@@ -35,4 +35,4 @@ class LuckerRole(commands.Cog):
             embed.set_footer(text="Meme Land bot | Создатель EBOLA#1337")
             await ctx.reply(embed=embed)
         else:
-            await ctx.reply("Данная команда работает в событии на канале: <#766386682047365194>")
+            await ctx.reply(f"Данная команда работает в событии на канале: <#{luckyRoleSettings['luckyRoleChannelID']}>")
