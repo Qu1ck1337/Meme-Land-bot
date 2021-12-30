@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from config import luckyRoleSettings
+from config import luckyRoleSettings, luckyRoles
 import random
 
 
@@ -13,36 +13,25 @@ class LuckerRole(commands.Cog):
         if ctx.channel.id == luckyRoleSettings["luckyRoleChannelID"]:
             # await ctx.reply(random.choice(luckyRoleSettings["luckyRolePhraze"]))
             randomNumber = random.randint(0, luckyRoleSettings["luckyRoleMax"])
-            if 777 == randomNumber:
-                role = ctx.guild.get_role(luckyRoleSettings["luckyRoleID"])
+            if randomNumber in luckyRoles.keys():
+                role = ctx.guild.get_role(luckyRoles[randomNumber])
                 await ctx.author.add_roles(role)
-                embed = discord.Embed(title=random.choice(luckyRoleSettings["luckyRoleWinPhraze"]),
-                                      description=f"**Выпало число:**"
-                                                  f"\n\n🎰 **`{randomNumber}`** 🎰"
-                                                  f"\n\n**Удача на твоей стороне!** 💎"
-                                                  f"\nПолучай себе заветную роль: **{role.name}**! Теперь можешь перед всеми понтоваться) 😎",
-                                      colour=0xffd700
-                                      )
-            elif 666 == randomNumber:
-                role = ctx.guild.get_role(luckyRoleSettings["DemonRoleID"])
-                await ctx.author.add_roles(role)
-                embed = discord.Embed(title=random.choice(luckyRoleSettings["luckyRoleWinPhraze"]),
-                                      description=f"**Выпало число:**"
-                                                  f"\n\n👹 **`{randomNumber}`** 👹"
-                                                  f"\n\n**Удача на твоей стороне!** 💎"
-                                                  f"\nПолучай себе заветную роль: **{role.name}**! Теперь можешь перед всеми понтоваться) 😎",
-                                      colour=0xffd700
-                                      )
-            elif 1 == randomNumber:
-                role = ctx.guild.get_role(luckyRoleSettings["FirstRoleID"])
-                await ctx.author.add_roles(role)
-                embed = discord.Embed(title=random.choice(luckyRoleSettings["luckyRoleWinPhraze"]),
-                                      description=f"**Выпало число:**"
-                                                  f"\n\n🕶️ **`{randomNumber}`** 🕶️"
-                                                  f"\n\n**Удача на твоей стороне!** 💎"
-                                                  f"\nПолучай себе заветную роль: **{role.name}**! Теперь можешь перед всеми понтоваться) 😎",
-                                      colour=0xffd700
-                                      )
+                if randomNumber != 1000:
+                    embed = discord.Embed(title=random.choice(luckyRoleSettings["luckyRoleWinPhraze"]),
+                                          description=f"**Выпало число:**"
+                                                      f"\n\n✅ **`{randomNumber}`** ✅"
+                                                      f"\n\n**Удача на твоей стороне!** 💎"
+                                                      f"\nПолучай себе заветную роль: **{role.name}**! Теперь ты можешь перед всеми ей понтоваться) 😎",
+                                          colour=0xffd700
+                                          )
+                else:
+                    embed = discord.Embed(title="Что???",
+                                          description=f"**Выпало число:**"
+                                                      f"\n\n❓ **`1337`** ❓"
+                                                      f"\n\n**Но как??? 😦**"
+                                                      f"\nПолучай себе невозможную роль: **{role.name}**! Теперь ты можешь перед всеми ей понтоваться) 😎",
+                                          colour=0xffd700
+                                          )
             else:
                 embed = discord.Embed(title="В следующий раз повезёт)",
                                       description=f"**Выпало число:**"
