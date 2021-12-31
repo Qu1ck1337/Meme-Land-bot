@@ -1,14 +1,7 @@
-import random
 from config import santaSettings
 import discord
 from discord.ext import commands
 from discord.ext.commands import Cog
-from discord_components import (
-    Button,
-    ButtonStyle,
-    Select,
-    SelectOption,
-)
 
 
 
