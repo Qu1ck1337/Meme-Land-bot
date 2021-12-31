@@ -30,5 +30,5 @@ luckyRoles = {
 }
 
 santaSettings = {
-    "santaChannelID": None
+    "santaRoleID": 926383093768654868
 }
