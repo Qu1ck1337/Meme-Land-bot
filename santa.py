@@ -4,7 +4,6 @@ from discord.ext import commands
 from discord.ext.commands import Cog
 
 
-
 class SantaEvent(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -31,5 +30,5 @@ class SantaEvent(commands.Cog):
                                       colour=0x42aaff
                                       )
             embed.set_thumbnail(url=message.guild.icon_url)
-            embed.set_footer(text="Meme Land bot | Новогодний создатель: EBOLA#1337")
+            embed.set_footer(text="Meme Land bot | Создатель новогоднего настроения: EBOLA#1337")
             await message.reply(embed=embed)
