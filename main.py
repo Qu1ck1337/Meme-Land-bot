@@ -6,7 +6,7 @@ from santa import SantaEvent
 bot = commands.Bot(command_prefix=settings['prefix'])
 
 bot.add_cog(LuckerRole(bot))
-bot.add_cog(SantaEvent(bot))
+#bot.add_cog(SantaEvent(bot))
 
 @bot.event
 async def on_ready():
