@@ -34,7 +34,7 @@ class Economic(commands.Cog):
                 dbname = self.client["server_economy"]
                 collection_name = dbname["users_data"]
                 result = collection_name.find().sort("balance", pymongo.DESCENDING).limit(10)
-                embed = discord.Embed(title="Топ-10 лучших мемеров сервера Meme Land")
+                embed = discord.Embed(title="Топ-10 лучших мемеров сервера Meme Land", color=0x42aaff)
                 for num, rez in enumerate(result):
                     embed.add_field(name=f"**{ '🥇 ' if num == 0 else '🥈 ' if num == 1 else '🥉 ' if num == 2 else ''}{num + 1}. {guild.get_member(rez['id'])}**", value=f"**Memecoins:** {rez['balance']} <:memeland_coin:939265285767192626>", inline=False)
                 embed.set_thumbnail(url=guild.icon_url)
