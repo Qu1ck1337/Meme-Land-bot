@@ -1,5 +1,5 @@
 settings = {
-    "isBetaVersion": True,
+    "isBetaVersion": False,
     "id": 894952935442747393,
     "token": "ODk0OTUyOTM1NDQyNzQ3Mzkz.YVxf3w.n6J30jwGCdk7Jtr7dIOvtHAT0Og",
     "prefix": "!",
