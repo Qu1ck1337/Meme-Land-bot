@@ -93,7 +93,7 @@ class Economic(commands.Cog):
         print(f"{datetime.datetime.now().strftime('%H:%M:%S')} | [INFO] Data of {member.display_name} was deleted")
 
     @commands.command()
-    @commands.has_role(economySettings["moderatorAndAdministratorRolesID"])
+    #@commands.has_role(economySettings["moderatorAndAdministratorRolesID"])
     @commands.is_owner()
     @commands.has_permissions(administrator=True)
     async def add_money(self, ctx, member: discord.Member, money: int):
@@ -121,7 +121,7 @@ class Economic(commands.Cog):
                 await ctx.reply(embed=embed)
 
     @commands.command()
-    @commands.has_role(economySettings["moderatorAndAdministratorRolesID"])
+    #@commands.has_role(economySettings["moderatorAndAdministratorRolesID"])
     @commands.is_owner()
     @commands.has_permissions(administrator=True)
     async def set_money(self, ctx, member: discord.Member, money: int):
