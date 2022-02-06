@@ -234,6 +234,7 @@ class Economic(commands.Cog):
     async def check_message(self, message):
         user = self.dsi_check_user_like(message)
         if user:
+            print(f"test {user}")
             await message.reply(embed=discord.Embed(title="Награда", description=f"Вы получили вознаграждение за бамп сервера! Получены: {economySettings['monitoringReward']} <:memeland_coin:939265285767192626>",
                                                     color=economySettings["attention_color"]))
             dbname = self.client['server_economy']
