@@ -17,7 +17,7 @@ bot.add_cog(Economic(bot))
 async def on_ready():
     print(f'{datetime.datetime.now().strftime("%H:%M:%S")} | [INFO] Ready!')
     await bot.change_presence(
-        activity=discord.Activity(type=discord.ActivityType.watching, name="Разрабатываюсь EBOLAЙ"))
+        activity=discord.Activity(type=discord.ActivityType.watching, name="BETA VERSION"))
 
 if settings["isBetaVersion"] is not True:
     bot.run(settings['token'])
