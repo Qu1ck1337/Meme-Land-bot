@@ -55,6 +55,7 @@ class Economic(commands.Cog):
         dbname = self.client['server_economy']
         collection_name = dbname["users_data"]
         guild = self.bot.get_guild(economySettings["guild"])
+
         for member in guild.members:
             if not member.bot and collection_name.find_one({"id": member.id}) is None:
                 await self.create_user_data(member)
@@ -303,19 +304,30 @@ class Economic(commands.Cog):
                     collection_name_user = dbname_user["users_data"]
 
                     user_result = collection_name_user.find_one({"id": ctx.author.id})
-                    if user_result["balance"] >= cost:
-                        new_balance = user_result["balance"] - cost
-                        collection_name_user.update_one(user_result, {"$set": {"balance": new_balance}})
-                        await ctx.author.add_roles(role)
-                        embed = discord.Embed(title="Успешная покупка", description=f"Покупка прошла успешно. Вы получили роль {role.mention}, купив за **{cost}** <:memeland_coin:939265285767192626>",
-                                              color=economySettings["success_color"])
-                        embed.set_footer(
-                            text=f"Запрошено {ctx.author} 🞄 {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}")
-                        await ctx.reply(embed=embed)
+
+                    if role not in ctx.author.roles:
+                        if user_result["balance"] >= cost:
+                            new_balance = user_result["balance"] - cost
+                            collection_name_user.update_one(user_result, {"$set": {"balance": new_balance}})
+                            await ctx.author.add_roles(role)
+                            embed = discord.Embed(title="Успешная покупка",
+                                                  description=f"Покупка прошла успешно. Вы получили роль {role.mention}, купив за **{cost}** <:memeland_coin:939265285767192626>",
+                                                  color=economySettings["success_color"])
+                            embed.set_footer(
+                                text=f"Запрошено {ctx.author} 🞄 {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}")
+                            await ctx.reply(embed=embed)
+                        else:
+                            embed = discord.Embed(title="Ошибка",
+                                                  description=f"Недостаточно <:memeland_coin:939265285767192626>"
+                                                              f"\nЧтобы купить роль {role.mention} вам нужно ещё **{cost - user_result['balance']}** <:memeland_coin:939265285767192626>",
+                                                  color=economySettings["error_color"])
+                            embed.set_footer(
+                                text=f"Запрошено {ctx.author} 🞄 {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}")
+                            await ctx.reply(embed=embed)
+                            return
                     else:
                         embed = discord.Embed(title="Ошибка",
-                                              description=f"Недостаточно <:memeland_coin:939265285767192626>"
-                                                          f"\nЧтобы купить роль {role.mention} вам нужно ещё **{cost - user_result['balance']}** <:memeland_coin:939265285767192626>",
+                                              description=f"У вас уже есть {role.mention}",
                                               color=economySettings["error_color"])
                         embed.set_footer(
                             text=f"Запрошено {ctx.author} 🞄 {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}")
