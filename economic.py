@@ -216,9 +216,8 @@ class Economic(commands.Cog):
                 collection_name = dbname["users_data"]
                 result = collection_name.find_one({"id": message.author.id})
                 print("1")
-
-                import pytz
-                if result["nextReward"] < datetime.datetime.now(pytz.timezone('Europe/Moscow')):
+                offset = datetime.timezone(datetime.timedelta(hours=3))
+                if result["nextReward"] < datetime.datetime.now(offset):
                     randomMoney = random.randint(economySettings["randomMoneyForMessageMin"],
                                                  economySettings["randomMoneyForMessageMax"])
                     if message.channel.id in economySettings["doubleMoneyChannel"]:
