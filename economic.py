@@ -227,8 +227,8 @@ class Economic(commands.Cog):
                                                                          "delayRewardSeconds"])}})
                     print(f"{message.author.display_name} reached a reward."
                           f"\nAdded Money: {randomMoney}")
-        except Exception:
-            pass
+        except Exception as ex:
+            print(ex)
 
     @commands.command(name="shop", aliases=["магазин"])
     async def shop(self, ctx):
