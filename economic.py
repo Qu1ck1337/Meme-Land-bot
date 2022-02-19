@@ -224,7 +224,7 @@ class Economic(commands.Cog):
                         res_bal = result['balance'] + randomMoney * 2
                     else:
                         res_bal = result['balance'] + randomMoney
-                    collection_name.update_one(result, {"$set": {"balance": res_bal,
+                    collection_name.update_one({"id": message.author.id}, {"$set": {"balance": res_bal,
                                                                  "nextReward": datetime.datetime.now() + datetime.timedelta(
                                                                      seconds=economySettings[
                                                                          "delayRewardSeconds"])}})
