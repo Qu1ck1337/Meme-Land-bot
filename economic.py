@@ -96,9 +96,9 @@ class Economic(commands.Cog):
         print(f"{datetime.datetime.now().strftime('%H:%M:%S')} | [INFO] Data of {member.display_name} was deleted")
 
     @commands.command()
-    @commands.has_any_role(economySettings["moderatorAndAdministratorRolesID"])
-    @commands.is_owner()
-    @commands.has_permissions(administrator=True)
+    @commands.has_any_role(939801337196073030, 905484393919967252, 906632280376741939)
+    #@commands.is_owner()
+    #@commands.has_permissions(administrator=True)
     async def add_money(self, ctx, member: discord.Member, money: int):
         if ctx.guild == self.bot.get_guild(economySettings["guild"]):
             dbname = self.client['server_economy']
@@ -126,9 +126,9 @@ class Economic(commands.Cog):
                     await ctx.reply(embed=embed)
 
     @commands.command()
-    @commands.has_any_role(economySettings["moderatorAndAdministratorRolesID"])
-    @commands.is_owner()
-    @commands.has_permissions(administrator=True)
+    @commands.has_any_role(939801337196073030, 905484393919967252, 906632280376741939)
+    #@commands.is_owner()
+    #@commands.has_permissions(administrator=True)
     async def set_money(self, ctx, member: discord.Member, money: int):
         if ctx.guild == self.bot.get_guild(economySettings["guild"]):
             dbname = self.client['server_economy']
@@ -210,14 +210,10 @@ class Economic(commands.Cog):
     @Cog.listener("on_message")
     async def check_message(self, message, pytz=None):
         try:
-            #print(message.guild)
             if message.guild == self.bot.get_guild(economySettings["guild"]) and message.channel.id not in economySettings["bannedChannelToGetMoney"]:
                 dbname = self.client['server_economy']
                 collection_name = dbname["users_data"]
                 result = collection_name.find_one({"id": message.author.id})
-                #print("1")
-                #import pytz
-                #offset = datetime.timezone(pytz.timezone('Europe/Moscow'))
                 if result["nextReward"] < datetime.datetime.now():
                     randomMoney = random.randint(economySettings["randomMoneyForMessageMin"],
                                                  economySettings["randomMoneyForMessageMax"])

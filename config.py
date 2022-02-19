@@ -44,7 +44,6 @@ santaSettings = {
 }
 
 economySettings = {
-    "moderatorAndAdministratorRolesID": [939801337196073030, 905484393919967252, 906632280376741939],
     "bannedChannelToGetMoney": [905415221793927198, 899672752494112829, 905417156211126295],
     "doubleMoneyChannel": [896440547990995075],
     "randomMoneyForMessageMin": 10,
