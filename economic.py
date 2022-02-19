@@ -210,7 +210,7 @@ class Economic(commands.Cog):
     @Cog.listener("on_message")
     async def check_message(self, message):
         try:
-            if message.guild == self.bot.get_guild(economySettings["guild"]) and (economySettings["memeChannel"] is None or message.channel.id not in economySettings["bannedChannelToGetMoney"]):
+            if message.guild == self.bot.get_guild(economySettings["guild"]) and message.channel.id not in economySettings["bannedChannelToGetMoney"]:
                 dbname = self.client['server_economy']
                 collection_name = dbname["users_data"]
                 result = collection_name.find_one({"id": message.author.id})
