@@ -44,10 +44,11 @@ santaSettings = {
 }
 
 economySettings = {
-    "moderatorAndAdministratorRolesID": [906632280376741939, 892495248528384040, 905484393919967252],
-    "memeChannel": 896440547990995075,
-    "randomMoneyForMessageMin": 1,
-    "randomMoneyForMessageMax": 5,
+    "moderatorAndAdministratorRolesID": [939801337196073030, 905484393919967252, 906632280376741939],
+    "bannedChannelToGetMoney": [905415221793927198, 899672752494112829, 905417156211126295],
+    "doubleMoneyChannel": [896440547990995075],
+    "randomMoneyForMessageMin": 10,
+    "randomMoneyForMessageMax": 25,
     "delayRewardSeconds": 60,
     "guild": 892493256129118260,
     "leaderBoardChannel": 939591886266580993,

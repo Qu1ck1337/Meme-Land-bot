@@ -45,11 +45,13 @@ class Economic(commands.Cog):
 
     @Cog.listener("on_member_join")
     async def on_member_join(self, member):
-        await self.create_user_data(member)
+        if member.guild == self.bot.get_guild(economySettings["guild"]):
+            await self.create_user_data(member)
 
     @Cog.listener("on_member_remove")
     async def on_member_remove(self, member):
-        await self.remove_user_data(member)
+        if member.guild == self.bot.get_guild(economySettings["guild"]):
+            await self.remove_user_data(member)
 
     async def check_server_members(self):
         dbname = self.client['server_economy']
@@ -94,174 +96,135 @@ class Economic(commands.Cog):
         print(f"{datetime.datetime.now().strftime('%H:%M:%S')} | [INFO] Data of {member.display_name} was deleted")
 
     @commands.command()
-    #@commands.has_role(economySettings["moderatorAndAdministratorRolesID"])
+    @commands.has_any_role(economySettings["moderatorAndAdministratorRolesID"])
     @commands.is_owner()
     @commands.has_permissions(administrator=True)
     async def add_money(self, ctx, member: discord.Member, money: int):
-        dbname = self.client['server_economy']
-        collection_name = dbname["users_data"]
-        result = collection_name.find_one({"id": member.id})
-        if result is not None:
-            var = result["balance"] + money
-            collection_name.update_one(result, {"$set": {"balance": var}})
-            embed = discord.Embed(title="Изменение баланса",
-                                  description=f"Пользователю {member.mention} начислилось **{money}** <:memeland_coin:939265285767192626>: "
-                                              f"\n> Состояние баланса: **{result['balance']} <:memeland_coin:939265285767192626>** >> **{result['balance'] + money}** <:memeland_coin:939265285767192626>",
-                                  color=economySettings["success_color"])
-            embed.set_footer(
-                text=f"Запрошено {ctx.author} 🞄 {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}")
-            await ctx.reply(embed=embed)
-        else:
-            status = await self.create_user_data(member=member)
-            if status:
-                await self.set_money(ctx=ctx, member=member, money=money)
-            else:
-                embed = discord.Embed(title="Ошибка", description="Искомый пользователь не найден.", color=economySettings["error_color"])
+        if ctx.guild == self.bot.get_guild(economySettings["guild"]):
+            dbname = self.client['server_economy']
+            collection_name = dbname["users_data"]
+            result = collection_name.find_one({"id": member.id})
+            if result is not None:
+                var = result["balance"] + money
+                collection_name.update_one(result, {"$set": {"balance": var}})
+                embed = discord.Embed(title="Изменение баланса",
+                                      description=f"Пользователю {member.mention} начислилось **{money}** <:memeland_coin:939265285767192626>: "
+                                                  f"\n> Состояние баланса: **{result['balance']} <:memeland_coin:939265285767192626>** >> **{result['balance'] + money}** <:memeland_coin:939265285767192626>",
+                                      color=economySettings["success_color"])
                 embed.set_footer(
                     text=f"Запрошено {ctx.author} 🞄 {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}")
                 await ctx.reply(embed=embed)
+            else:
+                status = await self.create_user_data(member=member)
+                if status:
+                    await self.set_money(ctx=ctx, member=member, money=money)
+                else:
+                    embed = discord.Embed(title="Ошибка", description="Искомый пользователь не найден.",
+                                          color=economySettings["error_color"])
+                    embed.set_footer(
+                        text=f"Запрошено {ctx.author} 🞄 {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}")
+                    await ctx.reply(embed=embed)
 
     @commands.command()
-    #@commands.has_role(economySettings["moderatorAndAdministratorRolesID"])
+    @commands.has_any_role(economySettings["moderatorAndAdministratorRolesID"])
     @commands.is_owner()
     @commands.has_permissions(administrator=True)
     async def set_money(self, ctx, member: discord.Member, money: int):
-        dbname = self.client['server_economy']
-        collection_name = dbname["users_data"]
-        result = collection_name.find_one({"id": member.id})
-        if result is not None:
-            collection_name.update_one(result, {"$set": {"balance": money}})
-            embed = discord.Embed(title="Изменение баланса",
-                                  description=f"Баланс пользователя {member.mention} изменён: "
-                                              f"\n> Состояние баланса: **{result['balance']} <:memeland_coin:939265285767192626>** >> **{money}** <:memeland_coin:939265285767192626>",
-                                  color=economySettings["success_color"])
-            embed.set_footer(text=f"Запрошено {ctx.author} 🞄 {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}")
-            await ctx.reply(embed=embed)
-        else:
-            status = await self.create_user_data(member=member)
-            if status:
-                await self.set_money(ctx=ctx, member=member, money=money)
+        if ctx.guild == self.bot.get_guild(economySettings["guild"]):
+            dbname = self.client['server_economy']
+            collection_name = dbname["users_data"]
+            result = collection_name.find_one({"id": member.id})
+            if result is not None:
+                collection_name.update_one(result, {"$set": {"balance": money}})
+                embed = discord.Embed(title="Изменение баланса",
+                                      description=f"Баланс пользователя {member.mention} изменён: "
+                                                  f"\n> Состояние баланса: **{result['balance']} <:memeland_coin:939265285767192626>** >> **{money}** <:memeland_coin:939265285767192626>",
+                                      color=economySettings["success_color"])
+                embed.set_footer(
+                    text=f"Запрошено {ctx.author} 🞄 {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}")
+                await ctx.reply(embed=embed)
             else:
-                embed = discord.Embed(title="Ошибка", description="Искомый пользователь не найден.", color=economySettings["error_color"])
+                status = await self.create_user_data(member=member)
+                if status:
+                    await self.set_money(ctx=ctx, member=member, money=money)
+                else:
+                    embed = discord.Embed(title="Ошибка", description="Искомый пользователь не найден.",
+                                          color=economySettings["error_color"])
+                    embed.set_footer(
+                        text=f"Запрошено {ctx.author} 🞄 {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}")
+                    await ctx.reply(embed=embed)
+
+    @commands.command(name="balance", aliases=["баланс"])
+    async def balance(self, ctx, member: discord.Member = None):
+        if ctx.guild == self.bot.get_guild(economySettings["guild"]):
+            if member is None:
+                member = ctx.author
+            dbname = self.client['server_economy']
+            collection_name = dbname["users_data"]
+            result = collection_name.find_one({"id": member.id})
+            if result is not None:
+                embed = discord.Embed(title=f"Состояние баланса",
+                                      description=f"Баланс {member.mention} на текущий момент: **{result['balance']}** <:memeland_coin:939265285767192626>",
+                                      color=economySettings["success_color"])
+                embed.set_footer(
+                    text=f"Запрошено {ctx.author} 🞄 {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}")
+                await ctx.reply(embed=embed)
+            else:
+                await self.create_user_data(member=member)
+                await self.balance(ctx=ctx, member=member)
+
+    @commands.command(name="send_money", aliases=["send", "перевести"])
+    async def send_money(self, ctx, member: discord.Member, money: int):
+        if ctx.guild == self.bot.get_guild(economySettings["guild"]):
+            dbname = self.client['server_economy']
+            collection_name = dbname["users_data"]
+
+            sender_result = collection_name.find_one({"id": ctx.author.id})
+
+            if sender_result is None:
+                await self.create_user_data(member=ctx.author)
+
+            if sender_result["balance"] >= money:
+                collection_name.update_one(sender_result, {"$set": {"balance": sender_result["balance"] - money}})
+
+                giver_result = collection_name.find_one({"id": member.id})
+                if giver_result is None:
+                    await ctx.send(embed=discord.Embed(
+                        title="Ошибка", description="Искомый получатель не найден.",
+                        color=economySettings["error_color"]))
+                    return
+                collection_name.update_one(giver_result, {"$set": {"balance": giver_result["balance"] + money}})
+                embed = discord.Embed(title="Успешный перевод",
+                                      description=f"**{money}** <:memeland_coin:939265285767192626> успешно переведены пользователю {member.mention}",
+                                      color=economySettings["success_color"])
+                embed.set_footer(
+                    text=f"Запрошено {ctx.author} 🞄 {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}")
+                await ctx.reply(embed=embed)
+            else:
+                embed = discord.Embed(
+                    title="Ошибка", description="Недостаточно средств", color=economySettings["error_color"])
                 embed.set_footer(
                     text=f"Запрошено {ctx.author} 🞄 {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}")
                 await ctx.reply(embed=embed)
 
-    @commands.command(name="balance", aliases=["баланс"])
-    async def balance(self, ctx, member: discord.Member = None):
-        if member is None:
-            member = ctx.author
-        dbname = self.client['server_economy']
-        collection_name = dbname["users_data"]
-        result = collection_name.find_one({"id": member.id})
-        if result is not None:
-            embed = discord.Embed(title=f"Состояние баланса",
-                                  description=f"Баланс {member.mention} на текущий момент: **{result['balance']}** <:memeland_coin:939265285767192626>",
-                                  color=economySettings["success_color"])
-            embed.set_footer(text=f"Запрошено {ctx.author} 🞄 {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}")
-            await ctx.reply(embed=embed)
-        else:
-            await self.create_user_data(member=member)
-            await self.balance(ctx=ctx, member=member)
-
-    @commands.command(name="send_money", aliases=["send", "перевести"])
-    async def send_money(self, ctx, member: discord.Member, money: int):
-        dbname = self.client['server_economy']
-        collection_name = dbname["users_data"]
-
-        sender_result = collection_name.find_one({"id": ctx.author.id})
-
-        if sender_result is None:
-            await self.create_user_data(member=ctx.author)
-
-        if sender_result["balance"] >= money:
-            collection_name.update_one(sender_result, {"$set": {"balance": sender_result["balance"] - money}})
-
-            giver_result = collection_name.find_one({"id": member.id})
-            if giver_result is None:
-                await ctx.send(embed=discord.Embed(
-                title="Ошибка", description="Искомый получатель не найден.", color=economySettings["error_color"]))
-                return
-            collection_name.update_one(giver_result, {"$set": {"balance": giver_result["balance"] + money}})
-            embed = discord.Embed(title="Успешный перевод",
-                                  description=f"**{money}** <:memeland_coin:939265285767192626> успешно переведены пользователю {member.mention}",
-                                  color=economySettings["success_color"])
-            embed.set_footer(
-                text=f"Запрошено {ctx.author} 🞄 {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}")
-            await ctx.reply(embed=embed)
-        else:
-            embed = discord.Embed(
-                title="Ошибка", description="Недостаточно средств", color=economySettings["error_color"])
-            embed.set_footer(
-                text=f"Запрошено {ctx.author} 🞄 {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}")
-            await ctx.reply(embed=embed)
-
-    def dsi_check_user_like(self, message: discord.Message):
-        # Лог Канал Лайков на сервере мониторинга
-        if message.channel.id != 581415119645573121:
-            return None
-        # Сообщение от юзера/бота, не от вебхук лога
-        if message.webhook_id == None:
-            return None
-        # Сообщение не содержит ембедов
-        if not message.embeds:
-            return None
-
-        for embed in message.embeds:
-            try:
-                server = message.author.name
-                server = server.split(" | ")
-                server = server[-1].rsplit("#", maxsplit=1)[0]
-                server_id = int(server)
-                if server_id != economySettings["guild"]:
-                    # Лайк для другого сервера
-                    return None
-
-                author = embed.author.name
-                author = author.split(" | ")
-                author = self.bot.get_user(int(author[-1]))
-
-                if not author:
-                    # Юзер не найден
-                    return None
-                # Возвращает лайкнувшего юзера
-                return author
-            except Exception as e:
-                pass
-        # Валидный ембед не найден
-        return None
-
     @Cog.listener("on_message")
     async def check_message(self, message):
-        user = self.dsi_check_user_like(message)
-        if user:
-            print(f"test {user}")
-            await message.reply(embed=discord.Embed(title="Награда", description=f"Вы получили вознаграждение за бамп сервера! Получены: {economySettings['monitoringReward']} <:memeland_coin:939265285767192626>",
-                                                    color=economySettings["attention_color"]))
-            dbname = self.client['server_economy']
-            collection_name = dbname["users_data"]
-            result = collection_name.find_one({"id": user.id})
-            if result is not None:
-                collection_name.update_one(result, {"$set": {"balance": economySettings["monitoringReward"]}})
-            else:
-                await self.create_user_data(message.author)
-                dbname = self.client['server_economy']
-                collection_name = dbname["users_data"]
-                result = collection_name.find_one({"id": user.id})
-                collection_name.update_one(result, {"$set": {"balance": economySettings["monitoringReward"]}})
-
         try:
-            if economySettings["memeChannel"] is None or message.channel.id == economySettings["memeChannel"]:
+            if message.guild == self.bot.get_guild(economySettings["guild"]) and (economySettings["memeChannel"] is None or message.channel.id not in economySettings["bannedChannelToGetMoney"]):
                 dbname = self.client['server_economy']
                 collection_name = dbname["users_data"]
                 result = collection_name.find_one({"id": message.author.id})
                 if result["nextReward"] < datetime.datetime.now():
                     randomMoney = random.randint(economySettings["randomMoneyForMessageMin"],
                                                  economySettings["randomMoneyForMessageMax"])
-                    res_bal = result['balance'] + randomMoney
+                    if message.channel.id in economySettings["doubleMoneyChannel"]:
+                        res_bal = result['balance'] + randomMoney * 2
+                    else:
+                        res_bal = result['balance'] + randomMoney
                     collection_name.update_one(result, {"$set": {"balance": res_bal,
                                                                  "nextReward": datetime.datetime.now() + datetime.timedelta(
-                                                                     seconds=economySettings["delayRewardSeconds"])}})
+                                                                     seconds=economySettings[
+                                                                         "delayRewardSeconds"])}})
                     print(f"{message.author.display_name} reached a reward."
                           f"\nAdded Money: {randomMoney}")
         except Exception:
@@ -269,67 +232,73 @@ class Economic(commands.Cog):
 
     @commands.command(name="shop", aliases=["магазин"])
     async def shop(self, ctx):
-        dbname = self.client['server_economy_settings']
-        collection_name = dbname["server_shop"]
+        if ctx.guild == self.bot.get_guild(economySettings["guild"]):
+            dbname = self.client['server_economy_settings']
+            collection_name = dbname["server_shop"]
 
-        embed = discord.Embed(title="Магазин Жорика", description=f"Чтобы купить что-то в магазине Жорика, используйте команду `!buy <номер товара>`", color=economySettings["attention_color"])
-        embed.set_footer(
-            text=f"Запрошено {ctx.author} 🞄 {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}")
-        embed.set_thumbnail(url=ctx.guild.icon_url)
+            embed = discord.Embed(title="Магазин Жорика",
+                                  description=f"Чтобы купить что-то в магазине Жорика, используйте команду `!buy <номер товара>` или `!купить <номер товара>`",
+                                  color=economySettings["attention_color"])
+            embed.set_footer(
+                text=f"Запрошено {ctx.author} 🞄 {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}")
+            embed.set_thumbnail(url=ctx.guild.icon_url)
 
-        result = collection_name.find_one()
-        for num, res in enumerate(result):
-            if res != "_id":
-                role_id = result[res][1]
-                role = ctx.guild.get_role(role_id)
-                embed.add_field(name=f"Товар #{num}", value=f"{role.mention} | Стоимость: **{result[res][0]}** <:memeland_coin:939265285767192626>", inline=False)
-        await ctx.send(embed=embed)
+            result = collection_name.find_one()
+            for num, res in enumerate(result):
+                if res != "_id":
+                    role_id = result[res][1]
+                    role = ctx.guild.get_role(role_id)
+                    embed.add_field(name=f"Товар #{num}",
+                                    value=f"{role.mention} | Стоимость: **{result[res][0]}** <:memeland_coin:939265285767192626>",
+                                    inline=False)
+            await ctx.send(embed=embed)
 
     @commands.command(name="buy", aliases=["купить"])
     async def buy(self, ctx, nums: int):
-        dbname = self.client['server_economy_settings']
-        collection_name = dbname["server_shop"]
+        if ctx.guild == self.bot.get_guild(economySettings["guild"]):
+            dbname = self.client['server_economy_settings']
+            collection_name = dbname["server_shop"]
 
-        result = collection_name.find_one()
+            result = collection_name.find_one()
 
-        for num, res in enumerate(result):
-            if res != "_id":
-                if num == nums:
-                    role_id = result[res][1]
-                    cost = result[res][0]
+            for num, res in enumerate(result):
+                if res != "_id":
+                    if num == nums:
+                        role_id = result[res][1]
+                        cost = result[res][0]
 
-                    role = ctx.guild.get_role(role_id)
+                        role = ctx.guild.get_role(role_id)
 
-                    dbname_user = self.client['server_economy']
-                    collection_name_user = dbname_user["users_data"]
+                        dbname_user = self.client['server_economy']
+                        collection_name_user = dbname_user["users_data"]
 
-                    user_result = collection_name_user.find_one({"id": ctx.author.id})
+                        user_result = collection_name_user.find_one({"id": ctx.author.id})
 
-                    if role not in ctx.author.roles:
-                        if user_result["balance"] >= cost:
-                            new_balance = user_result["balance"] - cost
-                            collection_name_user.update_one(user_result, {"$set": {"balance": new_balance}})
-                            await ctx.author.add_roles(role)
-                            embed = discord.Embed(title="Успешная покупка",
-                                                  description=f"Покупка прошла успешно. Вы получили роль {role.mention}, купив за **{cost}** <:memeland_coin:939265285767192626>",
-                                                  color=economySettings["success_color"])
-                            embed.set_footer(
-                                text=f"Запрошено {ctx.author} 🞄 {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}")
-                            await ctx.reply(embed=embed)
+                        if role not in ctx.author.roles:
+                            if user_result["balance"] >= cost:
+                                new_balance = user_result["balance"] - cost
+                                collection_name_user.update_one(user_result, {"$set": {"balance": new_balance}})
+                                await ctx.author.add_roles(role)
+                                embed = discord.Embed(title="Успешная покупка",
+                                                      description=f"Покупка прошла успешно. Вы получили роль {role.mention}, купив за **{cost}** <:memeland_coin:939265285767192626>",
+                                                      color=economySettings["success_color"])
+                                embed.set_footer(
+                                    text=f"Запрошено {ctx.author} 🞄 {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}")
+                                await ctx.reply(embed=embed)
+                            else:
+                                embed = discord.Embed(title="Ошибка",
+                                                      description=f"Недостаточно <:memeland_coin:939265285767192626>"
+                                                                  f"\nЧтобы купить {role.mention} вам нужно ещё **{cost - user_result['balance']}** <:memeland_coin:939265285767192626>",
+                                                      color=economySettings["error_color"])
+                                embed.set_footer(
+                                    text=f"Запрошено {ctx.author} 🞄 {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}")
+                                await ctx.reply(embed=embed)
+                                return
                         else:
                             embed = discord.Embed(title="Ошибка",
-                                                  description=f"Недостаточно <:memeland_coin:939265285767192626>"
-                                                              f"\nЧтобы купить роль {role.mention} вам нужно ещё **{cost - user_result['balance']}** <:memeland_coin:939265285767192626>",
+                                                  description=f"У вас уже есть {role.mention}",
                                                   color=economySettings["error_color"])
                             embed.set_footer(
                                 text=f"Запрошено {ctx.author} 🞄 {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}")
                             await ctx.reply(embed=embed)
                             return
-                    else:
-                        embed = discord.Embed(title="Ошибка",
-                                              description=f"У вас уже есть {role.mention}",
-                                              color=economySettings["error_color"])
-                        embed.set_footer(
-                            text=f"Запрошено {ctx.author} 🞄 {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}")
-                        await ctx.reply(embed=embed)
-                        return
