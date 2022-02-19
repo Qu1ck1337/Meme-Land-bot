@@ -216,6 +216,7 @@ class Economic(commands.Cog):
                 collection_name = dbname["users_data"]
                 result = collection_name.find_one({"id": message.author.id})
                 print(result)
+                print(result["nextReward"])
                 if result["nextReward"] < datetime.datetime.now():
                     randomMoney = random.randint(economySettings["randomMoneyForMessageMin"],
                                                  economySettings["randomMoneyForMessageMax"])
