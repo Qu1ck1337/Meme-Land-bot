@@ -210,14 +210,15 @@ class Economic(commands.Cog):
     @Cog.listener("on_message")
     async def check_message(self, message, pytz=None):
         try:
-            print(message.guild)
+            #print(message.guild)
             if message.guild == self.bot.get_guild(economySettings["guild"]) and message.channel.id not in economySettings["bannedChannelToGetMoney"]:
                 dbname = self.client['server_economy']
                 collection_name = dbname["users_data"]
                 result = collection_name.find_one({"id": message.author.id})
-                print("1")
-                offset = datetime.timezone(datetime.timedelta(hours=3))
-                if result["nextReward"] < datetime.datetime.now(offset):
+                #print("1")
+                #import pytz
+                #offset = datetime.timezone(pytz.timezone('Europe/Moscow'))
+                if result["nextReward"] < datetime.datetime.now():
                     randomMoney = random.randint(economySettings["randomMoneyForMessageMin"],
                                                  economySettings["randomMoneyForMessageMax"])
                     if message.channel.id in economySettings["doubleMoneyChannel"]:
