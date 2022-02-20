@@ -20,7 +20,7 @@ bot.add_cog(Meme_Rus(bot))
 async def on_ready():
     print(f'{datetime.datetime.now().strftime("%H:%M:%S")} | [INFO] Ready!')
     await bot.change_presence(
-        activity=discord.Activity(type=discord.ActivityType.watching, name="на Meme Land"))
+        activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(bot.guilds)} серверов!"))
 
 
 @bot.command()
