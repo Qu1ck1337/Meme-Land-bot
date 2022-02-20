@@ -24,6 +24,7 @@ class Meme_Rus(commands.Cog):
             dbname = self.client['bot_memes']
             collection_name = dbname["memes_on_moderation"]
             if ctx.message.attachments[0].url.split('.')[-1].lower() not in ['png', 'jpg', 'gif', 'jpeg']:
+                await ctx.reply("Вылкадывание видео пока недоступно, в скором времени добавим)")
                 return
             if collection_name.find_one({"url": ctx.message.attachments[0].url}) is None:
                 description = " ".join(content)
@@ -38,6 +39,8 @@ class Meme_Rus(commands.Cog):
                         "description": description,
                         "guild": ctx.guild.id
                     })
+                msg = await ctx.reply("Ваш мем отправлен на модерацию =)")
+                await msg.delete(delay=30)
             else:
                 ctx.reply("Такой мем уже есть")
         else:
