@@ -1,7 +1,6 @@
 import discord
-from discord.ext import commands, tasks
+from discord.ext import commands
 from discord.ext.commands import Cog
-import pymongo
 from pymongo import MongoClient
 from config import meme_rus_settings, settings, beta_settings
 import random
