@@ -19,11 +19,12 @@ bot.add_cog(Meme_Rus(bot))
 @bot.event
 async def on_ready():
     print(f'{datetime.datetime.now().strftime("%H:%M:%S")} | [INFO] Ready!')
-    bot.loop.create_task(update_status())
+    update_status.start()
 
 
-@tasks.loop(minutes=10)
+@tasks.loop(minutes=1)
 async def update_status():
+    print("looping")
     await bot.change_presence(
         activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(bot.guilds)} серверов!"))
 
