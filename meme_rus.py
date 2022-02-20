@@ -126,7 +126,7 @@ class Meme_Rus(commands.Cog):
     async def on_reaction_add(self, reaction, user):
         if user.bot:
             return
-        if (reaction.message.author == settings["id"] or reaction.message.author.id == beta_settings["beta_id"]) and reaction.emoji == "👍":
+        if (reaction.message.author.id == settings["id"] or reaction.message.author.id == beta_settings["beta_id"]) and reaction.emoji == "👍":
             dbname = self.client['bot_memes']
             accepted_memes_collection_name = dbname["accepted_memes"]
             result = accepted_memes_collection_name.find_one({"url": reaction.message.embeds[0].image.url})
