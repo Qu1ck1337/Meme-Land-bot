@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from config import luckyRoleSettings, luckyRoles
+from config import luckyRoleSettings, luckyRoles, settings
 import random
 
 
@@ -10,6 +10,8 @@ class LuckerRole(commands.Cog):
 
     @commands.command(name="spin", aliases=["спин", "крутить", "spins"])
     async def spin(self, ctx):
+        if ctx.guild.id != settings["guild"]:
+            return
         if ctx.channel.id == luckyRoleSettings["luckyRoleChannelID"]:
             # await ctx.reply(random.choice(luckyRoleSettings["luckyRolePhraze"]))
             randomNumber = random.randint(0, luckyRoleSettings["luckyRoleMax"])

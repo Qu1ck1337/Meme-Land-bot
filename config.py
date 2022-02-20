@@ -1,6 +1,7 @@
 settings = {
-    "isBetaVersion": False,
+    "isBetaVersion": True,
     "id": 894952935442747393,
+    "guild": 892493256129118260,
     "token": "ODk0OTUyOTM1NDQyNzQ3Mzkz.YVxf3w.n6J30jwGCdk7Jtr7dIOvtHAT0Og",
     "prefix": "!",
     "defaul_colour_of_embed": 0x42aaff
@@ -55,4 +56,11 @@ economySettings = {
     "error_color": 0xff0000,
     "attention_color": 0xFFCC33,
     "monitoringReward": 25
+}
+
+meme_rus_settings = {
+    "get_meme_phrases": ["Захотел мемчика? Я устрою!", "А вот для тебя весёлый подарочек...", "Пхах, прикинь чё нашёл...",
+                         "Нашёл что-то свеженькое для тебя!", "Любишь посмеятся?", "Опа, а вот мемчик!"],
+    "guild": 892493256129118260,
+    "moderationChannel": 944667843482484746
 }
