@@ -72,7 +72,7 @@ class Meme_Rus(commands.Cog):
     async def accept_meme(self, ctx, message: discord.Message):
         if ctx.guild.id != meme_rus_settings["guild"] or ctx.channel.id != meme_rus_settings["moderationChannel"]:
             return
-        if message.author == settings["id"] or message.author.id == beta_settings["beta_id"]:
+        if message.author.id == settings["id"] or message.author.id == beta_settings["beta_id"]:
             dbname = self.client['bot_memes']
             collection_name = dbname["memes_on_moderation"]
             result = collection_name.find_one({"msg_id": message.id})
@@ -104,7 +104,7 @@ class Meme_Rus(commands.Cog):
     async def reject_meme(self, ctx, message: discord.Message):
         if ctx.guild.id != meme_rus_settings["guild"] or ctx.channel.id != meme_rus_settings["moderationChannel"]:
             return
-        if message.author == settings["id"] or message.author.id == beta_settings["beta_id"]:
+        if message.author.id == settings["id"] or message.author.id == beta_settings["beta_id"]:
             dbname = self.client['bot_memes']
             collection_name = dbname["memes_on_moderation"]
             result = collection_name.find_one({"msg_id": message.id})
