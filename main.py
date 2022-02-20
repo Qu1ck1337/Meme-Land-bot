@@ -25,7 +25,7 @@ async def on_ready():
 
 @bot.command()
 async def help(context):
-    embed = discord.Embed(title="Помощь по командам бота", description="`!send_meme (прикреплённая картинка-мем)` - команда отправки мема"
+    embed = discord.Embed(title="Помощь по командам бота", description="`!send_meme <описание мема> (обязательно прикреплённая картинка-мем)` - команда отправки мема"
                                                                        "\n`!meme` - показывает случайный мем", color=0x42aaff)
     embed.set_footer(text="Это ранняя версия, спасибо за выбор моего бота! (EBOLA#1337)")
     await context.send(embed=embed)

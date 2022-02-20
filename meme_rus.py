@@ -27,7 +27,7 @@ class Meme_Rus(commands.Cog):
                 return
             if collection_name.find_one({"url": ctx.message.attachments[0].url}) is None:
                 description = " ".join(content)
-                embed = discord.Embed(title="Новый мем на модерацию", description=description)
+                embed = discord.Embed(title="Новый мем на модерацию", description=description, color=0xFFCC33)
                 embed.set_image(url=ctx.message.attachments[0])
                 msg = await moderation_channel.send(embed=embed)
                 collection_name.insert_one(
@@ -50,7 +50,7 @@ class Meme_Rus(commands.Cog):
 
         random_record = accepted_memes_collection_name.aggregate([{"$sample": {"size": 1}}])
         for result in random_record:
-            embed = discord.Embed(title=random.choice(meme_rus_settings["get_meme_phrases"]), description=result["description"])
+            embed = discord.Embed(title=random.choice(meme_rus_settings["get_meme_phrases"]), description=result["description"], color=0x42aaff)
 
             try:
                 likes = result["likes"]
@@ -84,7 +84,7 @@ class Meme_Rus(commands.Cog):
                 })
 
                 channel = await self.bot.get_guild(result["guild"]).get_member(result["author"]).create_dm()
-                embed = discord.Embed(title="Мем", description=result["description"])
+                embed = discord.Embed(title="Мем", description=result["description"], color=0x33FF66)
                 embed.set_image(url=result["url"])
                 await channel.send("Поздравляем, модерация одобрила ваш мем ^-^", embed=embed)
 
@@ -108,7 +108,7 @@ class Meme_Rus(commands.Cog):
             result = collection_name.find_one({"msg_id": message.id})
             if result is not None:
                 channel = await self.bot.get_guild(result["guild"]).get_member(result["author"]).create_dm()
-                embed = discord.Embed(title="Мем", description=result["description"])
+                embed = discord.Embed(title="Мем", description=result["description"], color=0xff0000)
                 embed.set_image(url=result["url"])
                 await channel.send("К сожалению ваш мем был отклонён(", embed=embed)
 
