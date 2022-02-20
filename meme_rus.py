@@ -91,7 +91,7 @@ class Meme_Rus(commands.Cog):
                 await channel.send("Поздравляем, модерация одобрила ваш мем ^-^", embed=embed)
 
                 meme_channel = self.bot.get_guild(meme_rus_settings["guild"]).get_channel(
-                    meme_rus_settings["moderationChannel"])
+                    meme_rus_settings["meme_accepted_channel"])
                 embed = discord.Embed(title="Новый мем!", description=result["description"], color=0x33FF66)
                 embed.set_image(url=result["url"])
                 await meme_channel.send(embed=embed)
