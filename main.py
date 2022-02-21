@@ -38,7 +38,7 @@ async def help(context):
     embed.set_footer(text="Это ранняя версия, спасибо за выбор моего бота! (EBOLA#1337)")
     await context.send(embed=embed)
 
-@bot.event
+#@bot.event
 async def on_command_error(context, exception):
     if isinstance(exception, discord.ext.commands.errors.CommandNotFound):
         await context.send(f"Неизвестная команда :/ "
