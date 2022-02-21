@@ -208,7 +208,7 @@ class Economic(commands.Cog):
                 await ctx.reply(embed=embed)
 
     @Cog.listener("on_message")
-    async def check_message(self, message, pytz=None):
+    async def check_message(self, message):
         try:
             if message.guild == self.bot.get_guild(economySettings["guild"]) and message.channel.id not in economySettings["bannedChannelToGetMoney"]:
                 dbname = self.client['server_economy']
