@@ -10,8 +10,8 @@ from santa import SantaEvent
 
 bot = commands.Bot(command_prefix=settings['prefix'], intents=discord.Intents.all(), help_command=None)
 
-bot.add_cog(LuckerRole(bot))
-bot.add_cog(Economic(bot))
+#bot.add_cog(LuckerRole(bot))
+#bot.add_cog(Economic(bot))
 bot.add_cog(Meme_Rus(bot))
 #bot.add_cog(SantaEvent(bot))
 
@@ -24,7 +24,6 @@ async def on_ready():
 
 @tasks.loop(minutes=1)
 async def update_status():
-    print("looping")
     await bot.change_presence(
         activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(bot.guilds)} серверов!"))
 
