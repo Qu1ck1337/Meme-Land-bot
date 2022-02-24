@@ -32,16 +32,21 @@ async def update_status():
 async def help(context):
     embed = discord.Embed(title="Помощь по командам бота", description=f"`{settings['prefix']}send_meme <описание мема>` + ОБЯЗАТЕЛЬНО прикреплённая картинка - команда отправки мема"
                                                                        f"\n`{settings['prefix']}meme` - показывает случайный мем"
+                                                                       f"\n`{settings['prefix']}meme <id мема>` - показывает мем с нужным id"
                                                                        f"\n`{settings['prefix']}last_meme` - показывает последний залитый мем"
                                                                        f"\n`{settings['prefix']}top_meme` - показывает самый лучший мем бота", color=0x42aaff)
     embed.set_footer(text="Это ранняя версия, спасибо за выбор моего бота! (EBOLA#1337)")
     await context.send(embed=embed)
 
-#@bot.event
+
+@bot.event
 async def on_command_error(context, exception):
-    if isinstance(exception, discord.ext.commands.errors.CommandNotFound):
-        await context.send(f"Неизвестная команда :/ "
-                           f"\n`{settings['prefix']}help` - чтобы узнать все команды бота")
+    #if isinstance(exception, discord.ext.commands.errors.CommandNotFound):
+    #    await context.send(f"Неизвестная команда :/ "
+    #                       f"\n`{settings['prefix']}help` - чтобы узнать все команды бота")
+    if isinstance(exception, discord.ext.commands.errors.BadArgument):
+        await context.reply(f"Неправильно введена команда :/ "
+                    f"\n`{settings['prefix']}help` - чтобы подробнее узнать все команды бота")
 
 
 if settings["isBetaVersion"] is not True:

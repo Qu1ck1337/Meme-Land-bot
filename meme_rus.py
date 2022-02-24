@@ -28,11 +28,14 @@ class Meme_Rus(commands.Cog):
             if collection_name.find_one({"url": ctx.message.attachments[0].url}) is None:
                 description = " ".join(content)
                 embed = discord.Embed(title="Новый мем на модерацию", description=description, color=0xFFCC33)
+                embed.add_field(name="Сервер:", value=f"{ctx.guild}")
+                embed.add_field(name="Автор:", value=f"{ctx.author}")
                 embed.set_image(url=ctx.message.attachments[0])
                 msg = await moderation_channel.send(embed=embed)
 
                 await msg.add_reaction("✅")
                 await msg.add_reaction("❌")
+                print(ctx.guild.id)
 
                 collection_name.insert_one(
                     {
@@ -42,54 +45,46 @@ class Meme_Rus(commands.Cog):
                         "description": description,
                         "guild": ctx.guild.id,
                     })
-                msg = await ctx.reply("Ваш мем отправлен на модерацию =)")
-                await msg.delete(delay=30)
+                message = await ctx.reply("Ваш мем отправлен на модерацию =)")
+                await message.delete(delay=30)
             else:
                 await ctx.reply("Такой мем уже есть")
         else:
             await ctx.reply(f"Вы не прикрепили мем к команде. Правильное использование команды: `{settings['prefix']}send_meme <описание мема>` + прикреплённая картинка")
 
     @commands.command()
-    async def meme(self, ctx, *description):
-        print(description)
+    async def meme(self, ctx, meme_id: int = None):
+        print(meme_id)
         dbname = self.client['bot_memes']
         accepted_memes_collection_name = dbname["accepted_memes"]
 
-        if len(description) == 0:
+        if meme_id is None:
             random_record = accepted_memes_collection_name.aggregate([{"$sample": {"size": 1}}])
-            for result in random_record:
-                embed = discord.Embed(
-                    title=f'{random.choice(meme_rus_settings["get_meme_phrases"])} <a:trippepe:901514564900913262>',
-                    description=result["description"], color=0x42aaff)
+        else:
+            if accepted_memes_collection_name.find_one({"meme_id": meme_id}) is None:
+                await ctx.reply("Мема с таким ID не существует :(")
+                return
+            random_record = accepted_memes_collection_name.find({"meme_id": meme_id}).limit(1)
 
-                try:
-                    likes = result["likes"]
-                except KeyError:
-                    accepted_memes_collection_name.update_one(result, {"$set": {"likes": 0}})
-                    likes = result["likes"]
+        for result in random_record:
+            embed = discord.Embed(
+                title=f'{random.choice(meme_rus_settings["get_meme_phrases"])} <a:trippepe:901514564900913262>',
+                description=result["description"], color=0x42aaff)
 
-                embed.add_field(name="Лайки:", value=f'{likes} 👍')
-                embed.set_image(url=result["url"])
-                embed.set_footer(text="Мы есть в дискорде: "
-                                      "\nhttps://discord.gg/VB3CgP9XTW",
-                                 icon_url=self.bot.get_guild(meme_rus_settings["guild"]).icon_url)
-                msg = await ctx.reply(embed=embed)
-                await msg.add_reaction("👍")
-        '''else:
-            print("hi")
-            rez = accepted_memes_collection_name.find({"description": " ".join(description)}).limit(1)
-            for result in rez:
-                embed = discord.Embed(
-                    title=f'{random.choice(meme_rus_settings["get_meme_phrases"])} <a:trippepe:901514564900913262>',
-                    description=result["description"], color=0x42aaff)
+            try:
                 likes = result["likes"]
-                embed.add_field(name="Лайки:", value=f'{likes} 👍')
-                embed.set_image(url=result["url"])
-                embed.set_footer(text="Мы есть в дискорде: "
-                                      "\nhttps://discord.gg/VB3CgP9XTW",
-                                 icon_url=self.bot.get_guild(meme_rus_settings["guild"]).icon_url)
-                msg = await ctx.reply(embed=embed)
-                await msg.add_reaction("👍")'''
+            except KeyError:
+                accepted_memes_collection_name.update_one(result, {"$set": {"likes": 0}})
+                likes = result["likes"]
+
+            embed.add_field(name="Лайки:", value=f'{likes} 👍')
+            embed.add_field(name="ID мема:", value=f'**{result["meme_id"]}**')
+            embed.set_image(url=result["url"])
+            embed.set_footer(text="Мы есть в дискорде: "
+                                  "\nhttps://discord.gg/VB3CgP9XTW",
+                             icon_url=self.bot.get_guild(meme_rus_settings["guild"]).icon_url)
+            msg = await ctx.reply(embed=embed)
+            await msg.add_reaction("👍")
 
     @commands.command()
     async def last_meme(self, ctx):
@@ -108,6 +103,7 @@ class Meme_Rus(commands.Cog):
                 likes = result["likes"]
 
             embed.add_field(name="Лайки:", value=f'{likes} 👍')
+            embed.add_field(name="ID мема:", value=f'**{result["meme_id"]}**')
             embed.set_image(url=result["url"])
             embed.set_footer(text="Мы есть в дискорде: "
                                   "\nhttps://discord.gg/VB3CgP9XTW",
@@ -132,6 +128,7 @@ class Meme_Rus(commands.Cog):
                 likes = result["likes"]
 
             embed.add_field(name="Лайки:", value=f'{likes} 👍')
+            embed.add_field(name="ID мема:", value=f'**{result["meme_id"]}**')
             embed.set_image(url=result["url"])
             embed.set_footer(text="Мы есть в дискорде: "
                                   "\nhttps://discord.gg/VB3CgP9XTW",
@@ -139,8 +136,8 @@ class Meme_Rus(commands.Cog):
             msg = await ctx.reply(embed=embed)
             await msg.add_reaction("👍")
 
-    @commands.command()
-    @commands.has_any_role(939801337196073030, 905484393919967252, 906632280376741939)
+    #@commands.command()
+    #@commands.has_any_role(939801337196073030, 905484393919967252, 906632280376741939)
     async def accept_meme(self, ctx, message: discord.Message):
         if ctx.guild.id != meme_rus_settings["guild"] or ctx.channel.id != meme_rus_settings["moderationChannel"]:
             return
@@ -177,8 +174,8 @@ class Meme_Rus(commands.Cog):
                 await ctx.reply("Такого мема нет в модерации")
             await ctx.message.delete()
 
-    @commands.command()
-    @commands.has_any_role(939801337196073030, 905484393919967252, 906632280376741939)
+    #@commands.command()
+    #@commands.has_any_role(939801337196073030, 905484393919967252, 906632280376741939)
     async def reject_meme(self, ctx, message: discord.Message):
         if ctx.guild.id != meme_rus_settings["guild"] or ctx.channel.id != meme_rus_settings["moderationChannel"]:
             return
@@ -220,12 +217,14 @@ class Meme_Rus(commands.Cog):
             collection_name = dbname["memes_on_moderation"]
             result = collection_name.find_one({"msg_id": reaction.message.id})
             if result is not None:
+                channel = await self.bot.get_guild(result["guild"]).get_member(result["author"]).create_dm()
+
                 accepted_memes_collection_name = dbname["accepted_memes"]
 
                 last_meme = accepted_memes_collection_name.find().sort('_id', -1).limit(1)
                 meme_id = 0
-                for result in last_meme:
-                    meme_id = result["meme_id"] + 1
+                for rslt in last_meme:
+                    meme_id = rslt["meme_id"] + 1
 
                 accepted_memes_collection_name.insert_one({
                     "url": result["url"],
@@ -235,8 +234,8 @@ class Meme_Rus(commands.Cog):
                     "meme_id": meme_id
                 })
 
-                channel = await reaction.message.author.create_dm()
                 embed = discord.Embed(title="Мем", description=result["description"], color=0x33FF66)
+                embed.add_field(name="ID мема", value=f"**{meme_id}**")
                 embed.set_image(url=result["url"])
                 await channel.send("Поздравляем, модерация одобрила ваш мем ^-^", embed=embed)
 
@@ -286,9 +285,3 @@ class Meme_Rus(commands.Cog):
             accepted_memes_collection_name.update_one(result, {"$set": {"meme_id": count}})
             count += 1
         print("indexes ended")
-
-
-    '''@Cog.listener("on_command_error")
-    async def on_command_error(self, context, exception):
-        exception
-    '''
