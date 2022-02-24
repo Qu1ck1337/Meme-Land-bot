@@ -242,6 +242,7 @@ class Meme_Rus(commands.Cog):
                 meme_channel = self.bot.get_guild(meme_rus_settings["guild"]).get_channel(
                     meme_rus_settings["meme_accepted_channel"])
                 embed = discord.Embed(title="Новый мем!", description=result["description"], color=0x42aaff)
+                embed.add_field(name="ID мема", value=f"**{meme_id}**")
                 embed.set_image(url=result["url"])
                 await meme_channel.send(embed=embed)
 
