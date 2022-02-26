@@ -360,25 +360,22 @@ class Meme_Rus(commands.Cog):
         collection_name = dbname["guilds"]
         results = collection_name.find()
         for result in results:
-            try:
-                guild = self.bot.get_guild(result["guild_id"])
-                channel = guild.get_channel(result["channel_id"])
+            guild = self.bot.get_guild(result["guild_id"])
+            channel = guild.get_channel(result["channel_id"])
 
-                dbname_meme = self.client['bot_memes']
-                accepted_memes_collection_name = dbname_meme["accepted_memes"]
-                meme_result = accepted_memes_collection_name.aggregate([{"$sample": {"size": 1}}])
+            dbname_meme = self.client['bot_memes']
+            accepted_memes_collection_name = dbname_meme["accepted_memes"]
+            meme_result = accepted_memes_collection_name.aggregate([{"$sample": {"size": 1}}])
 
-                for meme in meme_result:
-                    embed = discord.Embed(
-                        title=f'А вот и мем каждые 30 минут) <a:trippepe:901514564900913262>',
-                        description=meme["description"], color=0x42aaff)
-                    embed.add_field(name="Лайки:", value=f'{meme["likes"]} 👍')
-                    embed.add_field(name="ID мема:", value=f'**{meme["meme_id"]}**')
-                    embed.set_image(url=meme["url"])
-                    embed.set_footer(text="Мы есть в дискорде: "
+            for meme in meme_result:
+                embed = discord.Embed(
+                    title=f'А вот и мем каждые 30 минут) <a:trippepe:901514564900913262>',
+                    description=meme["description"], color=0x42aaff)
+                embed.add_field(name="Лайки:", value=f'{meme["likes"]} 👍')
+                embed.add_field(name="ID мема:", value=f'**{meme["meme_id"]}**')
+                embed.set_image(url=meme["url"])
+                embed.set_footer(text="Мы есть в дискорде: "
                                       "\nhttps://discord.gg/VB3CgP9XTW",
                                  icon_url=self.bot.get_guild(meme_rus_settings["guild"]).icon_url)
-                    msg = await channel.send(embed=embed)
-                    await msg.add_reaction("👍")
-            except Exception:
-                pass
+                msg = await channel.send(embed=embed)
+                await msg.add_reaction("👍")
