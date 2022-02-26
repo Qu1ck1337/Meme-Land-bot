@@ -352,9 +352,9 @@ class Meme_Rus(commands.Cog):
 
     @tasks.loop(minutes=30)
     async def auto_post_meme(self):
-        if self.post_meme is not True:
-            self.post_meme = True
-            return
+        #if self.post_meme is not True:
+        #    self.post_meme = True
+        #    return
         print(f"{datetime.datetime.now().strftime('%H:%M:%S')} | [INFO] Auto posting meme on servers")
         dbname = self.client['auto_post_guilds']
         collection_name = dbname["guilds"]
