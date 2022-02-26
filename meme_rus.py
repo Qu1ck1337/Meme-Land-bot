@@ -1,5 +1,7 @@
+import datetime
+
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 from discord.ext.commands import Cog
 from pymongo import MongoClient
 from config import meme_rus_settings, settings, beta_settings
@@ -13,6 +15,11 @@ class Meme_Rus(commands.Cog):
         self.CONNECTION_STRING = "mongodb+srv://dbBot:j5x-Pkq-Q8u-mW2@data.frvp6.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
         # Create a connection using MongoClient. You can import MongoClient or use pymongo.MongoClient
         self.client = MongoClient(self.CONNECTION_STRING)
+        self.post_meme = False
+
+    @Cog.listener("on_ready")
+    async def on_ready(self):
+        self.auto_post_meme.start()
 
     @commands.command()
     async def send_meme(self, ctx, *content):
@@ -54,7 +61,6 @@ class Meme_Rus(commands.Cog):
 
     @commands.command()
     async def meme(self, ctx, meme_id: int = None):
-        print(meme_id)
         dbname = self.client['bot_memes']
         accepted_memes_collection_name = dbname["accepted_memes"]
 
@@ -81,10 +87,13 @@ class Meme_Rus(commands.Cog):
             embed.add_field(name="ID мема:", value=f'**{result["meme_id"]}**')
             embed.set_image(url=result["url"])
             embed.set_footer(text="Мы есть в дискорде: "
-                                  "\nhttps://discord.gg/VB3CgP9XTW",
+                                  "\nhttps://discord.gg/VB3CgP9XTW"
+                                  "\n💎 Опробуйте автопостинг мемов! Подробнее: ml/help",
                              icon_url=self.bot.get_guild(meme_rus_settings["guild"]).icon_url)
             msg = await ctx.reply(embed=embed)
             await msg.add_reaction("👍")
+            print(
+                f"{datetime.datetime.now().strftime('%H:%M:%S')} | [USER] User {ctx.author} used <meme> command")
 
     @commands.command()
     async def last_meme(self, ctx):
@@ -106,10 +115,13 @@ class Meme_Rus(commands.Cog):
             embed.add_field(name="ID мема:", value=f'**{result["meme_id"]}**')
             embed.set_image(url=result["url"])
             embed.set_footer(text="Мы есть в дискорде: "
-                                  "\nhttps://discord.gg/VB3CgP9XTW",
+                                  "\nhttps://discord.gg/VB3CgP9XTW"
+                                  "\n💎 Опробуйте автопостинг мемов! Подробнее: ml/help",
                              icon_url=self.bot.get_guild(meme_rus_settings["guild"]).icon_url)
             msg = await ctx.reply(embed=embed)
             await msg.add_reaction("👍")
+            print(
+                f"{datetime.datetime.now().strftime('%H:%M:%S')} | [USER] User {ctx.author} used <last_meme> command")
 
     @commands.command()
     async def top_meme(self, ctx):
@@ -131,10 +143,13 @@ class Meme_Rus(commands.Cog):
             embed.add_field(name="ID мема:", value=f'**{result["meme_id"]}**')
             embed.set_image(url=result["url"])
             embed.set_footer(text="Мы есть в дискорде: "
-                                  "\nhttps://discord.gg/VB3CgP9XTW",
+                                  "\nhttps://discord.gg/VB3CgP9XTW"
+                                  "\n💎 Опробуйте автопостинг мемов! Подробнее: ml/help",
                              icon_url=self.bot.get_guild(meme_rus_settings["guild"]).icon_url)
             msg = await ctx.reply(embed=embed)
             await msg.add_reaction("👍")
+            print(
+                f"{datetime.datetime.now().strftime('%H:%M:%S')} | [USER] User {ctx.author} used <top_meme> command")
 
     #@commands.command()
     #@commands.has_any_role(939801337196073030, 905484393919967252, 906632280376741939)
@@ -207,6 +222,8 @@ class Meme_Rus(commands.Cog):
             result = accepted_memes_collection_name.find_one({"url": reaction.message.embeds[0].image.url})
             if result is not None:
                 accepted_memes_collection_name.update_one(result, {"$set": {"likes": result["likes"] + 1}})
+            print(
+                f"{datetime.datetime.now().strftime('%H:%M:%S')} | [USER] User {user} liked post with {result['meme_id']} id")
         elif reaction.message.channel.id == meme_rus_settings["moderationChannel"] and reaction.emoji == "✅" and \
             (reaction.message.author.id == settings["id"] or reaction.message.author.id == beta_settings["beta_id"]):
             if reaction.message.guild.id != meme_rus_settings["guild"]:
@@ -275,6 +292,17 @@ class Meme_Rus(commands.Cog):
             else:
                 await reaction.message.channel.send("Такого мема нет в модерации")
 
+    @Cog.listener("on_reaction_remove")
+    async def on_reaction_remove(self, reaction, user):
+        if (reaction.message.author.id == settings["id"] or reaction.message.author.id == beta_settings["beta_id"]) and reaction.emoji == "👍":
+            dbname = self.client['bot_memes']
+            accepted_memes_collection_name = dbname["accepted_memes"]
+            result = accepted_memes_collection_name.find_one({"url": reaction.message.embeds[0].image.url})
+            if result is not None:
+                accepted_memes_collection_name.update_one(result, {"$set": {"likes": result["likes"] - 1}})
+            print(
+                f"{datetime.datetime.now().strftime('%H:%M:%S')} | [USER] User {user} removed like from post with {result['meme_id']} id")
+
     @commands.command()
     @commands.is_owner()
     async def add_ids(self, ctx):
@@ -286,3 +314,68 @@ class Meme_Rus(commands.Cog):
             accepted_memes_collection_name.update_one(result, {"$set": {"meme_id": count}})
             count += 1
         print("indexes ended")
+
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    async def auto_meme(self, ctx, channel: discord.TextChannel = None):
+        if channel is None:
+            channel = ctx.channel
+        dbname = self.client['auto_post_guilds']
+        collection_name = dbname["guilds"]
+        result = collection_name.find_one({"guild_id": ctx.guild.id})
+        if result is None:
+            collection_name.insert_one({
+                "guild_id": ctx.guild.id,
+                "channel_id": channel.id
+            })
+            await ctx.reply(f"Автопостинг мемов успешно установлен на канале: {channel.mention}")
+        else:
+            if result["channel_id"] != channel.id:
+                collection_name.update_one(result, {"$set": {"channel_id": channel.id}})
+                await ctx.reply(f"Автопостинг мемов успешно установлен на канале: {channel.mention}")
+            else:
+                await ctx.reply("На данном канале уже установлен автопостинг мемов")
+        print(f"{datetime.datetime.now().strftime('%H:%M:%S')} | [USER] User {ctx.author} set auto post meme")
+
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    async def stop_auto_meme(self, ctx):
+        dbname = self.client['auto_post_guilds']
+        collection_name = dbname["guilds"]
+        result = collection_name.find_one({"guild_id": ctx.guild.id})
+        if result is not None:
+            collection_name.delete_one(result)
+            await ctx.reply(f"Автопостинг мемов на этом сервере приостановлен :(")
+        else:
+            await ctx.reply(f"На вашем сервере не был включён автопостинг мемов")
+        print(f"{datetime.datetime.now().strftime('%H:%M:%S')} | [USER] User {ctx.author} stopped auto meme posting")
+
+    @tasks.loop(minutes=30)
+    async def auto_post_meme(self):
+        if self.post_meme is not True:
+            self.post_meme = True
+            return
+        print(f"{datetime.datetime.now().strftime('%H:%M:%S')} | [INFO] Auto posting meme on servers")
+        dbname = self.client['auto_post_guilds']
+        collection_name = dbname["guilds"]
+        results = collection_name.find()
+        for result in results:
+            guild = self.bot.get_guild(result["guild_id"])
+            channel = guild.get_channel(result["channel_id"])
+
+            dbname_meme = self.client['bot_memes']
+            accepted_memes_collection_name = dbname_meme["accepted_memes"]
+            meme_result = accepted_memes_collection_name.aggregate([{"$sample": {"size": 1}}])
+
+            for meme in meme_result:
+                embed = discord.Embed(
+                    title=f'А вот и мем каждые 30 минут) <a:trippepe:901514564900913262>',
+                    description=meme["description"], color=0x42aaff)
+                embed.add_field(name="Лайки:", value=f'{meme["likes"]} 👍')
+                embed.add_field(name="ID мема:", value=f'**{meme["meme_id"]}**')
+                embed.set_image(url=meme["url"])
+                embed.set_footer(text="Мы есть в дискорде: "
+                                      "\nhttps://discord.gg/VB3CgP9XTW",
+                                 icon_url=self.bot.get_guild(meme_rus_settings["guild"]).icon_url)
+                msg = await channel.send(embed=embed)
+                await msg.add_reaction("👍")
