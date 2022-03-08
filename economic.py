@@ -1,9 +1,10 @@
 import datetime
+
+import discord
 from discord.ext.commands import Cog
 from pymongo import MongoClient
 import pymongo
 from discord.ext import commands, tasks
-import discord
 from config import economySettings
 import random
 
@@ -112,7 +113,7 @@ class Economic(commands.Cog):
                                                   f"\n> Состояние баланса: **{result['balance']} <:memeland_coin:939265285767192626>** >> **{result['balance'] + money}** <:memeland_coin:939265285767192626>",
                                       color=economySettings["success_color"])
                 embed.set_footer(
-                    text=f"Запрошено {ctx.author} 🞄 {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}")
+                    text=f"Запрошено {ctx.author} • {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}", icon_url=ctx.author.avatar_url)
                 await ctx.reply(embed=embed)
             else:
                 status = await self.create_user_data(member=member)
@@ -122,7 +123,7 @@ class Economic(commands.Cog):
                     embed = discord.Embed(title="Ошибка", description="Искомый пользователь не найден.",
                                           color=economySettings["error_color"])
                     embed.set_footer(
-                        text=f"Запрошено {ctx.author} 🞄 {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}")
+                        text=f"Запрошено {ctx.author} • {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}", icon_url=ctx.author.avatar_url)
                     await ctx.reply(embed=embed)
 
     @commands.command()
@@ -141,7 +142,7 @@ class Economic(commands.Cog):
                                                   f"\n> Состояние баланса: **{result['balance']} <:memeland_coin:939265285767192626>** >> **{money}** <:memeland_coin:939265285767192626>",
                                       color=economySettings["success_color"])
                 embed.set_footer(
-                    text=f"Запрошено {ctx.author} 🞄 {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}")
+                    text=f"Запрошено {ctx.author} • {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}", icon_url=ctx.author.avatar_url)
                 await ctx.reply(embed=embed)
             else:
                 status = await self.create_user_data(member=member)
@@ -151,7 +152,7 @@ class Economic(commands.Cog):
                     embed = discord.Embed(title="Ошибка", description="Искомый пользователь не найден.",
                                           color=economySettings["error_color"])
                     embed.set_footer(
-                        text=f"Запрошено {ctx.author} 🞄 {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}")
+                        text=f"Запрошено {ctx.author} • {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}", icon_url=ctx.author.avatar_url)
                     await ctx.reply(embed=embed)
 
     @commands.command(name="balance", aliases=["баланс"])
@@ -167,7 +168,7 @@ class Economic(commands.Cog):
                                       description=f"Баланс {member.mention} на текущий момент: **{result['balance']}** <:memeland_coin:939265285767192626>",
                                       color=economySettings["success_color"])
                 embed.set_footer(
-                    text=f"Запрошено {ctx.author} 🞄 {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}")
+                    text=f"Запрошено {ctx.author} • {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}", icon_url=ctx.author.avatar_url)
                 await ctx.reply(embed=embed)
             else:
                 await self.create_user_data(member=member)
@@ -198,13 +199,13 @@ class Economic(commands.Cog):
                                       description=f"**{money}** <:memeland_coin:939265285767192626> успешно переведены пользователю {member.mention}",
                                       color=economySettings["success_color"])
                 embed.set_footer(
-                    text=f"Запрошено {ctx.author} 🞄 {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}")
+                    text=f"Запрошено {ctx.author} • {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}", icon_url=ctx.author.avatar_url)
                 await ctx.reply(embed=embed)
             else:
                 embed = discord.Embed(
                     title="Ошибка", description="Недостаточно средств", color=economySettings["error_color"])
                 embed.set_footer(
-                    text=f"Запрошено {ctx.author} 🞄 {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}")
+                    text=f"Запрошено {ctx.author} • {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}", icon_url=ctx.author.avatar_url)
                 await ctx.reply(embed=embed)
 
     @Cog.listener("on_message")
@@ -231,27 +232,42 @@ class Economic(commands.Cog):
             print(ex)
 
     @commands.command(name="shop", aliases=["магазин"])
-    async def shop(self, ctx):
+    async def shop(self, ctx, page: int=1):
         if ctx.guild == self.bot.get_guild(economySettings["guild"]):
             dbname = self.client['server_economy_settings']
             collection_name = dbname["server_shop"]
 
-            embed = discord.Embed(title="Магазин Жорика",
-                                  description=f"Чтобы купить что-то в магазине Жорика, используйте команду `!buy <номер товара>` или `!купить <номер товара>`",
+            embed = discord.Embed(title=f"Магазин Жорика "
+                                        f"\nСтраница {page}",
+                                  description=f"Чтобы купить что-то в магазине Жорика, используйте команду `ml/buy <номер товара>` или `ml/купить <номер товара>`",
                                   color=economySettings["attention_color"])
-            embed.set_footer(
-                text=f"Запрошено {ctx.author} 🞄 {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}")
             embed.set_thumbnail(url=ctx.guild.icon_url)
+            embed.set_footer(
+                text=f"Запрошено {ctx.author} • {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}", icon_url=ctx.author.avatar_url)
 
             result = collection_name.find_one()
+            is_page_exists = False
             for num, res in enumerate(result):
-                if res != "_id":
+                if res != "_id" and num > 10 * (page - 1) and num <= 10 * page:
+                    is_page_exists = True
                     role_id = result[res][1]
                     role = ctx.guild.get_role(role_id)
                     embed.add_field(name=f"Товар #{num}",
                                     value=f"{role.mention} | Стоимость: **{result[res][0]}** <:memeland_coin:939265285767192626>",
                                     inline=False)
-            await ctx.send(embed=embed)
+            if is_page_exists is True:
+                if page == 1:
+                    embed.add_field(name=f"Страница {page}",
+                                    value=f"Перейти на следующую страницу `ml/shop {page + 1}`",
+                                    inline=False)
+                else:
+                    embed.add_field(name=f"Страница {page}",
+                                    value=f"Перейти на следующую страницу `ml/shop {page + 1}`"
+                                          f"Перейти на предыдущую страницу `ml/shop {page - 1}`",
+                                    inline=False)
+                await ctx.send(embed=embed)
+            else:
+                await ctx.send("Такой страницы магазина Жорика не существует :(")
 
     @commands.command(name="buy", aliases=["купить"])
     async def buy(self, ctx, nums: int):
@@ -283,7 +299,7 @@ class Economic(commands.Cog):
                                                       description=f"Покупка прошла успешно. Вы получили роль {role.mention}, купив за **{cost}** <:memeland_coin:939265285767192626>",
                                                       color=economySettings["success_color"])
                                 embed.set_footer(
-                                    text=f"Запрошено {ctx.author} 🞄 {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}")
+                                    text=f"Запрошено {ctx.author} • {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}", icon_url=ctx.author.avatar_url)
                                 await ctx.reply(embed=embed)
                             else:
                                 embed = discord.Embed(title="Ошибка",
@@ -291,7 +307,7 @@ class Economic(commands.Cog):
                                                                   f"\nЧтобы купить {role.mention} вам нужно ещё **{cost - user_result['balance']}** <:memeland_coin:939265285767192626>",
                                                       color=economySettings["error_color"])
                                 embed.set_footer(
-                                    text=f"Запрошено {ctx.author} 🞄 {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}")
+                                    text=f"Запрошено {ctx.author} • {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}", icon_url=ctx.author.avatar_url)
                                 await ctx.reply(embed=embed)
                                 return
                         else:
@@ -299,6 +315,6 @@ class Economic(commands.Cog):
                                                   description=f"У вас уже есть {role.mention}",
                                                   color=economySettings["error_color"])
                             embed.set_footer(
-                                text=f"Запрошено {ctx.author} 🞄 {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}")
+                                text=f"Запрошено {ctx.author} • {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}", icon_url=ctx.author.avatar_url)
                             await ctx.reply(embed=embed)
                             return
