@@ -263,7 +263,7 @@ class Economic(commands.Cog):
                 else:
                     embed.add_field(name=f"Страница {page}",
                                     value=f"Перейти на следующую страницу `ml/shop {page + 1}`"
-                                          f"Перейти на предыдущую страницу `ml/shop {page - 1}`",
+                                          f"\nПерейти на предыдущую страницу `ml/shop {page - 1}`",
                                     inline=False)
                 await ctx.send(embed=embed)
             else:
