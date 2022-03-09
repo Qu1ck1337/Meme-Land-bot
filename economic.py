@@ -105,6 +105,7 @@ class Economic(commands.Cog):
             embed = discord.Embed(title="Ошибка", description="Отправка невозможна",
                                   color=economySettings["error_color"])
             await ctx.reply(embed=embed)
+            return
         if ctx.guild == self.bot.get_guild(economySettings["guild"]):
             dbname = self.client['server_economy']
             collection_name = dbname["users_data"]
