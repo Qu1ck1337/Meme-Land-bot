@@ -101,11 +101,6 @@ class Economic(commands.Cog):
     #@commands.is_owner()
     #@commands.has_permissions(administrator=True)
     async def add_money(self, ctx, member: discord.Member, money: int):
-        if money < 0:
-            embed = discord.Embed(title="Ошибка", description="Отправка невозможна",
-                                  color=economySettings["error_color"])
-            await ctx.reply(embed=embed)
-            return
         if ctx.guild == self.bot.get_guild(economySettings["guild"]):
             dbname = self.client['server_economy']
             collection_name = dbname["users_data"]
@@ -181,6 +176,11 @@ class Economic(commands.Cog):
 
     @commands.command(name="send_money", aliases=["send", "перевести"])
     async def send_money(self, ctx, member: discord.Member, money: int):
+        if money < 0:
+            embed = discord.Embed(title="Ошибка", description="Отправка невозможна",
+                                  color=economySettings["error_color"])
+            await ctx.reply(embed=embed)
+            return
         if ctx.guild == self.bot.get_guild(economySettings["guild"]):
             dbname = self.client['server_economy']
             collection_name = dbname["users_data"]
