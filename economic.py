@@ -101,6 +101,10 @@ class Economic(commands.Cog):
     #@commands.is_owner()
     #@commands.has_permissions(administrator=True)
     async def add_money(self, ctx, member: discord.Member, money: int):
+        if money < 0:
+            embed = discord.Embed(title="Ошибка", description="Отправка невозможна",
+                                  color=economySettings["error_color"])
+            await ctx.reply(embed=embed)
         if ctx.guild == self.bot.get_guild(economySettings["guild"]):
             dbname = self.client['server_economy']
             collection_name = dbname["users_data"]
@@ -265,9 +269,9 @@ class Economic(commands.Cog):
                                     value=f"Перейти на следующую страницу `ml/shop {page + 1}`"
                                           f"\nПерейти на предыдущую страницу `ml/shop {page - 1}`",
                                     inline=False)
-                await ctx.send(embed=embed)
+                await ctx.reply(embed=embed)
             else:
-                await ctx.send("Такой страницы магазина Жорика не существует :(")
+                await ctx.reply("Такой страницы магазина Жорика не существует :(")
 
     @commands.command(name="buy", aliases=["купить"])
     async def buy(self, ctx, nums: int):
