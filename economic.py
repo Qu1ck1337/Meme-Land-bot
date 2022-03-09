@@ -176,7 +176,7 @@ class Economic(commands.Cog):
 
     @commands.command(name="send_money", aliases=["send", "перевести"])
     async def send_money(self, ctx, member: discord.Member, money: int):
-        if money < 0:
+        if money <= 0:
             embed = discord.Embed(title="Ошибка", description="Отправка невозможна",
                                   color=economySettings["error_color"])
             await ctx.reply(embed=embed)
