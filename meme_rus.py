@@ -352,30 +352,33 @@ class Meme_Rus(commands.Cog):
 
     @tasks.loop(minutes=30)
     async def auto_post_meme(self):
-        #if self.post_meme is not True:
-        #    self.post_meme = True
-        #    return
+        if self.post_meme is not True:
+            self.post_meme = True
+            return
         print(f"{datetime.datetime.now().strftime('%H:%M:%S')} | [INFO] Auto posting meme on servers")
         dbname = self.client['auto_post_guilds']
         collection_name = dbname["guilds"]
         results = collection_name.find()
+        dbname_meme = self.client['bot_memes']
+        accepted_memes_collection_name = dbname_meme["accepted_memes"]
         for result in results:
-            guild = self.bot.get_guild(result["guild_id"])
-            channel = guild.get_channel(result["channel_id"])
+            try:
+                guild = self.bot.get_guild(result["guild_id"])
+                channel = guild.get_channel(result["channel_id"])
 
-            dbname_meme = self.client['bot_memes']
-            accepted_memes_collection_name = dbname_meme["accepted_memes"]
-            meme_result = accepted_memes_collection_name.aggregate([{"$sample": {"size": 1}}])
+                meme_result = accepted_memes_collection_name.aggregate([{"$sample": {"size": 1}}])
 
-            for meme in meme_result:
-                embed = discord.Embed(
-                    title=f'А вот и мем каждые 30 минут) <a:trippepe:901514564900913262>',
-                    description=meme["description"], color=0x42aaff)
-                embed.add_field(name="Лайки:", value=f'{meme["likes"]} 👍')
-                embed.add_field(name="ID мема:", value=f'**{meme["meme_id"]}**')
-                embed.set_image(url=meme["url"])
-                embed.set_footer(text="Мы есть в дискорде: "
-                                      "\nhttps://discord.gg/VB3CgP9XTW",
-                                 icon_url=self.bot.get_guild(meme_rus_settings["guild"]).icon_url)
-                msg = await channel.send(embed=embed)
-                await msg.add_reaction("👍")
+                for meme in meme_result:
+                    embed = discord.Embed(
+                        title=f'А вот и мем каждые 30 минут) <a:trippepe:901514564900913262>',
+                        description=meme["description"], color=0x42aaff)
+                    embed.add_field(name="Лайки:", value=f'{meme["likes"]} 👍')
+                    embed.add_field(name="ID мема:", value=f'**{meme["meme_id"]}**')
+                    embed.set_image(url=meme["url"])
+                    embed.set_footer(text="Мы есть в дискорде: "
+                                          "\nhttps://discord.gg/VB3CgP9XTW",
+                                     icon_url=self.bot.get_guild(meme_rus_settings["guild"]).icon_url)
+                    msg = await channel.send(embed=embed)
+                    await msg.add_reaction("👍")
+            except AttributeError:
+                pass
