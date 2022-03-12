@@ -234,7 +234,7 @@ class Economic(commands.Cog):
                     print(f"{message.author.display_name} reached a reward."
                           f"\nAdded Money: {randomMoney}")
         except Exception as ex:
-            print(ex)
+            pass
 
     @commands.command(name="shop", aliases=["магазин"])
     async def shop(self, ctx, page: int=1):
