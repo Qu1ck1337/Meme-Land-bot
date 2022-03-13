@@ -5,6 +5,7 @@ from config import settings, beta_settings
 from luckerRole import LuckerRole
 from economic import Economic
 from meme_rus import Meme_Rus
+from fun import Fun
 from santa import SantaEvent
 
 
@@ -13,6 +14,7 @@ bot = commands.Bot(command_prefix=settings['prefix'], intents=discord.Intents.al
 bot.add_cog(LuckerRole(bot))
 bot.add_cog(Economic(bot))
 bot.add_cog(Meme_Rus(bot))
+bot.add_cog(Fun(bot))
 #bot.add_cog(SantaEvent(bot))
 
 
