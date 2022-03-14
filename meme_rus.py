@@ -212,27 +212,29 @@ class Meme_Rus(commands.Cog):
                 await ctx.reply("Такого мема нет в модерации")
             await ctx.message.delete()
 
-    @Cog.listener("on_reaction_add")
-    async def on_reaction_add(self, reaction, user):
-        if user.bot:
+    @Cog.listener("on_raw_reaction_add")
+    async def on_raw_reaction_add(self, payload):
+        if payload.member.bot:
             return
-        if (reaction.message.author.id == settings["id"] or reaction.message.author.id == beta_settings["beta_id"]) and reaction.emoji == "👍":
+        message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
+        author = message.author
+        if (author.id == settings["id"] or author.id == beta_settings["beta_id"]) and str(payload.emoji) == "👍":
             dbname = self.client['bot_memes']
             accepted_memes_collection_name = dbname["accepted_memes"]
-            result = accepted_memes_collection_name.find_one({"url": reaction.message.embeds[0].image.url})
+            result = accepted_memes_collection_name.find_one({"url": message.embeds[0].image.url})
             if result is not None:
                 accepted_memes_collection_name.update_one(result, {"$set": {"likes": result["likes"] + 1}})
             print(
-                f"{datetime.datetime.now().strftime('%H:%M:%S')} | [USER] User {user} liked post with {result['meme_id']} id")
-        elif reaction.message.channel.id == meme_rus_settings["moderationChannel"] and reaction.emoji == "✅" and \
-            (reaction.message.author.id == settings["id"] or reaction.message.author.id == beta_settings["beta_id"]):
-            if reaction.message.guild.id != meme_rus_settings["guild"]:
+                f"{datetime.datetime.now().strftime('%H:%M:%S')} | [USER] User {payload.member} liked post with {result['meme_id']} id")
+        elif payload.channel_id == meme_rus_settings["moderationChannel"] and str(payload.emoji) == "✅" and \
+            (author.id == settings["id"] or author.id == beta_settings["beta_id"]):
+            if message.guild.id != meme_rus_settings["guild"]:
                 return
 
             print("accept_meme")
             dbname = self.client['bot_memes']
             collection_name = dbname["memes_on_moderation"]
-            result = collection_name.find_one({"msg_id": reaction.message.id})
+            result = collection_name.find_one({"msg_id": message.id})
             if result is not None:
                 channel = await self.bot.get_guild(result["guild"]).get_member(result["author"]).create_dm()
 
@@ -265,20 +267,20 @@ class Meme_Rus(commands.Cog):
 
                 collection_name.delete_one(result)
 
-                msg = await reaction.message.channel.send("Мем принят")
+                msg = await message.channel.send("Мем принят")
                 await msg.delete(delay=30)
-                await reaction.message.delete()
+                await message.delete()
             else:
-                await reaction.message.channel.send("Такого мема нет в модерации")
-        elif reaction.message.channel.id == meme_rus_settings["moderationChannel"] and reaction.emoji == "❌" and \
-            (reaction.message.author.id == settings["id"] or reaction.message.author.id == beta_settings["beta_id"]):
-            if reaction.message.guild.id != meme_rus_settings["guild"]:
+                await message.channel.send("Такого мема нет в модерации")
+        elif payload.channel_id == meme_rus_settings["moderationChannel"] and str(payload.emoji) == "❌" and \
+            (author.id == settings["id"] or author.id == beta_settings["beta_id"]):
+            if message.guild.id != meme_rus_settings["guild"]:
                 return
 
             print("reject_meme")
             dbname = self.client['bot_memes']
             collection_name = dbname["memes_on_moderation"]
-            result = collection_name.find_one({"msg_id": reaction.message.id})
+            result = collection_name.find_one({"msg_id": message.id})
             if result is not None:
                 channel = await self.bot.get_guild(result["guild"]).get_member(result["author"]).create_dm()
                 embed = discord.Embed(title="Мем", description=result["description"], color=0xff0000)
@@ -286,11 +288,11 @@ class Meme_Rus(commands.Cog):
                 await channel.send("К сожалению ваш мем был отклонён(", embed=embed)
 
                 collection_name.delete_one(result)
-                msg = await reaction.message.channel.send("Мем отклонён")
+                msg = await message.channel.send("Мем отклонён")
                 await msg.delete(delay=30)
-                await reaction.message.delete()
+                await message.delete()
             else:
-                await reaction.message.channel.send("Такого мема нет в модерации")
+                await message.channel.send("Такого мема нет в модерации")
 
     @Cog.listener("on_reaction_remove")
     async def on_reaction_remove(self, reaction, user):

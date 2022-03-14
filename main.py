@@ -11,10 +11,10 @@ from santa import SantaEvent
 
 bot = commands.Bot(command_prefix=settings['prefix'], intents=discord.Intents.all(), help_command=None)
 
-bot.add_cog(LuckerRole(bot))
-bot.add_cog(Economic(bot))
+#bot.add_cog(LuckerRole(bot))
+#bot.add_cog(Economic(bot))
 bot.add_cog(Meme_Rus(bot))
-bot.add_cog(Fun(bot))
+#bot.add_cog(Fun(bot))
 #bot.add_cog(SantaEvent(bot))
 
 
