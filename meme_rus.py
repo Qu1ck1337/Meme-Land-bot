@@ -86,9 +86,9 @@ class Meme_Rus(commands.Cog):
             embed.add_field(name="Лайки:", value=f'{likes} 👍')
             embed.add_field(name="ID мема:", value=f'**{result["meme_id"]}**')
             embed.set_image(url=result["url"])
-            embed.set_footer(text="Мы есть в дискорде: "
-                                  "\nhttps://discord.gg/VB3CgP9XTW"
-                                  "\n💎 Опробуйте автопостинг мемов! Подробнее: ml/help",
+            embed.set_footer(text=f"Сервер поддержки: "
+                                  f"\nhttps://discord.gg/VB3CgP9XTW"
+                                  f"\n{random.choice(meme_rus_settings['advise_phrases'])}",
                              icon_url=self.bot.get_guild(meme_rus_settings["guild"]).icon_url)
             msg = await ctx.reply(embed=embed)
             await msg.add_reaction("👍")
@@ -114,9 +114,9 @@ class Meme_Rus(commands.Cog):
             embed.add_field(name="Лайки:", value=f'{likes} 👍')
             embed.add_field(name="ID мема:", value=f'**{result["meme_id"]}**')
             embed.set_image(url=result["url"])
-            embed.set_footer(text="Мы есть в дискорде: "
-                                  "\nhttps://discord.gg/VB3CgP9XTW"
-                                  "\n💎 Опробуйте автопостинг мемов! Подробнее: ml/help",
+            embed.set_footer(text=f"Сервер поддержки: "
+                                  f"\nhttps://discord.gg/VB3CgP9XTW"
+                                  f"\n{random.choice(meme_rus_settings['advise_phrases'])}",
                              icon_url=self.bot.get_guild(meme_rus_settings["guild"]).icon_url)
             msg = await ctx.reply(embed=embed)
             await msg.add_reaction("👍")
@@ -142,9 +142,9 @@ class Meme_Rus(commands.Cog):
             embed.add_field(name="Лайки:", value=f'{likes} 👍')
             embed.add_field(name="ID мема:", value=f'**{result["meme_id"]}**')
             embed.set_image(url=result["url"])
-            embed.set_footer(text="Мы есть в дискорде: "
-                                  "\nhttps://discord.gg/VB3CgP9XTW"
-                                  "\n💎 Опробуйте автопостинг мемов! Подробнее: ml/help",
+            embed.set_footer(text=f"Сервер поддержки: "
+                                  f"\nhttps://discord.gg/VB3CgP9XTW"
+                                  f"\n{random.choice(meme_rus_settings['advise_phrases'])}",
                              icon_url=self.bot.get_guild(meme_rus_settings["guild"]).icon_url)
             msg = await ctx.reply(embed=embed)
             await msg.add_reaction("👍")
@@ -377,8 +377,9 @@ class Meme_Rus(commands.Cog):
                     embed.add_field(name="Лайки:", value=f'{meme["likes"]} 👍')
                     embed.add_field(name="ID мема:", value=f'**{meme["meme_id"]}**')
                     embed.set_image(url=meme["url"])
-                    embed.set_footer(text="Мы есть в дискорде: "
-                                          "\nhttps://discord.gg/VB3CgP9XTW",
+                    embed.set_footer(text=f"Сервер поддержки: "
+                                            f"\nhttps://discord.gg/VB3CgP9XTW"
+                                            f"\n{random.choice(meme_rus_settings['advise_phrases'])}",
                                      icon_url=self.bot.get_guild(meme_rus_settings["guild"]).icon_url)
                     msg = await channel.send(embed=embed)
                     await msg.add_reaction("👍")
