@@ -1,5 +1,5 @@
 settings = {
-    "isBetaVersion": False,
+    "isBetaVersion": True,
     "id": 894952935442747393,
     "guild": 892493256129118260,
     "token": "ODk0OTUyOTM1NDQyNzQ3Mzkz.YVxf3w.n6J30jwGCdk7Jtr7dIOvtHAT0Og",
@@ -72,4 +72,9 @@ meme_rus_settings = {
     "meme_accepted_channel": 944899159121612831,
     "advise_phrases": ["💎 Опробуйте автопостинг мемов! Подробнее: ml/help", "❓ Если возникли трудности с ботом: ml/help",
                        "📨 Если вы хотите поделиться мемами со всеми, то исользуйте: ml/send_meme"]
+}
+
+profile_settings = {
+    "db_profile": "Users_Data",
+    "collection_profile": "Data"
 }

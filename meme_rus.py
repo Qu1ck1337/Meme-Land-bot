@@ -1,6 +1,7 @@
 import datetime
 
 import discord
+import requests
 from discord.ext import commands, tasks
 from discord.ext.commands import Cog
 from pymongo import MongoClient
@@ -59,69 +60,96 @@ class Meme_Rus(commands.Cog):
         else:
             await ctx.reply(f"Вы не прикрепили мем к команде. Правильное использование команды: `{settings['prefix']}send_meme <описание мема>` + прикреплённая картинка")
 
+    def valid_meme_checker(self, url):
+        check = requests.head(url)
+        if check.status_code == 403:
+            return False
+        else:
+            return True
+
     @commands.command()
     async def meme(self, ctx, meme_id: int = None):
         dbname = self.client['bot_memes']
         accepted_memes_collection_name = dbname["accepted_memes"]
 
+        random_record = None
         if meme_id is None:
-            random_record = accepted_memes_collection_name.aggregate([{"$sample": {"size": 1}}])
+            search = True
+            while search:
+                random_m = accepted_memes_collection_name.aggregate([{"$sample": {"size": 1}}])
+                for res in random_m:
+                    if self.valid_meme_checker(res["url"]):
+                        search = False
+                        random_record = res
         else:
             if accepted_memes_collection_name.find_one({"meme_id": meme_id}) is None:
                 await ctx.reply("Мема с таким ID не существует :(")
                 return
-            random_record = accepted_memes_collection_name.find({"meme_id": meme_id}).limit(1)
+            random_record = accepted_memes_collection_name.find_one({"meme_id": meme_id})
+            if not self.valid_meme_checker(random_record["url"]):
+                await ctx.reply("Мема с таким ID не существует :(")
+                return
 
-        for result in random_record:
-            embed = discord.Embed(
-                title=f'{random.choice(meme_rus_settings["get_meme_phrases"])} <a:trippepe:901514564900913262>',
-                description=result["description"], color=0x42aaff)
+        embed = discord.Embed(
+            title=f'{random.choice(meme_rus_settings["get_meme_phrases"])} <a:trippepe:901514564900913262>',
+            description=random_record["description"], color=0x42aaff)
 
-            try:
-                likes = result["likes"]
-            except KeyError:
-                accepted_memes_collection_name.update_one(result, {"$set": {"likes": 0}})
-                likes = result["likes"]
+        try:
+            likes = random_record["likes"]
+        except KeyError:
+            accepted_memes_collection_name.update_one(random_record, {"$set": {"likes": 0}})
+            likes = random_record["likes"]
 
-            embed.add_field(name="Лайки:", value=f'{likes} 👍')
-            embed.add_field(name="ID мема:", value=f'**{result["meme_id"]}**')
-            embed.set_image(url=result["url"])
-            embed.set_footer(text=f"Сервер поддержки: "
-                                  f"\nhttps://discord.gg/VB3CgP9XTW"
-                                  f"\n{random.choice(meme_rus_settings['advise_phrases'])}",
-                             icon_url=self.bot.get_guild(meme_rus_settings["guild"]).icon_url)
-            msg = await ctx.reply(embed=embed)
-            await msg.add_reaction("👍")
-            print(
-                f"{datetime.datetime.now().strftime('%H:%M:%S')} | [USER] User {ctx.author} used <meme> command")
+        embed.add_field(name="Лайки:", value=f'{likes} 👍')
+        embed.add_field(name="ID мема:", value=f'**{random_record["meme_id"]}**')
+        embed.set_image(url=random_record["url"])
+        embed.set_footer(text=f"Сервер поддержки: "
+                              f"\nhttps://discord.gg/VB3CgP9XTW"
+                              f"\n{random.choice(meme_rus_settings['advise_phrases'])}",
+                         icon_url=self.bot.get_guild(meme_rus_settings["guild"]).icon_url)
+        msg = await ctx.reply(embed=embed)
+        await msg.add_reaction("👍")
+        print(
+            f"{datetime.datetime.now().strftime('%H:%M:%S')} | [USER] User {ctx.author} used <meme> command")
 
     @commands.command()
     async def last_meme(self, ctx):
         dbname = self.client['bot_memes']
         accepted_memes_collection_name = dbname["accepted_memes"]
 
-        last_meme = accepted_memes_collection_name.find().sort('_id', -1).limit(1)
-        for result in last_meme:
-            embed = discord.Embed(title="Самый свежий мемчик для тебя! 🍞",
-                                  description=result["description"], color=0x42aaff)
+        search = True
+        meme_l = accepted_memes_collection_name.find().sort('_id', -1).limit(1)
+        last_meme = None
+        id = 0
+        while search:
+            for meme in meme_l:
+                id = meme["meme_id"]
+                if self.valid_meme_checker(meme["url"]):
+                    last_meme = meme
+                    search = False
+            if search:
+                meme_l = accepted_memes_collection_name.find({"meme_id": id - 1})
 
-            try:
-                likes = result["likes"]
-            except KeyError:
-                accepted_memes_collection_name.update_one(result, {"$set": {"likes": 0}})
-                likes = result["likes"]
+        embed = discord.Embed(title="Самый свежий мемчик для тебя! 🍞",
+                              description=last_meme["description"], color=0x42aaff)
 
-            embed.add_field(name="Лайки:", value=f'{likes} 👍')
-            embed.add_field(name="ID мема:", value=f'**{result["meme_id"]}**')
-            embed.set_image(url=result["url"])
-            embed.set_footer(text=f"Сервер поддержки: "
-                                  f"\nhttps://discord.gg/VB3CgP9XTW"
-                                  f"\n{random.choice(meme_rus_settings['advise_phrases'])}",
-                             icon_url=self.bot.get_guild(meme_rus_settings["guild"]).icon_url)
-            msg = await ctx.reply(embed=embed)
-            await msg.add_reaction("👍")
-            print(
-                f"{datetime.datetime.now().strftime('%H:%M:%S')} | [USER] User {ctx.author} used <last_meme> command")
+        try:
+            likes = last_meme["likes"]
+        except KeyError:
+            accepted_memes_collection_name.update_one(last_meme, {"$set": {"likes": 0}})
+            likes = last_meme["likes"]
+
+        embed.add_field(name="Лайки:", value=f'{likes} 👍')
+        embed.add_field(name="ID мема:", value=f'**{last_meme["meme_id"]}**')
+        embed.set_image(url=last_meme["url"])
+        embed.set_footer(text=f"Сервер поддержки: "
+                              f"\nhttps://discord.gg/VB3CgP9XTW"
+                              f"\n{random.choice(meme_rus_settings['advise_phrases'])}",
+                         icon_url=self.bot.get_guild(meme_rus_settings["guild"]).icon_url)
+        msg = await ctx.reply(embed=embed)
+        await msg.add_reaction("👍")
+        print(
+            f"{datetime.datetime.now().strftime('%H:%M:%S')} | [USER] User {ctx.author} used <last_meme> command")
 
     @commands.command()
     async def top_meme(self, ctx):
@@ -354,9 +382,9 @@ class Meme_Rus(commands.Cog):
 
     @tasks.loop(minutes=30)
     async def auto_post_meme(self):
-        #if self.post_meme is not True:
-        #    self.post_meme = True
-        #    return
+        if self.post_meme is not True:
+            self.post_meme = True
+            return
         print(f"{datetime.datetime.now().strftime('%H:%M:%S')} | [INFO] Auto posting meme on servers")
         dbname = self.client['auto_post_guilds']
         collection_name = dbname["guilds"]
@@ -368,20 +396,27 @@ class Meme_Rus(commands.Cog):
 
                 dbname_meme = self.client['bot_memes']
                 accepted_memes_collection_name = dbname_meme["accepted_memes"]
-                meme_result = accepted_memes_collection_name.aggregate([{"$sample": {"size": 1}}])
 
-                for meme in meme_result:
-                    embed = discord.Embed(
-                        title=f'А вот и мем каждые 30 минут) <a:trippepe:901514564900913262>',
-                        description=meme["description"], color=0x42aaff)
-                    embed.add_field(name="Лайки:", value=f'{meme["likes"]} 👍')
-                    embed.add_field(name="ID мема:", value=f'**{meme["meme_id"]}**')
-                    embed.set_image(url=meme["url"])
-                    embed.set_footer(text=f"Сервер поддержки: "
-                                            f"\nhttps://discord.gg/VB3CgP9XTW"
-                                            f"\n{random.choice(meme_rus_settings['advise_phrases'])}",
-                                     icon_url=self.bot.get_guild(meme_rus_settings["guild"]).icon_url)
-                    msg = await channel.send(embed=embed)
-                    await msg.add_reaction("👍")
+                search = True
+                meme_result = None
+                while search:
+                    meme_r = accepted_memes_collection_name.aggregate([{"$sample": {"size": 1}}])
+                    for res in meme_r:
+                        if self.valid_meme_checker(res["url"]):
+                            search = False
+                            meme_result = res
+
+                embed = discord.Embed(
+                    title=f'А вот и мем каждые 30 минут) <a:trippepe:901514564900913262>',
+                    description=meme_result["description"], color=0x42aaff)
+                embed.add_field(name="Лайки:", value=f'{meme_result["likes"]} 👍')
+                embed.add_field(name="ID мема:", value=f'**{meme_result["meme_id"]}**')
+                embed.set_image(url=meme_result["url"])
+                embed.set_footer(text=f"Сервер поддержки: "
+                                      f"\nhttps://discord.gg/VB3CgP9XTW"
+                                      f"\n{random.choice(meme_rus_settings['advise_phrases'])}",
+                                 icon_url=self.bot.get_guild(meme_rus_settings["guild"]).icon_url)
+                msg = await channel.send(embed=embed)
+                await msg.add_reaction("👍")
             except Exception:
                 pass

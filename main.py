@@ -6,15 +6,17 @@ from luckerRole import LuckerRole
 from economic import Economic
 from meme_rus import Meme_Rus
 from fun import Fun
+from user_profile import User_profile
 from santa import SantaEvent
 
 
 bot = commands.Bot(command_prefix=settings['prefix'], intents=discord.Intents.all(), help_command=None)
 
-bot.add_cog(LuckerRole(bot))
-bot.add_cog(Economic(bot))
+#bot.add_cog(LuckerRole(bot))
+#bot.add_cog(Economic(bot))
 bot.add_cog(Meme_Rus(bot))
-bot.add_cog(Fun(bot))
+#bot.add_cog(Fun(bot))
+bot.add_cog(User_profile(bot))
 #bot.add_cog(SantaEvent(bot))
 
 
@@ -24,10 +26,22 @@ async def on_ready():
     update_status.start()
 
 
+status_id = 2
 @tasks.loop(minutes=1)
 async def update_status():
-    await bot.change_presence(
-        activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(bot.guilds)} серверов!"))
+    global status_id
+    if status_id == 0:
+        await bot.change_presence(
+            activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(bot.guilds)} серверов!"))
+        status_id += 1
+    elif status_id == 1:
+        await bot.change_presence(
+            activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(bot.users)} пользователей!"))
+        status_id += 1
+    elif status_id == 2:
+        await bot.change_presence(
+            activity=discord.Activity(type=discord.ActivityType.watching, name=f"{settings['prefix']}help"))
+        status_id = 0
 
 
 @bot.command()
