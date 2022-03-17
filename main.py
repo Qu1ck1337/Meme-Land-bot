@@ -12,11 +12,11 @@ from santa import SantaEvent
 
 bot = commands.Bot(command_prefix=settings['prefix'], intents=discord.Intents.all(), help_command=None)
 
-#bot.add_cog(LuckerRole(bot))
-#bot.add_cog(Economic(bot))
+bot.add_cog(LuckerRole(bot))
+bot.add_cog(Economic(bot))
 bot.add_cog(Meme_Rus(bot))
-#bot.add_cog(Fun(bot))
-bot.add_cog(User_profile(bot))
+bot.add_cog(Fun(bot))
+#bot.add_cog(User_profile(bot))
 #bot.add_cog(SantaEvent(bot))
 
 
@@ -26,8 +26,8 @@ async def on_ready():
     update_status.start()
 
 
-status_id = 2
-@tasks.loop(minutes=1)
+status_id = 0
+@tasks.loop(minutes=5)
 async def update_status():
     global status_id
     if status_id == 0:
