@@ -1,21 +1,24 @@
+import asyncio
 import datetime
+import os
+
 import discord
 from discord.ext import commands, tasks
 from config import settings, beta_settings
-from luckerRole import LuckerRole
-from economic import Economic
-from meme_rus import Meme_Rus
-from fun import Fun
+from cogs.luckerRole import LuckerRole
+from cogs.economic import Economic
+from cogs.meme_rus import Meme_Rus
+from cogs.fun import Fun
 from user_profile import User_profile
-from santa import SantaEvent
+from cogs.santa import SantaEvent
 
 
 bot = commands.Bot(command_prefix=settings['prefix'], intents=discord.Intents.all(), help_command=None)
 
-bot.add_cog(LuckerRole(bot))
-bot.add_cog(Economic(bot))
-bot.add_cog(Meme_Rus(bot))
-bot.add_cog(Fun(bot))
+#bot.add_cog(LuckerRole(bot))
+#bot.add_cog(Economic(bot))
+#bot.add_cog(Meme_Rus(bot))
+#bot.add_cog(Fun(bot))
 #bot.add_cog(User_profile(bot))
 #bot.add_cog(SantaEvent(bot))
 
@@ -111,7 +114,19 @@ async def send_info_to_all_servers(ctx):
                 pass
 
 
-if settings["isBetaVersion"] is not True:
-    bot.run(settings['token'])
-else:
-    bot.run(beta_settings['beta_token'])
+async def main():
+    async with bot:
+        await load_extensions()
+        if settings["isBetaVersion"] is not True:
+            await bot.run(settings['token'])
+        else:
+            await bot.run(beta_settings['beta_token'])
+
+
+async def load_extensions():
+    for filename in os.listdir("./cogs"):
+        if filename.endswith(".py"):
+            # cut off the .py from the file name
+            await bot.load_extension(f"cogs.{filename[:-3]}")
+
+asyncio.run(main())
