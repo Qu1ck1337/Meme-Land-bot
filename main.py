@@ -1,40 +1,42 @@
 import asyncio
 import datetime
 import os
-
 import discord
+from discord import app_commands
 from discord.ext import commands, tasks
 from config import settings, beta_settings
 
-bot = commands.Bot(command_prefix=settings['prefix'], intents=discord.Intents.all(), help_command=None)
+intents = discord.Intents(guilds=True, members=True, emojis=True, presences=True, messages=True, reactions=True, typing=True)
+
+bot = commands.Bot(command_prefix=settings['prefix'], help_command=None, intents=intents,
+                   application_id=934900322634190878)
 
 @bot.event
 async def on_ready():
     print(f'{datetime.datetime.now().strftime("%H:%M:%S")} | [INFO] Ready!')
+    await bot.tree.sync(guild=discord.Object(892493256129118260))
+    await bot.tree.sync(guild=discord.Object(766386682047365190))
+    await bot.tree.sync()
     update_status.start()
 
 
 status_id = 0
-@tasks.loop(minutes=5)
+@tasks.loop(minutes=1)
 async def update_status():
     global status_id
     if status_id == 0:
         await bot.change_presence(
-            activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(bot.guilds)} серверов!"))
+            activity=discord.Activity(type=discord.ActivityType.watching, name=f"/help | {len(bot.guilds)} серверов!"))
         status_id += 1
     elif status_id == 1:
         await bot.change_presence(
-            activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(bot.users)} пользователей!"))
-        status_id += 1
-    elif status_id == 2:
-        await bot.change_presence(
-            activity=discord.Activity(type=discord.ActivityType.watching, name=f"{settings['prefix']}help"))
+            activity=discord.Activity(type=discord.ActivityType.watching, name=f"/help | {len(bot.users)} пользователей!"))
         status_id = 0
 
 
-@bot.command()
-async def help(context):
-    if context.guild.id == settings["guild"]:
+@bot.tree.command(name="help", description="Помощь по командам бота")
+async def help(interaction: discord.Interaction):
+    if interaction.guild_id == settings["guild"]:
         embed = discord.Embed(title="Помощь по командам бота", description=f"Команды для сервера **Meme Land**:"
                                                                            f"\n`{settings['prefix']}balance` - узнать свой баланс монеток"
                                                                            f"\n`{settings['prefix']}balance <@участник>` - узнать баланс участника сервера **Meme Land**"
@@ -58,7 +60,7 @@ async def help(context):
                                                                            f"\n`{settings['prefix']}stop_auto_meme` - приостанавливает автопостинг мемов на данном сервере"
                                                                            f"\n > **Это команда работает только для администраторов сервера**",
                               color=0x42aaff)
-        await context.send(embed=embed)
+        await interaction.response.send_message(embed=embed)
     else:
         embed = discord.Embed(title="Помощь по командам бота", description=f"`{settings['prefix']}send_meme <описание мема>` + ОБЯЗАТЕЛЬНО прикреплённая картинка - команда отправки мема"
                                                                            f"\n`{settings['prefix']}meme` - показывает случайный мем"
@@ -75,18 +77,27 @@ async def help(context):
                                                                            f"\n > **Это команда работает только для администраторов сервера**",
                               color=0x42aaff)
         embed.set_footer(text="Это ранняя версия моего бота, спасибо за ваш выбор! 💗 (EBOLA#1337)")
-        await context.send(embed=embed)
+        await interaction.response.send_message(embed=embed)
 
 
 @bot.event
 async def on_command_error(context, exception):
-    print(exception)
+    await context.reply("Все старые команды бота с этого момента доступны через `/` **slash-команды**. Это удобно для пользователя, а также разработчика 😉")
     #if isinstance(exception, discord.ext.commands.errors.CommandNotFound):
     #    await context.send(f"Неизвестная команда :/ "
     #                       f"\n`{settings['prefix']}help` - чтобы узнать все команды бота")
-    if isinstance(exception, discord.ext.commands.errors.BadArgument):
-        await context.reply(f"Неправильно введена команда :/ "
-                    f"\n`{settings['prefix']}help` - чтобы подробнее узнать все команды бота")
+    #if isinstance(exception, discord.ext.commands.errors.BadArgument):
+        #await context.reply(f"Неправильно введена команда :/ "
+                    #f"\n`{settings['prefix']}help` - чтобы подробнее узнать все команды бота")
+
+@bot.tree.error
+async def on_slash_command_error(interaction: discord.Interaction, command: discord.app_commands.Command, error: discord.app_commands.AppCommandError):
+    print(error)
+    if error == discord.app_commands.errors.MissingPermissions:
+        await interaction.response.send_message(f"У вас недостаточно прав, чтобы использовать **/{command.name}** команду"
+                                                f"\n`Администратор` / `Управлять сервером` права нужны для этой команды.")
+    else:
+        await interaction.response.send_message(f"У вас недостаточно прав, чтобы использовать **/{command.name}** команду")
 
 
 #@bot.command()
@@ -98,6 +109,24 @@ async def send_info_to_all_servers(ctx):
                 await channel.send("test")
             except Exception:
                 pass
+
+
+'''@bot.command()
+async def dele(ctx):
+    print(bot.remove_command("help"))
+
+
+@bot.command()
+async def fetc(ctx):
+    print(await bot.tree.fetch_commands())
+    print(bot.tree.get_command("help"))
+
+
+@bot.command()
+async def sync_bot(ctx):
+    print("sync commands")
+    await bot.tree.sync(guild=ctx.guild)
+    await bot.tree.sync()'''
 
 
 async def main():

@@ -9,7 +9,7 @@ settings = {
 
 beta_settings = {
     "beta_id": 934900322634190878,
-    "beta_token": "OTM0OTAwMzIyNjM0MTkwODc4.Ye2zxg.f4ElNKBOW5zuyAE-Y1nEW2CoH_E"
+    "beta_token": "OTM0OTAwMzIyNjM0MTkwODc4.Ye2zxg.1eOMvHDt0nYoZJANKgG7qIzbwxo"
 }
 
 db = {
