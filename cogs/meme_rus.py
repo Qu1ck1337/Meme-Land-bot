@@ -796,7 +796,7 @@ class Meme_Rus(commands.Cog):
                 while search:
                     meme_r = accepted_memes_collection_name.aggregate([{"$sample": {"size": 1}}])
                     for res in meme_r:
-                        if self.valid_meme_checker(res["url"]):
+                        if await self.valid_meme_checker(res["url"]):
                             search = False
                             meme_result = res
 
