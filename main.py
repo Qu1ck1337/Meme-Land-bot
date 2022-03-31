@@ -97,7 +97,7 @@ async def on_slash_command_error(interaction: discord.Interaction, command: disc
         await interaction.response.send_message(f"У вас недостаточно прав, чтобы использовать **/{command.name}** команду")
 
 
-@bot.command()
+#@bot.command()
 async def send_info_to_all_servers(ctx):
     if await bot.is_owner(ctx.author):
         for guild in bot.guilds:
