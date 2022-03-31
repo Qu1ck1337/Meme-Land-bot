@@ -8,7 +8,7 @@ from config import settings, beta_settings
 
 intents = discord.Intents(guilds=True, members=True, emojis=True, presences=True, messages=True, reactions=True, typing=True)
 
-bot = commands.Bot(command_prefix=settings['prefix'], help_command=None, intents=discord.Intents.all(),
+bot = commands.Bot(command_prefix=settings['prefix'], help_command=None, intents=intents,
                    application_id=934900322634190878)
 
 @bot.event
