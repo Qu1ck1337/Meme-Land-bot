@@ -12,11 +12,11 @@ bot = commands.Bot(command_prefix=settings['prefix'], help_command=None, intents
 
 @bot.event
 async def on_ready():
-    print(f'{datetime.datetime.now().strftime("%H:%M:%S")} | [INFO] Ready!')
-    await bot.tree.sync(guild=discord.Object(892493256129118260))
-    await bot.tree.sync(guild=discord.Object(766386682047365190))
+    #await bot.tree.sync(guild=discord.Object(892493256129118260))
+    #await bot.tree.sync(guild=discord.Object(766386682047365190))
     await bot.tree.sync()
     update_status.start()
+    print(f'{datetime.datetime.now().strftime("%H:%M:%S")} | [INFO] Ready!')
 
 
 status_id = 0
