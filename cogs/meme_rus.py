@@ -339,7 +339,7 @@ class Meme_Rus(commands.Cog):
     @app_commands.command(name="send_meme", description="Отправить мемы")
     @app_commands.describe(description="Описание мема")
     @app_commands.describe(meme="Мем (.png .jpg .gif .jpeg)")
-    async def send_meme(self, interaction: discord.Interaction, description: str, meme: discord.Attachment):
+    async def send_meme(self, interaction: discord.Interaction, meme: discord.Attachment, description: str = ""):
         if interaction.user.bot:
             return
 
