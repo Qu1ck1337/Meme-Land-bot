@@ -618,8 +618,9 @@ class Meme_Rus(commands.Cog):
                 author_res = profile_collection_name.find_one({"user_id": meme_res["author"]})
 
                 if author_res is None:
-                    self.create_user_profile(author.id)
+                    self.create_user_profile(meme_res["author"])
                     author_res = profile_collection_name.find_one({"user_id": meme_res["author"]})
+                print(author_res)
                 profile_collection_name.update_one(author_res, {"$set": {"memes_likes": author_res["memes_likes"] + 1}})
             print(
                 f"{datetime.datetime.now().strftime('%H:%M:%S')} | [USER] User {payload.member} liked post with {result['meme_id']} id")
@@ -720,7 +721,7 @@ class Meme_Rus(commands.Cog):
                 author_res = profile_collection_name.find_one({"user_id": meme_res["author"]})
 
                 if author_res is None:
-                    self.create_user_profile(author.id)
+                    self.create_user_profile(meme_res["author"])
                     author_res = profile_collection_name.find_one({"user_id": meme_res["author"]})
                 profile_collection_name.update_one(author_res, {"$set": {"memes_likes": author_res["memes_likes"] - 1}})
             print(
