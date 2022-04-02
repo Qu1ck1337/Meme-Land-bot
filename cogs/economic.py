@@ -270,7 +270,7 @@ class Economic(commands.Cog):
 
             embed = discord.Embed(title=f"Магазин Жорика "
                                         f"\nСтраница {page}",
-                                  description=f"Чтобы купить что-то в магазине Жорика, используйте команду `ml/buy <номер товара>` или `ml/купить <номер товара>`",
+                                  description=f"Чтобы купить что-то в магазине Жорика, используйте команду `/buy <номер товара>`",
                                   color=economySettings["attention_color"])
             embed.set_thumbnail(url=interaction.guild.icon)
             embed.set_footer(
@@ -289,12 +289,12 @@ class Economic(commands.Cog):
             if is_page_exists is True:
                 if page == 1:
                     embed.add_field(name=f"Страница {page}",
-                                    value=f"Перейти на следующую страницу `ml/shop {page + 1}`",
+                                    value=f"Перейти на следующую страницу `/shop {page + 1}`",
                                     inline=False)
                 else:
                     embed.add_field(name=f"Страница {page}",
-                                    value=f"Перейти на следующую страницу `ml/shop {page + 1}`"
-                                          f"\nПерейти на предыдущую страницу `ml/shop {page - 1}`",
+                                    value=f"Перейти на следующую страницу `/shop {page + 1}`"
+                                          f"\nПерейти на предыдущую страницу `/shop {page - 1}`",
                                     inline=False)
                 await interaction.response.send_message(embed=embed)
             else:

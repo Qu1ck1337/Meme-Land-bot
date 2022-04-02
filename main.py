@@ -12,10 +12,11 @@ bot = commands.Bot(command_prefix=settings['prefix'], help_command=None, intents
 
 @bot.event
 async def on_ready():
-    #await bot.tree.sync(guild=discord.Object(892493256129118260))
+    #await bot.tree.sync(guild=bot.get_guild(892493256129118260))
     #await bot.tree.sync(guild=discord.Object(766386682047365190))
     await bot.tree.sync()
     update_status.start()
+    print(await bot.tree.fetch_commands())
     print(f'{datetime.datetime.now().strftime("%H:%M:%S")} | [INFO] Ready!')
 
 
@@ -91,10 +92,10 @@ async def on_command_error(context, exception):
 async def on_slash_command_error(interaction: discord.Interaction, command: discord.app_commands.Command, error: discord.app_commands.AppCommandError):
     print(error)
     if error == discord.app_commands.errors.MissingPermissions:
-        await interaction.response.send_message(f"У вас недостаточно прав, чтобы использовать **/{command.name}** команду"
+        await interaction.response.send_message(f"У вас недостаточно прав, чтобы использовать команду **/{command.name}**"
                                                 f"\n`Администратор` / `Управлять сервером` права нужны для этой команды.")
     else:
-        await interaction.response.send_message(f"У вас недостаточно прав, чтобы использовать **/{command.name}** команду")
+        await interaction.response.send_message(f"У вас недостаточно прав, чтобы использовать команду **/{command.name}**, либо произошла ошибка во время выполнения команды.")
 
 
 #@bot.command()

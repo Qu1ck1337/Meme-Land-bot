@@ -1,6 +1,7 @@
 import datetime
 
 import discord
+import pymongo
 import requests
 from discord.ext import commands, tasks
 from discord.ext.commands import Cog
@@ -884,6 +885,21 @@ class Meme_Rus(commands.Cog):
             meme_embed.set_image(url=meme_res["url"])
             await user.send(embed=embed)
             await user.send(embed=meme_embed)
+
+    @app_commands.command(description="Таблица лидеров")
+    @app_commands.guilds(892493256129118260)
+    async def leaderboard(self, interaction: discord.Interaction):
+        dbname = self.client[profile_settings["db_profile"]]
+        collection_name = dbname[profile_settings["collection_profile"]]
+        result = collection_name.find().sort([("level", pymongo.DESCENDING), ("exp", pymongo.DESCENDING)]).limit(10)
+        embed = discord.Embed(title="Топ-10 лучших мемеров бота Meme Land", color=0x42aaff)
+        for num, rez in enumerate(result):
+            embed.add_field(
+                name=f"**{'🥇 ' if num == 0 else '🥈 ' if num == 1 else '🥉 ' if num == 2 else ''}{num + 1}. {self.bot.get_user(rez['user_id']).name}**",
+                value=f"**Уровень:** {rez['level']}\n**Опыт: {rez['exp']}**", inline=False)
+        embed.set_thumbnail(url=interaction.guild.icon)
+        embed.set_footer(text=f"Запрошено {interaction.user.name} в {datetime.datetime.now().strftime('%H:%M')}", icon_url=interaction.user.avatar)
+        await interaction.response.send_message(embed=embed)
 
 
 async def setup(bot):
