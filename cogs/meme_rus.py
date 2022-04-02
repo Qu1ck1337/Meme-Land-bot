@@ -291,7 +291,7 @@ class Meme_Rus(commands.Cog):
         if result is None:
             self.create_user_profile(interaction.user.id)
             result = collection_name.find_one({"user_id": interaction.user.id})
-        await self.add_user_exp(interaction, result, collection_name, 0, False)
+        await self.add_user_exp(interaction, result, collection_name, 0)
         result = collection_name.find_one({"user_id": interaction.user.id})
 
         embed = discord.Embed(title=f"Профиль пользователя {interaction.user.display_name}", color=0x42aaff)
@@ -326,9 +326,8 @@ class Meme_Rus(commands.Cog):
                          icon_url=self.bot.get_guild(meme_rus_settings["guild"]).icon)
         await interaction.response.send_message(embed=embed)
         await interaction.channel.send(embed=meme_embed, view=NextButton(bot=self.bot, cursor=cursor))
-        await interaction.channel.send(f"{interaction.user.mention} Поздравляю, теперь у тебя **{result['level']} уровень** мемерства! 🥳 🥳 🥳 ")
 
-    async def add_user_exp(self, interaction: discord.Interaction, user_data, collection, add_exp, send_message: bool = True):
+    async def add_user_exp(self, interaction: discord.Interaction, user_data, collection, add_exp):
         exp_to_new_level = user_data["level"] * 100 + 100
         exp = user_data["exp"] + add_exp
         update_level = True
@@ -343,9 +342,8 @@ class Meme_Rus(commands.Cog):
         if level != 0:
             level += user_data["level"]
             collection.update_one(user_data, {"$set": {"level": level, "exp": exp}})
-            if send_message:
-                await interaction.channel.send(
-                    f"{interaction.user.mention} Поздравляю, теперь у тебя **{level} уровень** мемерства! 🥳 🥳 🥳 ")
+            await interaction.channel.send(
+                f"{interaction.user.mention} Поздравляю, теперь у тебя **{level} уровень** мемерства! 🥳 🥳 🥳 ")
         else:
             collection.update_one(user_data, {"$set": {"exp": exp}})
 
