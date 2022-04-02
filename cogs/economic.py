@@ -6,7 +6,7 @@ from discord.ext.commands import Cog
 from pymongo import MongoClient
 import pymongo
 from discord.ext import commands, tasks
-from config import economySettings
+from config import economySettings, profile_settings
 import random
 
 
@@ -17,6 +17,7 @@ class Economic(commands.Cog):
         self.CONNECTION_STRING = "mongodb+srv://MLB1:xeB-QAG-44s-9c6@cluster0.maorj.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
         # Create a connection using MongoClient. You can import MongoClient or use pymongo.MongoClient
         self.client = MongoClient(self.CONNECTION_STRING)
+        self.CONNECTION_STRING_TO_MEMES = "mongodb+srv://dbBot:j5x-Pkq-Q8u-mW2@data.frvp6.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
 
     @Cog.listener("on_ready")
     async def on_ready(self):
@@ -31,16 +32,29 @@ class Economic(commands.Cog):
                 guild = self.bot.get_guild(economySettings["guild"])
                 channel = guild.get_channel(economySettings["leaderBoardChannel"])
 
-                await channel.purge(limit=1)
+                await channel.purge(limit=2)
 
                 dbname = self.client["server_economy"]
                 collection_name = dbname["users_data"]
                 result = collection_name.find().sort("balance", pymongo.DESCENDING).limit(10)
-                embed = discord.Embed(title="Топ-10 лучших мемеров сервера Meme Land", color=0x42aaff)
+                embed = discord.Embed(title="Топ-10 самых богатых участников сервера Meme Land", color=0x42aaff)
                 for num, rez in enumerate(result):
                     embed.add_field(name=f"**{ '🥇 ' if num == 0 else '🥈 ' if num == 1 else '🥉 ' if num == 2 else ''}{num + 1}. {guild.get_member(rez['id'])}**", value=f"**Memecoins:** {rez['balance']} <:memeland_coin:939265285767192626>", inline=False)
                 embed.set_thumbnail(url=guild.icon)
                 await channel.send(embed=embed)
+
+                meme_client = MongoClient(self.CONNECTION_STRING_TO_MEMES)
+                dbname = meme_client[profile_settings["db_profile"]]
+                collection_name = dbname[profile_settings["collection_profile"]]
+                result = collection_name.find().sort([("level", pymongo.DESCENDING), ("exp", pymongo.DESCENDING)]).limit(10)
+                embed = discord.Embed(title="Топ-10 лучших мемеров бота Meme Land", color=0x42aaff)
+                for num, rez in enumerate(result):
+                    embed.add_field(
+                        name=f"**{'🥇 ' if num == 0 else '🥈 ' if num == 1 else '🥉 ' if num == 2 else ''}{num + 1}. {self.bot.get_user(rez['user_id'])}**",
+                        value=f"**Уровень:** {rez['level']}\n**Опыт: {rez['exp']}**", inline=False)
+                embed.set_thumbnail(url=guild.icon)
+                await channel.send(embed=embed)
+
                 print(f"{datetime.datetime.now().strftime('%H:%M:%S')} | [INFO] Leaderboard was sent")
         except AttributeError:
             pass
@@ -74,7 +88,6 @@ class Economic(commands.Cog):
             await self.create_user_data(ctx.author)
 
     async def create_user_data(self, member: discord.Member):
-        # Create the database for our example (we will use the same database throughout the tutorial
         dbname = self.client['server_economy']
         collection_name = dbname["users_data"]
         if collection_name.find_one({"id": member.id}) is None:
@@ -91,7 +104,6 @@ class Economic(commands.Cog):
             return True
 
     async def remove_user_data(self, member: discord.Member):
-        # Create the database for our example (we will use the same database throughout the tutorial
         dbname = self.client['server_economy']
         collection_name = dbname["users_data"]
         collection_name.delete_one({'id': member.id})

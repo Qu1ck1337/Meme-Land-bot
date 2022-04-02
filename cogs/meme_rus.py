@@ -287,9 +287,12 @@ class Meme_Rus(commands.Cog):
         dbname = self.client[profile_settings["db_profile"]]
         collection_name = dbname[profile_settings["collection_profile"]]
         result = collection_name.find_one({"user_id": interaction.user.id})
+
         if result is None:
             self.create_user_profile(interaction.user.id)
             result = collection_name.find_one({"user_id": interaction.user.id})
+        await self.add_user_exp(interaction, result, collection_name, 0, False)
+        result = collection_name.find_one({"user_id": interaction.user.id})
 
         embed = discord.Embed(title=f"Профиль пользователя {interaction.user.display_name}", color=0x42aaff)
         embed.add_field(name="Уровень:", value=result["level"], inline=True)
@@ -306,12 +309,11 @@ class Meme_Rus(commands.Cog):
         if test_meme is None:
             await interaction.response.send_message(embed=embed)
             await interaction.channel.send(f"Мемов пока ещё нет =("
-                           f"\nОтправить мемы можно с помощью команды `{settings['prefix']}send_meme <описание мема>` + прикреплённая картинка")
+                           f"\nОтправить мемы можно с помощью команды `{settings['prefix']}send_meme <описание мема> + картинка`")
             return
 
         cursor = accepted_memes_collection_name.find({"author": interaction.user.id})
         author_memes = cursor.next()
-        print(author_memes)
         meme_embed = discord.Embed(
             title=f'{random.choice(meme_rus_settings["get_meme_phrases"])} <a:trippepe:901514564900913262>',
             description=author_memes["description"], color=0x42aaff)
@@ -324,15 +326,26 @@ class Meme_Rus(commands.Cog):
                          icon_url=self.bot.get_guild(meme_rus_settings["guild"]).icon)
         await interaction.response.send_message(embed=embed)
         await interaction.channel.send(embed=meme_embed, view=NextButton(bot=self.bot, cursor=cursor))
+        await interaction.channel.send(f"{interaction.user.mention} Поздравляю, теперь у тебя **{result['level']} уровень** мемерства! 🥳 🥳 🥳 ")
 
-    async def add_user_exp(self, interation: discord.Interaction, user_data, collection, add_exp):
+    async def add_user_exp(self, interaction: discord.Interaction, user_data, collection, add_exp, send_message: bool = True):
         exp_to_new_level = user_data["level"] * 100 + 100
         exp = user_data["exp"] + add_exp
-        if exp >= exp_to_new_level:
-            final_exp = exp - exp_to_new_level
-            level = user_data["level"] + 1
-            collection.update_one(user_data, {"$set": {"level": level, "exp": final_exp}})
-            await interation.channel.send(f"{interation.user.mention} Поздравляю, теперь у тебя **{level} уровень** мемерства! 🥳 🥳 🥳 ")
+        update_level = True
+        level = 0
+        while update_level:
+            if exp >= exp_to_new_level:
+                exp -= exp_to_new_level
+                level += 1
+                exp_to_new_level += 100
+            else:
+                update_level = False
+        if level != 0:
+            level += user_data["level"]
+            collection.update_one(user_data, {"$set": {"level": level, "exp": exp}})
+            if send_message:
+                await interaction.channel.send(
+                    f"{interaction.user.mention} Поздравляю, теперь у тебя **{level} уровень** мемерства! 🥳 🥳 🥳 ")
         else:
             collection.update_one(user_data, {"$set": {"exp": exp}})
 
