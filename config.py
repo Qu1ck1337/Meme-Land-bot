@@ -2,7 +2,7 @@ settings = {
     "isBetaVersion": False,
     "id": 894952935442747393,
     "guild": 892493256129118260,
-    "token": "ODk0OTUyOTM1NDQyNzQ3Mzkz.YVxf3w.n6J30jwGCdk7Jtr7dIOvtHAT0Og",
+    "token": "ODk0OTUyOTM1NDQyNzQ3Mzkz.YVxf3w.7xelW6IVzw9b16ZudB94myCwGHs",
     "prefix": "ml/",
     "defaul_colour_of_embed": 0x42aaff
 }
