@@ -887,7 +887,6 @@ class Meme_Rus(commands.Cog):
             await user.send(embed=meme_embed)
 
     @app_commands.command(description="Таблица лидеров")
-    @app_commands.guilds(892493256129118260)
     async def leaderboard(self, interaction: discord.Interaction):
         dbname = self.client[profile_settings["db_profile"]]
         collection_name = dbname[profile_settings["collection_profile"]]
