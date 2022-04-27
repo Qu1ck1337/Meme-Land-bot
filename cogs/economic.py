@@ -331,8 +331,8 @@ class Economic(commands.Cog):
         except Exception as ex:
             pass
 
-    @app_commands.command()
-    @app_commands.guilds(892493256129118260)
+    #@app_commands.command()
+    #@app_commands.guilds(892493256129118260)
     async def update_user_data(self, interaction: discord.Interaction):
         dbname = self.client['server_economy']
         collection_name = dbname["users_data"]
