@@ -8,12 +8,12 @@ from config import settings, beta_settings
 intents = discord.Intents(guilds=True, members=True, emojis=True, messages=True, reactions=True, typing=True)
 
 bot = commands.Bot(command_prefix=settings['prefix'], help_command=None, intents=intents,
-                   application_id=894952935442747393)
+                   application_id=934900322634190878)
 
 @bot.event
 async def on_ready():
-    #await bot.tree.sync(guild=bot.get_guild(892493256129118260))
-    #await bot.tree.sync(guild=discord.Object(766386682047365190))
+    await bot.tree.sync(guild=bot.get_guild(892493256129118260))
+    await bot.tree.sync(guild=bot.get_guild(766386682047365190))
     await bot.tree.sync()
     update_status.start()
     print(await bot.tree.fetch_commands())
@@ -90,7 +90,7 @@ async def on_command_error(context, exception):
         #await context.reply(f"Неправильно введена команда :/ "
                     #f"\n`{settings['prefix']}help` - чтобы подробнее узнать все команды бота")
 
-@bot.tree.error
+#@bot.tree.error
 async def on_slash_command_error(interaction: discord.Interaction, command: discord.app_commands.Command, error: discord.app_commands.AppCommandError):
     print(error)
     if error == discord.app_commands.errors.MissingPermissions:

@@ -6,7 +6,7 @@ import requests
 from discord.ext import commands, tasks
 from discord.ext.commands import Cog
 from pymongo import MongoClient
-from config import meme_rus_settings, settings, beta_settings, profile_settings
+from config import meme_rus_settings, settings, beta_settings, profile_settings, economySettings
 import random
 from discord import app_commands
 
@@ -215,7 +215,7 @@ class RandomMemeButton(discord.ui.View):
 
     async def valid_meme_checker(self, url):
         check = requests.head(url)
-        if check.status_code == 403:
+        if check.status_code == 403 or check.status_code == 404:
             await self.delete_meme_after_validation(url=url)
             return False
         else:
@@ -393,7 +393,7 @@ class Meme_Rus(commands.Cog):
 
     async def valid_meme_checker(self, url):
         check = requests.head(url)
-        if check.status_code == 403:
+        if check.status_code == 403 or check.status_code == 404:
             await self.delete_meme_after_validation(url=url)
             return False
         else:
@@ -402,6 +402,13 @@ class Meme_Rus(commands.Cog):
     @app_commands.command(name="meme", description="Посмотреть мем")
     @app_commands.describe(id="ID мема")
     async def meme(self, interaction: discord.Interaction, id: int = None):
+        if interaction.guild == settings["guild"] and interaction.channel.id in settings["ignored_commands_channels"]:
+            await interaction.response.send_message(embed=discord.Embed(
+                title="Ошибка",
+                description="Данная команда недоступна на этом канале, чтобы смотреть мемчики переходи в <#968940291904114769>)",
+                color=economySettings["error_color"]))
+            return
+
         dbname = self.client['bot_memes']
         accepted_memes_collection_name = dbname["accepted_memes"]
 
@@ -461,6 +468,13 @@ class Meme_Rus(commands.Cog):
 
     @app_commands.command(name="last_meme", description="Посмотреть последний одобренный мем")
     async def last_meme(self, interaction: discord.Interaction):
+        if interaction.guild == settings["guild"] and interaction.channel.id in settings["ignored_commands_channels"]:
+            await interaction.response.send_message(embed=discord.Embed(
+                title="Ошибка",
+                description="Данная команда недоступна на этом канале, чтобы смотреть мемчики переходи в <#968940291904114769>)",
+                color=economySettings["error_color"]))
+            return
+
         dbname = self.client['bot_memes']
         accepted_memes_collection_name = dbname["accepted_memes"]
 
@@ -510,6 +524,13 @@ class Meme_Rus(commands.Cog):
 
     @app_commands.command(name="top_meme", description="Посмотреть самый залайканный мем")
     async def top_meme(self, interaction: discord.Interaction):
+        if interaction.guild == settings["guild"] and interaction.channel.id in settings["ignored_commands_channels"]:
+            await interaction.response.send_message(embed=discord.Embed(
+                title="Ошибка",
+                description="Данная команда недоступна на этом канале, чтобы смотреть мемчики переходи в <#968940291904114769>)",
+                color=economySettings["error_color"]))
+            return
+
         dbname = self.client['bot_memes']
         accepted_memes_collection_name = dbname["accepted_memes"]
 
@@ -594,7 +615,7 @@ class Meme_Rus(commands.Cog):
             collection_name = dbname["memes_on_moderation"]
             result = collection_name.find_one({"msg_id": message.id})
             if result is not None:
-                channel = await self.bot.get_guild(result["guild"]).get_member(result["author"]).create_dm()
+                channel = await self.bot.fetch_user(result["author"]).create_dm()
                 embed = discord.Embed(title="Мем", description=result["description"], color=0xff0000)
                 embed.set_image(url=result["url"])
                 await channel.send("К сожалению ваш мем был отклонён(", embed=embed)
@@ -646,7 +667,7 @@ class Meme_Rus(commands.Cog):
             collection_name = dbname["memes_on_moderation"]
             result = collection_name.find_one({"msg_id": message.id})
             if result is not None:
-                channel = await self.bot.get_guild(result["guild"]).get_member(result["author"]).create_dm()
+                channel = await self.bot.fetch_user(result["author"]).create_dm()
 
                 accepted_memes_collection_name = dbname["accepted_memes"]
 
@@ -700,7 +721,7 @@ class Meme_Rus(commands.Cog):
             collection_name = dbname["memes_on_moderation"]
             result = collection_name.find_one({"msg_id": message.id})
             if result is not None:
-                channel = await self.bot.get_guild(result["guild"]).get_member(result["author"]).create_dm()
+                channel = await self.bot.fetch_user(result["author"]).create_dm()
                 embed = discord.Embed(title="Мем", description=result["description"], color=0xff0000)
                 embed.set_image(url=result["url"])
                 await channel.send("К сожалению ваш мем был отклонён(", embed=embed)

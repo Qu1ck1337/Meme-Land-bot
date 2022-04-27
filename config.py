@@ -1,10 +1,11 @@
 settings = {
-    "isBetaVersion": False,
+    "isBetaVersion": True,
     "id": 894952935442747393,
     "guild": 892493256129118260,
-    "token": "ODk0OTUyOTM1NDQyNzQ3Mzkz.YVxf3w.7xelW6IVzw9b16ZudB94myCwGHs",
+    "token": "ODk0OTUyOTM1NDQyNzQ3Mzkz.YVxf3w.mDITEPcJG6THaPHCiAyFE7Z_Akc",
     "prefix": "ml/",
-    "defaul_colour_of_embed": 0x42aaff
+    "defaul_colour_of_embed": 0x42aaff,
+    "ignored_commands_channels": [896440547990995075, 896440570900263003]
 }
 
 beta_settings = {
@@ -18,32 +19,24 @@ db = {
 }
 
 luckyRoleSettings = {
-    "luckyRoleMax": 1000,
+    "luckyRoleMax": 100,
     "luckyRolePhraze": ["Посмотрим насколько ты удачливый! 🤩", "Кручу, верчу, удачу проверить твою хочу! 😏",
                         "Интересно, какое число тебе выпадет? <:imean:901497483002261525>", "Крутите барабан!",
                         "Хмм... <:thonk:908051482421633125>", "Ставлю все свои нейронные связи на то, что ты победишь) 😉"],
     "luckyRoleWinPhraze": ["О, повезло, повезло...", "Бинго!", "Impossible...", "WeeWee!", "Ес минус 3! УХУ!"],
-    "luckyRoleChannelID": 924275377352871936
+    "luckyRoleChannelID": 924275377352871936,
+    "artefacts_max_count": 12,
+    "artefacts_lucky_role": 924264011401400330
+}
+
+luckyRoles_list = {
+    "lucky_role": 924264011401400330,
 }
 
 luckyRoles = {
-    777: 924264011401400330,
-    666: 924600112263618580,
-    1: 924601345007296542,
-    69: 926196128536473681,
-    0: 926196382593847347,
-    228: 926196539280470117,
-    404: 926196775558201374,
-    1000: 926196867400884404,
-    911: 926197053921562764,
-    999: 926197868795158528,
-    737: 926360831153811486,
-    300: 950115918858575954,
-    403: 950116257716387870,
-    812: 950116875797413938,
-    3: 950117160007647252,
-    410: 952170576376651786,
-    993: 952171240435646495
+    # -1 - артефакт
+    "lucky_role_min": 0,
+    "lucky_role_max": 1
 }
 
 santaSettings = {
@@ -55,13 +48,21 @@ economySettings = {
     "doubleMoneyChannel": [896440547990995075],
     "randomMoneyForMessageMin": 10,
     "randomMoneyForMessageMax": 25,
-    "delayRewardSeconds": 60,
+    "randomExpForMessageMin": 10,
+    "randomExpForMessageMax": 25,
+    "delayRewardSeconds": 1,
     "guild": 892493256129118260,
     "leaderBoardChannel": 939591886266580993,
     "success_color": 0x33FF66,
     "error_color": 0xff0000,
     "attention_color": 0xFFCC33,
     "monitoringReward": 25
+}
+
+roles_for_shop = {
+    "Demon": 924600112263618580,
+    "Reverse": 926196128536473681,
+    "Blatnoy": 926196867400884404
 }
 
 meme_rus_settings = {

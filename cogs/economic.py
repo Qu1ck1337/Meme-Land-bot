@@ -6,7 +6,7 @@ from discord.ext.commands import Cog
 from pymongo import MongoClient
 import pymongo
 from discord.ext import commands, tasks
-from config import economySettings, profile_settings
+from config import economySettings, profile_settings, luckyRoles, luckyRoles_list, roles_for_shop, settings
 import random
 
 
@@ -94,7 +94,10 @@ class Economic(commands.Cog):
             user_data = {
                 "id": member.id,
                 "balance": 0,
-                "nextReward": datetime.datetime.now() + datetime.timedelta(seconds=economySettings["delayRewardSeconds"])
+                "nextReward": datetime.datetime.now() + datetime.timedelta(seconds=economySettings["delayRewardSeconds"]),
+                "exp": 0,
+                "level": 0,
+                "lucky_artefacts": 0
             }
             collection_name.insert_one(user_data)
             print(f"{datetime.datetime.now().strftime('%H:%M:%S')} | [INFO] Created and sent data of user {member.display_name}")
@@ -195,10 +198,63 @@ class Economic(commands.Cog):
                 await self.create_user_data(member=member)
                 await self.balance(interaction=interaction, member=member)
 
-    @app_commands.command(name="send_money", description="Перевести монетки на баланс другого участника")
+    @app_commands.command(description="Посмотреть свой профиль на сервере")
     @app_commands.guilds(892493256129118260)
-    @app_commands.describe(member="Участник, которому нужно отправить монетки")
-    @app_commands.describe(money="Количество монеток, которое нужно отправить получателю")
+    async def sprofile(self, interaction: discord.Interaction):
+        dbname = self.client['server_economy']
+        collection_name = dbname["users_data"]
+        result = collection_name.find_one({"id": interaction.user.id})
+
+        if result is None:
+            await self.create_user_data(member=interaction.user)
+            result = collection_name.find_one({"id": interaction.user.id})
+            return
+
+        embed = discord.Embed(title="Профиль", description=f"Мемелендер <@{interaction.user.id}>", color=0x42aaff)
+        embed.add_field(name="Баланс", value=f'{result["balance"]} <:memeland_coin:939265285767192626>')
+        embed.add_field(name="Уровень", value=f"{result['level']}")
+        exp_for_lvl = 100
+        for lvl in range(result["level"]):
+            exp_for_lvl += 55 + 10 * lvl
+        embed.add_field(name="Опыт", value=f"{result['exp']} / {exp_for_lvl}")
+        print(interaction.user.joined_at)
+        embed.add_field(name="Присоединился", value=f'<t:{int(interaction.user.joined_at.timestamp())}:D>') #interaction.user.joined_at.strftime("%d %b. %Y")
+
+        roles_name = []
+        roles = list(filter(lambda role: role.id in luckyRoles_list.values(), interaction.user.roles))
+        for role in roles:
+            roles_name.append(role.name)
+        roles_name = "\n".join(roles_name)
+        embed.add_field(name="Предметы с удачи", value=f"Предметов: **{len(roles)} / {len(luckyRoles_list.values())}**\n```{roles_name}```", inline=True)
+
+        user_items_roles = list(filter(lambda role: role.id in roles_for_shop.values(), interaction.user.roles))
+        roles_name = []
+        for role in user_items_roles:
+            roles_name.append(role.name)
+        roles_name = "\n".join(roles_name)
+        embed.add_field(name="Купленные роли", value=f"Предметов: **{len(user_items_roles)} / {len(roles_for_shop.values())}**\n```{roles_name}```", inline=True)
+
+        dbname_item = self.client['server_economy_settings']
+        collection_name_item = dbname_item["server_shop"]
+        items_list = collection_name_item.find_one()
+        items_list_id = []
+        for item in list(items_list.values())[1:]:
+            items_list_id.append(item[1])
+        user_items_list = list(filter(lambda role: role.id in items_list_id and role.id not in roles_for_shop.values(), interaction.user.roles))
+
+        roles_name = []
+        for role in user_items_list:
+            roles_name.append(role.name)
+        roles_name = "\n".join(roles_name)
+
+        embed.add_field(name="Инвентарь", value=f"Всего: **{len(user_items_list)} / {len(items_list_id)}**\n```{roles_name}```", inline=True)
+        embed.set_thumbnail(url=interaction.user.avatar)
+        await interaction.response.send_message(embed=embed)
+
+    #@app_commands.command(name="send_money", description="Перевести монетки на баланс другого участника")
+    #@app_commands.guilds(892493256129118260)
+    #@app_commands.describe(member="Участник, которому нужно отправить монетки")
+    #@app_commands.describe(money="Количество монеток, которое нужно отправить получателю")
     async def send_money(self, interaction: discord.Interaction, member: discord.Member, money: int):
         if money <= 0:
             embed = discord.Embed(title="Ошибка", description="Отправка невозможна",
@@ -247,24 +303,56 @@ class Economic(commands.Cog):
                 if result["nextReward"] < datetime.datetime.now():
                     randomMoney = random.randint(economySettings["randomMoneyForMessageMin"],
                                                  economySettings["randomMoneyForMessageMax"])
+                    randomExp = random.randint(economySettings["randomExpForMessageMin"],
+                                               economySettings["randomExpForMessageMax"])
+                    exp_lvl = result["level"]
+                    exp_for_lvl = 100
+                    for lvl in range(exp_lvl):
+                        exp_for_lvl += 55 + 10 * lvl
+
                     if message.channel.id in economySettings["doubleMoneyChannel"]:
                         res_bal = result['balance'] + randomMoney * 2
+                        res_exp = result['exp'] + randomExp * 2
                     else:
                         res_bal = result['balance'] + randomMoney
-                    collection_name.update_one({"id": message.author.id}, {"$set": {"balance": res_bal,
-                                                                 "nextReward": datetime.datetime.now() + datetime.timedelta(
+                        res_exp = result['exp'] + randomExp
+
+                    if exp_for_lvl < res_exp:
+                        res_exp -= exp_for_lvl
+                        exp_lvl += 1
+                        await message.channel.send(f"{message.author.mention} апнулся до {exp_lvl} уровня! 🥳")
+                    collection_name.update_one({"id": message.author.id}, {"$set": {"balance": res_bal, "exp": res_exp,
+                                                            "nextReward": datetime.datetime.now() + datetime.timedelta(
                                                                      seconds=economySettings[
-                                                                         "delayRewardSeconds"])}})
+                                                                         "delayRewardSeconds"]),
+                                                                                    "level": exp_lvl}})
                     print(f"{message.author.display_name} reached a reward."
                           f"\nAdded Money: {randomMoney}")
         except Exception as ex:
             pass
 
+    @app_commands.command()
+    @app_commands.guilds(892493256129118260)
+    async def update_user_data(self, interaction: discord.Interaction):
+        dbname = self.client['server_economy']
+        collection_name = dbname["users_data"]
+        result = collection_name.find()
+        for user in result:
+            print(user)
+            collection_name.update_one(user, {"$set": {"level": 0, "exp": 0, "lucky_artefacts": 0}})
+        print("Done!")
+
     @app_commands.command(name="shop", description="Открывает магазин жорика")
     @app_commands.guilds(892493256129118260)
-    @app_commands.describe(page="Страница магазина")
-    async def shop(self, interaction: discord.Interaction, page: int=1):
+    #@app_commands.describe(page="Страница магазина")
+    async def shop(self, interaction: discord.Interaction):
         if interaction.guild == self.bot.get_guild(economySettings["guild"]):
+            if interaction.channel.id in settings["ignored_commands_channels"]:
+                await interaction.response.send_message(embed=discord.Embed(
+                    title="Ошибка", description="Данная команда недоступна на этом канале, а вот в <#899672752494112829> можно использовать все мои команды)",
+                    color=economySettings["error_color"]))
+                return
+            page = 1
             dbname = self.client['server_economy_settings']
             collection_name = dbname["server_shop"]
 
@@ -278,7 +366,9 @@ class Economic(commands.Cog):
 
             result = collection_name.find_one()
             is_page_exists = False
+            max_item = 0
             for num, res in enumerate(result):
+                max_item = num
                 if res != "_id" and (num > 10 * (page - 1)) and num <= 10 * page:
                     is_page_exists = True
                     role_id = result[res][1]
@@ -287,24 +377,21 @@ class Economic(commands.Cog):
                                     value=f"{role.mention} | Стоимость: **{result[res][0]}** <:memeland_coin:939265285767192626>",
                                     inline=False)
             if is_page_exists is True:
-                if page == 1:
-                    embed.add_field(name=f"Страница {page}",
-                                    value=f"Перейти на следующую страницу `/shop {page + 1}`",
-                                    inline=False)
-                else:
-                    embed.add_field(name=f"Страница {page}",
-                                    value=f"Перейти на следующую страницу `/shop {page + 1}`"
-                                          f"\nПерейти на предыдущую страницу `/shop {page - 1}`",
-                                    inline=False)
-                await interaction.response.send_message(embed=embed)
-            else:
-                await interaction.response.send_message("Такой страницы магазина Жорика не существует :(")
+                embed.add_field(name=f"Страница",
+                                value=f"{page} / {max_item // 10 + 1}",
+                                inline=False)
+                await interaction.response.send_message(embed=embed, view=ShopButtons(collection=collection_name))
 
     @app_commands.command(name="buy", description="Купить предмет в магазине Жорика")
     @app_commands.guilds(892493256129118260)
     @app_commands.describe(nums="Номер товара в магазине Жорика")
     async def buy(self, interaction: discord.Interaction, nums: int):
         if interaction.guild == self.bot.get_guild(economySettings["guild"]):
+            if interaction.channel.id in settings["ignored_commands_channels"]:
+                await interaction.response.send_message(embed=discord.Embed(
+                    title="Ошибка", description="Данная команда недоступна на этом канале, а вот в <#899672752494112829> можно использовать все мои команды)",
+                    color=economySettings["error_color"]))
+                return
             dbname = self.client['server_economy_settings']
             collection_name = dbname["server_shop"]
 
@@ -351,6 +438,108 @@ class Economic(commands.Cog):
                                 text=f"Запрошено {interaction.user} • {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}", icon_url=interaction.user.avatar)
                             await interaction.response.send_message(embed=embed)
                             return
+
+
+class ShopButtons(discord.ui.View):
+    def __init__(self, *, timeout=180, collection):
+        self.collection = collection
+        self.is_next = True
+        self.page = 1
+        self.is_next_button_exists = True
+        self.is_prev_button_exists = False
+        self.next_button_data = None
+        self.prev_button_data = None
+        super().__init__(timeout=timeout)
+
+    async def check_button_status(self):
+        try:
+            self.next_button_data.disabled = not self.is_next_button_exists
+            self.prev_button_data.disabled = not self.is_prev_button_exists
+        except Exception:
+            pass
+
+    @discord.ui.button(label="◀", style=discord.ButtonStyle.blurple)
+    async def prev_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        page = self.page - 1
+        embed = discord.Embed(title=f"Магазин Жорика "
+                                    f"\nСтраница {page}",
+                              description=f"Чтобы купить что-то в магазине Жорика, используйте команду `/buy <номер товара>`",
+                              color=economySettings["attention_color"])
+        embed.set_thumbnail(url=interaction.guild.icon)
+        embed.set_footer(
+            text=f"Запрошено {interaction.user} • {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}",
+            icon_url=interaction.user.avatar)
+
+        result = self.collection.find_one()
+        is_page_exists = False
+        max_item = 0
+        for num, res in enumerate(result):
+            max_item = num
+            if res != "_id" and (num > 10 * (page - 1)) and num <= 10 * page:
+                is_page_exists = True
+                role_id = result[res][1]
+                role = interaction.guild.get_role(role_id)
+                embed.add_field(name=f"Товар #{num}",
+                                value=f"{role.mention} | Стоимость: **{result[res][0]}** <:memeland_coin:939265285767192626>",
+                                inline=False)
+        if is_page_exists is True:
+            if page == 1:
+                self.is_prev_button_exists = False
+            elif max_item <= page * 10:
+                self.is_next_button_exists = False
+            else:
+                self.is_next_button_exists = True
+                self.is_prev_button_exists = True
+            embed.add_field(name=f"Страница",
+                            value=f"{page} / {max_item // 10 + 1}",
+                            inline=False)
+            await self.check_button_status()
+            await interaction.response.edit_message(embed=embed, view=self)
+            self.page -= 1
+        else:
+            await interaction.response.send_message(f"Предыдущей страницы нет в магазине :(", ephemeral=True)
+
+
+    @discord.ui.button(label="▶", style=discord.ButtonStyle.blurple)
+    async def next_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        page = self.page + 1
+        embed = discord.Embed(title=f"Магазин Жорика "
+                                    f"\nСтраница {page}",
+                              description=f"Чтобы купить что-то в магазине Жорика, используйте команду `/buy <номер товара>`",
+                              color=economySettings["attention_color"])
+        embed.set_thumbnail(url=interaction.guild.icon)
+        embed.set_footer(
+            text=f"Запрошено {interaction.user} • {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}",
+            icon_url=interaction.user.avatar)
+
+        result = self.collection.find_one()
+        is_page_exists = False
+        max_item = 0
+        for num, res in enumerate(result):
+            max_item = num
+            if res != "_id" and (num > 10 * (page - 1)) and num <= 10 * page:
+                is_page_exists = True
+                role_id = result[res][1]
+                role = interaction.guild.get_role(role_id)
+                embed.add_field(name=f"Товар #{num}",
+                                value=f"{role.mention} | Стоимость: **{result[res][0]}** <:memeland_coin:939265285767192626>",
+                                inline=False)
+        if is_page_exists is True:
+            if page == 1:
+                self.is_prev_button_exists = False
+            elif max_item <= page * 10:
+                self.is_next_button_exists = False
+            else:
+                self.is_next_button_exists = True
+                self.is_prev_button_exists = True
+            embed.add_field(name=f"Страница",
+                            value=f"{page} / {max_item // 10 + 1}",
+                            inline=False)
+            await self.check_button_status()
+            await interaction.response.edit_message(embed=embed, view=self)
+            self.page += 1
+        else:
+            await interaction.response.send_message(f"Следующей страницы нет в магазине :(", ephemeral=True)
 
 
 async def setup(bot):
