@@ -243,8 +243,11 @@ class RandomMemeButton(discord.ui.View):
             accepted_memes_collection_name.delete_one(meme_res)
             meme_embed = discord.Embed(title="Удалённый мем", description=meme_res["description"], color=0xff0000)
             meme_embed.set_image(url=meme_res["url"])
-            await user.send(embed=embed)
-            await user.send(embed=meme_embed)
+            try:
+                await user.send(embed=embed)
+                await user.send(embed=meme_embed)
+            except Exception:
+                pass
 
 
 class Meme_Rus(commands.Cog):
@@ -910,8 +913,11 @@ class Meme_Rus(commands.Cog):
             accepted_memes_collection_name.delete_one(meme_res)
             meme_embed = discord.Embed(title="Удалённый мем", description=meme_res["description"], color=0xff0000)
             meme_embed.set_image(url=meme_res["url"])
-            await user.send(embed=embed)
-            await user.send(embed=meme_embed)
+            try:
+                await user.send(embed=embed)
+                await user.send(embed=meme_embed)
+            except Exception:
+                pass
 
     @app_commands.command(description="Таблица лидеров")
     async def leaderboard(self, interaction: discord.Interaction):
