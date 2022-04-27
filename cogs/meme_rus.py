@@ -227,7 +227,10 @@ class RandomMemeButton(discord.ui.View):
         meme_res = accepted_memes_collection_name.find_one({"url": url})
         if meme_res is not None:
             user = self.bot.get_user(meme_res["author"])
-            await user.create_dm()
+            try:
+                await user.create_dm()
+            except Exception:
+                pass
             embed = discord.Embed(title="Ваш мем был удалён", description=f"Нам пришлось удалить ваш мем c ID: **{meme_res['meme_id']}**", color=0xff0000)
             embed.add_field(name="Причина:", value='Мема не существует, оригинал был удалён')
             dbname_user = self.client[profile_settings["db_profile"]]
@@ -891,7 +894,10 @@ class Meme_Rus(commands.Cog):
         meme_res = accepted_memes_collection_name.find_one({"url": url})
         if meme_res is not None:
             user = self.bot.get_user(meme_res["author"])
-            await user.create_dm()
+            try:
+                await user.create_dm()
+            except Exception:
+                pass
             embed = discord.Embed(title="Ваш мем был удалён", description=f"Нам пришлось удалить ваш мем c ID: **{meme_res['meme_id']}**", color=0xff0000)
             embed.add_field(name="Причина:", value='Мема не существует, оригинал был удалён')
             dbname_user = self.client[profile_settings["db_profile"]]
