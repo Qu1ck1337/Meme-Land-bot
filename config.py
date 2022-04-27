@@ -1,5 +1,5 @@
 settings = {
-    "isBetaVersion": True,
+    "isBetaVersion": False,
     "id": 894952935442747393,
     "guild": 892493256129118260,
     "token": "ODk0OTUyOTM1NDQyNzQ3Mzkz.YVxf3w.mDITEPcJG6THaPHCiAyFE7Z_Akc",
