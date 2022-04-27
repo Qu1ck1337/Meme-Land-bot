@@ -673,7 +673,7 @@ class Meme_Rus(commands.Cog):
             collection_name = dbname["memes_on_moderation"]
             result = collection_name.find_one({"msg_id": message.id})
             if result is not None:
-                channel = await self.bot.fetch_user(result["author"]).create_dm()
+                channel = await self.bot.get_user(result["author"]).create_dm()
 
                 accepted_memes_collection_name = dbname["accepted_memes"]
 
@@ -727,7 +727,7 @@ class Meme_Rus(commands.Cog):
             collection_name = dbname["memes_on_moderation"]
             result = collection_name.find_one({"msg_id": message.id})
             if result is not None:
-                channel = await self.bot.fetch_user(result["author"]).create_dm()
+                channel = await self.bot.get_user(result["author"]).create_dm()
                 embed = discord.Embed(title="Мем", description=result["description"], color=0xff0000)
                 embed.set_image(url=result["url"])
                 await channel.send("К сожалению ваш мем был отклонён(", embed=embed)
