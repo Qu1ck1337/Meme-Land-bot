@@ -891,7 +891,7 @@ class Meme_Rus(commands.Cog):
 
             dbname_user = self.client[profile_settings["db_profile"]]
             collection_name_user = dbname_user[profile_settings["collection_profile"]]
-            result_user = collection_name_user.find_one({"user_id": user.id})
+            result_user = collection_name_user.find_one({"user_id": meme_res["author"]})
             if result_user is None:
                 self.create_user_profile(user.id)
                 result_user = collection_name_user.find_one({"user_id": user.id})
