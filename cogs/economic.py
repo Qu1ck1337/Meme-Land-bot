@@ -365,7 +365,7 @@ class Economic(commands.Cog):
                     is_page_exists = True
                     role_id = result[res][1]
                     role = interaction.guild.get_role(role_id)
-                    embed.add_field(name=f"Товар #{num}",
+                    embed.add_field(name=f"Роль #{num}",
                                     value=f"{role.mention} | Стоимость: **{result[res][0]}** <:memeland_coin:939265285767192626>",
                                     inline=False)
             if is_page_exists is True:
