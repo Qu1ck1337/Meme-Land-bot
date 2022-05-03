@@ -226,22 +226,29 @@ class RandomMemeButton(discord.ui.View):
         accepted_memes_collection_name = dbname["accepted_memes"]
         meme_res = accepted_memes_collection_name.find_one({"url": url})
         if meme_res is not None:
-            user = self.bot.get_user(meme_res["author"])
-            await user.create_dm()
-            embed = discord.Embed(title="Ваш мем был удалён", description=f"Нам пришлось удалить ваш мем c ID: **{meme_res['meme_id']}**", color=0xff0000)
-            embed.add_field(name="Причина:", value='Мема не существует, оригинал был удалён')
             dbname_user = self.client[profile_settings["db_profile"]]
             collection_name_user = dbname_user[profile_settings["collection_profile"]]
-            result_user = collection_name_user.find_one({"user_id": user.id})
+            result_user = collection_name_user.find_one({"user_id": meme_res["author"]})
             if result_user is None:
-                self.create_user_profile(user.id)
-                result_user = collection_name_user.find_one({"user_id": user.id})
+                self.create_user_profile(meme_res["author"])
+                result_user = collection_name_user.find_one({"user_id": meme_res["author"]})
             collection_name_user.update_one(result_user, {"$set": {"memes_count": result_user["memes_count"] - 1, "memes_likes": result_user["memes_likes"] - meme_res["likes"]}})
             accepted_memes_collection_name.delete_one(meme_res)
-            meme_embed = discord.Embed(title="Удалённый мем", description=meme_res["description"], color=0xff0000)
-            meme_embed.set_image(url=meme_res["url"])
-            await user.send(embed=embed)
-            await user.send(embed=meme_embed)
+
+            user = self.bot.get_user(meme_res["author"])
+            if user is not None:
+                channel = await user.create_dm()
+
+                embed = discord.Embed(title="Ваш мем был удалён", description=f"Нам пришлось удалить ваш мем c ID: **{meme_res['meme_id']}**", color=0xff0000)
+                embed.add_field(name="Причина:", value='Мема не существует, оригинал был удалён')
+
+                meme_embed = discord.Embed(title="Удалённый мем", description=meme_res["description"], color=0xff0000)
+                meme_embed.set_image(url=meme_res["url"])
+                try:
+                    await channel.send(embed=embed)
+                    await channel.send(embed=meme_embed)
+                except discord.errors.Forbidden:
+                    pass
 
 
 class Meme_Rus(commands.Cog):
@@ -402,7 +409,7 @@ class Meme_Rus(commands.Cog):
     @app_commands.command(name="meme", description="Посмотреть мем")
     @app_commands.describe(id="ID мема")
     async def meme(self, interaction: discord.Interaction, id: int = None):
-        if interaction.guild == settings["guild"] and interaction.channel.id in settings["ignored_commands_channels"]:
+        if interaction.guild.id == settings["guild"] and interaction.channel.id in settings["ignored_commands_channels"]:
             await interaction.response.send_message(embed=discord.Embed(
                 title="Ошибка",
                 description="Данная команда недоступна на этом канале, чтобы смотреть мемчики переходи в <#968940291904114769>)",
@@ -468,7 +475,7 @@ class Meme_Rus(commands.Cog):
 
     @app_commands.command(name="last_meme", description="Посмотреть последний одобренный мем")
     async def last_meme(self, interaction: discord.Interaction):
-        if interaction.guild == settings["guild"] and interaction.channel.id in settings["ignored_commands_channels"]:
+        if interaction.guild.id == settings["guild"] and interaction.channel.id in settings["ignored_commands_channels"]:
             await interaction.response.send_message(embed=discord.Embed(
                 title="Ошибка",
                 description="Данная команда недоступна на этом канале, чтобы смотреть мемчики переходи в <#968940291904114769>)",
@@ -524,7 +531,7 @@ class Meme_Rus(commands.Cog):
 
     @app_commands.command(name="top_meme", description="Посмотреть самый залайканный мем")
     async def top_meme(self, interaction: discord.Interaction):
-        if interaction.guild == settings["guild"] and interaction.channel.id in settings["ignored_commands_channels"]:
+        if interaction.guild.id == settings["guild"] and interaction.channel.id in settings["ignored_commands_channels"]:
             await interaction.response.send_message(embed=discord.Embed(
                 title="Ошибка",
                 description="Данная команда недоступна на этом канале, чтобы смотреть мемчики переходи в <#968940291904114769>)",
@@ -667,8 +674,6 @@ class Meme_Rus(commands.Cog):
             collection_name = dbname["memes_on_moderation"]
             result = collection_name.find_one({"msg_id": message.id})
             if result is not None:
-                channel = await self.bot.fetch_user(result["author"]).create_dm()
-
                 accepted_memes_collection_name = dbname["accepted_memes"]
 
                 last_meme = accepted_memes_collection_name.find().sort('_id', -1).limit(1)
@@ -692,10 +697,16 @@ class Meme_Rus(commands.Cog):
                     result_user = collection_name_user.find_one({"user_id": result["author"]})
                 collection_name_user.update_one(result_user, {"$set": {"memes_count": result_user["memes_count"] + 1, "exp": result_user["exp"] + 25}})
 
-                embed = discord.Embed(title="Мем", description=result["description"], color=0x33FF66)
-                embed.add_field(name="ID мема", value=f"**{meme_id}**")
-                embed.set_image(url=result["url"])
-                await channel.send("Поздравляем, модерация одобрила ваш мем ^-^", embed=embed)
+                user = self.bot.get_user(result["author"])
+                if user is not None:
+                    channel = await user.create_dm()
+                    embed = discord.Embed(title="Мем", description=result["description"], color=0x33FF66)
+                    embed.add_field(name="ID мема", value=f"**{meme_id}**")
+                    embed.set_image(url=result["url"])
+                    try:
+                        await channel.send("Поздравляем, модерация одобрила ваш мем ^-^", embed=embed)
+                    except discord.errors.Forbidden:
+                        pass
 
                 meme_channel = self.bot.get_guild(meme_rus_settings["guild"]).get_channel(
                     meme_rus_settings["meme_accepted_channel"])
@@ -721,10 +732,15 @@ class Meme_Rus(commands.Cog):
             collection_name = dbname["memes_on_moderation"]
             result = collection_name.find_one({"msg_id": message.id})
             if result is not None:
-                channel = await self.bot.fetch_user(result["author"]).create_dm()
-                embed = discord.Embed(title="Мем", description=result["description"], color=0xff0000)
-                embed.set_image(url=result["url"])
-                await channel.send("К сожалению ваш мем был отклонён(", embed=embed)
+                user = self.bot.get_user(result["author"])
+                if user is not None:
+                    channel = await user.create_dm()
+                    embed = discord.Embed(title="Мем", description=result["description"], color=0xff0000)
+                    embed.set_image(url=result["url"])
+                    try:
+                        await channel.send("К сожалению ваш мем был отклонён(", embed=embed)
+                    except discord.errors.Forbidden:
+                        pass
 
                 collection_name.delete_one(result)
                 msg = await message.channel.send("Мем отклонён")
@@ -879,8 +895,13 @@ class Meme_Rus(commands.Cog):
 
             meme_embed = discord.Embed(title="Удалённый мем", description=meme_res["description"], color=0xff0000)
             meme_embed.set_image(url=meme_res["url"])
-            await user.send(embed=embed)
-            await user.send(embed=meme_embed)
+
+            try:
+                await user.send(embed=embed)
+                await user.send(embed=meme_embed)
+            except discord.errors.Forbidden:
+                pass
+
             await interaction.response.send_message(f"Мем с ID {meme_id} был удалён. Пользователь уведомлён об этом.")
         else:
             await interaction.response.send_message(embed=discord.Embed(title="Ошибка!", description=f"Мем с ID **{meme_id}** не существует!", color=0xff0000))
@@ -890,22 +911,29 @@ class Meme_Rus(commands.Cog):
         accepted_memes_collection_name = dbname["accepted_memes"]
         meme_res = accepted_memes_collection_name.find_one({"url": url})
         if meme_res is not None:
-            user = self.bot.get_user(meme_res["author"])
-            await user.create_dm()
-            embed = discord.Embed(title="Ваш мем был удалён", description=f"Нам пришлось удалить ваш мем c ID: **{meme_res['meme_id']}**", color=0xff0000)
-            embed.add_field(name="Причина:", value='Мема не существует, оригинал был удалён')
             dbname_user = self.client[profile_settings["db_profile"]]
             collection_name_user = dbname_user[profile_settings["collection_profile"]]
-            result_user = collection_name_user.find_one({"user_id": user.id})
+            result_user = collection_name_user.find_one({"user_id": meme_res["author"]})
             if result_user is None:
-                self.create_user_profile(user.id)
-                result_user = collection_name_user.find_one({"user_id": user.id})
+                self.create_user_profile(meme_res["author"])
+                result_user = collection_name_user.find_one({"user_id": meme_res["author"]})
             collection_name_user.update_one(result_user, {"$set": {"memes_count": result_user["memes_count"] - 1, "memes_likes": result_user["memes_likes"] - meme_res["likes"]}})
             accepted_memes_collection_name.delete_one(meme_res)
-            meme_embed = discord.Embed(title="Удалённый мем", description=meme_res["description"], color=0xff0000)
-            meme_embed.set_image(url=meme_res["url"])
-            await user.send(embed=embed)
-            await user.send(embed=meme_embed)
+
+            user = self.bot.get_user(meme_res["author"])
+            if user is not None:
+                channel = await user.create_dm()
+
+                embed = discord.Embed(title="Ваш мем был удалён", description=f"Нам пришлось удалить ваш мем c ID: **{meme_res['meme_id']}**", color=0xff0000)
+                embed.add_field(name="Причина:", value='Мема не существует, оригинал был удалён')
+
+                meme_embed = discord.Embed(title="Удалённый мем", description=meme_res["description"], color=0xff0000)
+                meme_embed.set_image(url=meme_res["url"])
+                try:
+                    await channel.send(embed=embed)
+                    await channel.send(embed=meme_embed)
+                except discord.errors.Forbidden:
+                    pass
 
     @app_commands.command(description="Таблица лидеров")
     async def leaderboard(self, interaction: discord.Interaction):
