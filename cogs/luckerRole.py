@@ -141,8 +141,8 @@ class LuckerRole(commands.Cog):
         else:
             await interaction.response.send_message(f"Данная команда работает только на канале: <#{luckyRoleSettings['luckyRoleChannelID']}>")
 
-    @app_commands.command()
-    @app_commands.guilds(892493256129118260)
+    #@app_commands.command()
+    #@app_commands.guilds(892493256129118260)
     async def update_user_data(self, interaction: discord.Interaction):
         dbname = self.client['server_economy']
         collection_name = dbname["users_data"]
