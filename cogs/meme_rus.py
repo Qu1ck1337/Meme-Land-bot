@@ -416,6 +416,8 @@ class Meme_Rus(commands.Cog):
                 color=economySettings["error_color"]))
             return
 
+        await interaction.response.send_message(embed=discord.Embed(title="Загружаюсь...", description=f"Ищу для вас мемчик <a:loading:971033648956579840>", color=0x42aaff))
+
         dbname = self.client['bot_memes']
         accepted_memes_collection_name = dbname["accepted_memes"]
 
@@ -430,11 +432,11 @@ class Meme_Rus(commands.Cog):
                         random_record = res
         else:
             if accepted_memes_collection_name.find_one({"meme_id": id}) is None:
-                await interaction.response.send_message("Мема с таким ID не существует :(")
+                await interaction.edit_original_message(content="Мема с таким ID не существует :(")
                 return
             random_record = accepted_memes_collection_name.find_one({"meme_id": id})
             if not await self.valid_meme_checker(random_record["url"]):
-                await interaction.response.send_message("Мема с таким ID не существует :(")
+                await interaction.edit_original_message(content="Мема с таким ID не существует :(")
                 return
 
         embed = discord.Embed(
@@ -455,11 +457,11 @@ class Meme_Rus(commands.Cog):
                               f"\n{random.choice(meme_rus_settings['advise_phrases'])}",
                          icon_url=self.bot.get_guild(meme_rus_settings["guild"]).icon)
         if id is None:
-            await interaction.response.send_message(embed=embed, view=RandomMemeButton(interaction=interaction,
+            await interaction.edit_original_message(embed=embed, view=RandomMemeButton(interaction=interaction,
                                                                                  collection_name=accepted_memes_collection_name,
                                                                                  meme_id=random_record["meme_id"], bot=self.bot))
         else:
-            await interaction.response.send_message(embed=embed, view=LikeButton(interaction=interaction,
+            await interaction.edit_original_message(embed=embed, view=LikeButton(interaction=interaction,
                                                                             collection_name=accepted_memes_collection_name,
                                                                             meme_id=random_record["meme_id"]))
         dbname_u = self.client[profile_settings["db_profile"]]
@@ -481,6 +483,8 @@ class Meme_Rus(commands.Cog):
                 description="Данная команда недоступна на этом канале, чтобы смотреть мемчики переходи в <#968940291904114769>)",
                 color=economySettings["error_color"]))
             return
+
+        await interaction.response.send_message(embed=discord.Embed(title="Загружаюсь...", description=f"Ищу для вас мемчик <a:loading:971033648956579840>", color=0x42aaff))
 
         dbname = self.client['bot_memes']
         accepted_memes_collection_name = dbname["accepted_memes"]
@@ -514,7 +518,7 @@ class Meme_Rus(commands.Cog):
                               f"\nhttps://discord.gg/VB3CgP9XTW"
                               f"\n{random.choice(meme_rus_settings['advise_phrases'])}",
                          icon_url=self.bot.get_guild(meme_rus_settings["guild"]).icon)
-        await interaction.response.send_message(embed=embed, view=LikeButton(interaction=interaction,
+        await interaction.edit_original_message(embed=embed, view=LikeButton(interaction=interaction,
                                                                              collection_name=accepted_memes_collection_name,
                                                                              meme_id=last_meme["meme_id"]))
 
@@ -538,6 +542,8 @@ class Meme_Rus(commands.Cog):
                 color=economySettings["error_color"]))
             return
 
+        await interaction.response.send_message(embed=discord.Embed(title="Загружаюсь...", description=f"Ищу для вас мемчик <a:loading:971033648956579840>", color=0x42aaff))
+
         dbname = self.client['bot_memes']
         accepted_memes_collection_name = dbname["accepted_memes"]
 
@@ -559,7 +565,7 @@ class Meme_Rus(commands.Cog):
                                   f"\nhttps://discord.gg/VB3CgP9XTW"
                                   f"\n{random.choice(meme_rus_settings['advise_phrases'])}",
                              icon_url=self.bot.get_guild(meme_rus_settings["guild"]).icon)
-            await interaction.response.send_message(embed=embed, view=LikeButton(interaction=interaction,
+            await interaction.edit_original_message(embed=embed, view=LikeButton(interaction=interaction,
                                                                             collection_name=accepted_memes_collection_name,
                                                                             meme_id=result["meme_id"]))
 

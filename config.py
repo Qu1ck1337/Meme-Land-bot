@@ -26,17 +26,20 @@ luckyRoleSettings = {
     "luckyRoleWinPhraze": ["О, повезло, повезло...", "Бинго!", "Impossible...", "WeeWee!", "Ес минус 3! УХУ!"],
     "luckyRoleChannelID": 924275377352871936,
     "artefacts_max_count": 12,
-    "artefacts_lucky_role": 924264011401400330
+    "konch_artefacts_max_count": 12,
 }
 
 luckyRoles_list = {
     "lucky_role": 924264011401400330,
+    "konch_role": 971036222845747200
 }
 
 luckyRoles = {
-    # -1 - артефакт
-    "lucky_role_min": 0,
-    "lucky_role_max": 1
+    "lucky_role": [0, 924264011401400330, "lucky_artefacts", 12],
+    "konch_role": [1, 971036222845747200, "konch_artefacts", 24],
+    "shnip_shnap": [2, 971052313319976970, "shnip_shnap_artefacts", 3],
+    "ebola's_son": [3, 971053012212654101, "ebolas_son_artefacts", 5],
+    "el_primo": [4, 971053703282962484, "el_primo_artefacts", 3]
 }
 
 santaSettings = {

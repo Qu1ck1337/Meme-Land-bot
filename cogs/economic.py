@@ -97,7 +97,11 @@ class Economic(commands.Cog):
                 "nextReward": datetime.datetime.now() + datetime.timedelta(seconds=economySettings["delayRewardSeconds"]),
                 "exp": 0,
                 "level": 0,
-                "lucky_artefacts": 0
+                "lucky_artefacts": 0,
+                "konch_artefacts": 0,
+                "shnip_shnap_artefacts": 0,
+                "ebolas_son_artefacts": 0,
+                "el_primo_artefacts": 0
             }
             collection_name.insert_one(user_data)
             print(f"{datetime.datetime.now().strftime('%H:%M:%S')} | [INFO] Created and sent data of user {member.display_name}")
@@ -212,12 +216,11 @@ class Economic(commands.Cog):
 
         embed = discord.Embed(title="Профиль", description=f"Мемелендер <@{interaction.user.id}>", color=0x42aaff)
         embed.add_field(name="Баланс", value=f'{result["balance"]} <:memeland_coin:939265285767192626>')
-        embed.add_field(name="Уровень", value=f"{result['level']}")
-        exp_for_lvl = 100
-        for lvl in range(result["level"]):
-            exp_for_lvl += 55 + 10 * lvl
-        embed.add_field(name="Опыт", value=f"{result['exp']} / {exp_for_lvl}")
-        print(interaction.user.joined_at)
+        #embed.add_field(name="Уровень", value=f"{result['level']}")
+        #exp_for_lvl = 100
+        #for lvl in range(result["level"]):
+        #    exp_for_lvl += 55 + 10 * lvl
+        #embed.add_field(name="Опыт", value=f"{result['exp']} / {exp_for_lvl}")
         embed.add_field(name="Присоединился", value=f'<t:{int(interaction.user.joined_at.timestamp())}:D>') #interaction.user.joined_at.strftime("%d %b. %Y")
 
         roles_name = []
@@ -228,11 +231,11 @@ class Economic(commands.Cog):
         embed.add_field(name="Предметы с удачи", value=f"Предметов: **{len(roles)} / {len(luckyRoles_list.values())}**\n```{roles_name}```", inline=True)
 
         user_items_roles = list(filter(lambda role: role.id in roles_for_shop.values(), interaction.user.roles))
-        roles_name = []
-        for role in user_items_roles:
-            roles_name.append(role.name)
-        roles_name = "\n".join(roles_name)
-        embed.add_field(name="Купленные роли", value=f"Предметов: **{len(user_items_roles)} / {len(roles_for_shop.values())}**\n```{roles_name}```", inline=True)
+        #roles_name = []
+        #for role in user_items_roles:
+        #    roles_name.append(role.name)
+        #roles_name = "\n".join(roles_name)
+        #embed.add_field(name="Купленные роли", value=f"Предметов: **{len(user_items_roles)} / {len(roles_for_shop.values())}**\n```{roles_name}```", inline=True)
 
         dbname_item = self.client['server_economy_settings']
         collection_name_item = dbname_item["server_shop"]
@@ -303,44 +306,33 @@ class Economic(commands.Cog):
                 if result["nextReward"] < datetime.datetime.now():
                     randomMoney = random.randint(economySettings["randomMoneyForMessageMin"],
                                                  economySettings["randomMoneyForMessageMax"])
-                    randomExp = random.randint(economySettings["randomExpForMessageMin"],
-                                               economySettings["randomExpForMessageMax"])
-                    exp_lvl = result["level"]
-                    exp_for_lvl = 100
-                    for lvl in range(exp_lvl):
-                        exp_for_lvl += 55 + 10 * lvl
+                    #randomExp = random.randint(economySettings["randomExpForMessageMin"],
+                    #                           economySettings["randomExpForMessageMax"])
+                    #exp_lvl = result["level"]
+                    #exp_for_lvl = 100
+                    #for lvl in range(exp_lvl):
+                    #    exp_for_lvl += 55 + 10 * lvl
 
                     if message.channel.id in economySettings["doubleMoneyChannel"]:
                         res_bal = result['balance'] + randomMoney * 2
-                        res_exp = result['exp'] + randomExp * 2
+                        #res_exp = result['exp'] + randomExp * 2
                     else:
                         res_bal = result['balance'] + randomMoney
-                        res_exp = result['exp'] + randomExp
+                        #res_exp = result['exp'] + randomExp
 
-                    if exp_for_lvl < res_exp:
-                        res_exp -= exp_for_lvl
-                        exp_lvl += 1
-                        await message.channel.send(f"{message.author.mention} апнулся до {exp_lvl} уровня! 🥳")
-                    collection_name.update_one({"id": message.author.id}, {"$set": {"balance": res_bal, "exp": res_exp,
+                    #if exp_for_lvl < res_exp:
+                    #    res_exp -= exp_for_lvl
+                    #    exp_lvl += 1
+                    #    await message.channel.send(f"{message.author.mention} апнулся до {exp_lvl} уровня! 🥳")
+                    collection_name.update_one({"id": message.author.id}, {"$set": {"balance": res_bal, #"exp": res_exp,
                                                             "nextReward": datetime.datetime.now() + datetime.timedelta(
                                                                      seconds=economySettings[
-                                                                         "delayRewardSeconds"]),
-                                                                                    "level": exp_lvl}})
+                                                                         "delayRewardSeconds"])}})
+                                                                                    #"level": exp_lvl}
                     print(f"{message.author.display_name} reached a reward."
                           f"\nAdded Money: {randomMoney}")
         except Exception as ex:
             pass
-
-    @app_commands.command()
-    @app_commands.guilds(892493256129118260)
-    async def update_user_data(self, interaction: discord.Interaction):
-        dbname = self.client['server_economy']
-        collection_name = dbname["users_data"]
-        result = collection_name.find()
-        for user in result:
-            print(user)
-            collection_name.update_one(user, {"$set": {"level": 0, "exp": 0, "lucky_artefacts": 0}})
-        print("Done!")
 
     @app_commands.command(name="shop", description="Открывает магазин жорика")
     @app_commands.guilds(892493256129118260)
@@ -479,7 +471,7 @@ class ShopButtons(discord.ui.View):
                 is_page_exists = True
                 role_id = result[res][1]
                 role = interaction.guild.get_role(role_id)
-                embed.add_field(name=f"Товар #{num}",
+                embed.add_field(name=f"Роль #{num}",
                                 value=f"{role.mention} | Стоимость: **{result[res][0]}** <:memeland_coin:939265285767192626>",
                                 inline=False)
         if is_page_exists is True:
@@ -521,7 +513,7 @@ class ShopButtons(discord.ui.View):
                 is_page_exists = True
                 role_id = result[res][1]
                 role = interaction.guild.get_role(role_id)
-                embed.add_field(name=f"Товар #{num}",
+                embed.add_field(name=f"Роль #{num}",
                                 value=f"{role.mention} | Стоимость: **{result[res][0]}** <:memeland_coin:939265285767192626>",
                                 inline=False)
         if is_page_exists is True:
