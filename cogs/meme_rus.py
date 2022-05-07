@@ -949,7 +949,7 @@ class Meme_Rus(commands.Cog):
         embed = discord.Embed(title="Топ-10 лучших мемеров бота Meme Land", color=0x42aaff)
         for num, rez in enumerate(result):
             embed.add_field(
-                name=f"**{'🥇 ' if num == 0 else '🥈 ' if num == 1 else '🥉 ' if num == 2 else ''}{num + 1}. {self.bot.get_user(rez['user_id']).name}**",
+                name=f"**{'🥇 ' if num == 0 else '🥈 ' if num == 1 else '🥉 ' if num == 2 else ''}{num + 1}. {self.bot.get_user(rez['user_id']).name if self.bot.get_user(rez['user_id']) else 'user id: ' + str(rez['user_id'])}**",
                 value=f"**Уровень:** {rez['level']}\n**Опыт: {rez['exp']}**", inline=False)
         embed.set_thumbnail(url=interaction.guild.icon)
         embed.set_footer(text=f"Запрошено {interaction.user.name} в {datetime.datetime.now().strftime('%H:%M')}", icon_url=interaction.user.avatar)

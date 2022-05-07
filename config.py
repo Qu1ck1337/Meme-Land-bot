@@ -31,7 +31,10 @@ luckyRoleSettings = {
 
 luckyRoles_list = {
     "lucky_role": 924264011401400330,
-    "konch_role": 971036222845747200
+    "konch_role": 971036222845747200,
+    "shnip_shnap": 971052313319976970,
+    "ebola's_son": 971053012212654101,
+    "el_primo": 971053703282962484
 }
 
 luckyRoles = {
