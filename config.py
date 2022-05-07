@@ -56,7 +56,7 @@ economySettings = {
     "randomMoneyForMessageMax": 25,
     "randomExpForMessageMin": 10,
     "randomExpForMessageMax": 25,
-    "delayRewardSeconds": 1,
+    "delayRewardSeconds": 10,
     "guild": 892493256129118260,
     "leaderBoardChannel": 939591886266580993,
     "success_color": 0x33FF66,
