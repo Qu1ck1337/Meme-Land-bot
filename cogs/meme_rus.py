@@ -215,7 +215,7 @@ class RandomMemeButton(discord.ui.View):
 
     async def valid_meme_checker(self, url):
         check = requests.head(url)
-        if check.status_code == 403 or check.status_code == 404:
+        if check.status_code == 403: #or check.status_code == 404:
             await self.delete_meme_after_validation(url=url)
             return False
         else:
@@ -400,7 +400,7 @@ class Meme_Rus(commands.Cog):
 
     async def valid_meme_checker(self, url):
         check = requests.head(url)
-        if check.status_code == 403 or check.status_code == 404:
+        if check.status_code == 403:
             await self.delete_meme_after_validation(url=url)
             return False
         else:
