@@ -11,11 +11,6 @@ class Fun(commands.Cog):
     async def ping(self, interaction: discord.Interaction):
         await interaction.response.send_message("Pong! 😄")
 
-    '''@app_commands.command(name="test")
-    @app_commands.guilds(766386682047365190)
-    async def test(self, interaction: discord.Interaction):
-        await interaction.response.send_message("Hello from command 1!", ephemeral=True)'''
-
 
 async def setup(bot):
     print("Setup Fun")

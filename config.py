@@ -1,16 +1,21 @@
 settings = {
     "isBetaVersion": False,
-    "id": 894952935442747393,
     "guild": 892493256129118260,
-    "token": "ODk0OTUyOTM1NDQyNzQ3Mzkz.YVxf3w.mDITEPcJG6THaPHCiAyFE7Z_Akc",
     "prefix": "ml/",
     "defaul_colour_of_embed": 0x42aaff,
     "ignored_commands_channels": [896440547990995075, 896440570900263003]
 }
 
+release_settings = {
+    "id": 894952935442747393,
+    "token": "ODk0OTUyOTM1NDQyNzQ3Mzkz.YVxf3w.mDITEPcJG6THaPHCiAyFE7Z_Akc",
+    "application_id": 894952935442747393
+}
+
 beta_settings = {
-    "beta_id": 934900322634190878,
-    "beta_token": "OTM0OTAwMzIyNjM0MTkwODc4.Ye2zxg.1eOMvHDt0nYoZJANKgG7qIzbwxo"
+    "id": 934900322634190878,
+    "token": "OTM0OTAwMzIyNjM0MTkwODc4.Ye2zxg.1eOMvHDt0nYoZJANKgG7qIzbwxo",
+    "application_id": 934900322634190878
 }
 
 db = {

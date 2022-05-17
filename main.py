@@ -3,12 +3,13 @@ import datetime
 import os
 import discord
 from discord.ext import commands, tasks
-from config import settings, beta_settings
+from config import settings, beta_settings, release_settings
 
 intents = discord.Intents(guilds=True, members=True, emojis=True, messages=True, reactions=True, typing=True)
 
 bot = commands.Bot(command_prefix=settings['prefix'], help_command=None, intents=intents,
-                   application_id=894952935442747393)
+                   application_id=release_settings["application_id"] if settings["isBetaVersion"] is False else
+                   beta_settings["application_id"])
 
 @bot.event
 async def on_ready():
@@ -128,7 +129,7 @@ async def main():
         if settings["isBetaVersion"] is not True:
             await bot.start(settings['token'])
         else:
-            await bot.start(beta_settings['beta_token'])
+            await bot.start(beta_settings['token'])
 
 
 async def load_extensions():
