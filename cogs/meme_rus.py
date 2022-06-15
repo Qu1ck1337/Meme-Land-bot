@@ -555,11 +555,10 @@ class Meme_Rus(commands.Cog):
                     embed.set_image(url=result["url"])
                     try:
                         await channel.send(embed=discord.Embed(title="Ваш мем был одобрен!",
-                                                               description="Поздравляем, ваш мем был одобрен ^-^! Из-за"
-                                                                           " политики безопасности "
-                                                                           "дискорда мы не гарантируем, что"
-                                                                           "ваш мем сможет пробыть у бота более 2х "
-                                                                           "недель.",
+                                                               description="Поздравляем, ваш мем был одобрен ^-^! "
+                                                                           "Из-за политики безопасности дискорда мы не "
+                                                                           "гарантируем, что ваш мем сможет размещён "
+                                                                           "у бота более **2х** недель.",
                                                                color=0x33FF66))
                         await channel.send(embed=embed)
                     except discord.errors.Forbidden:
@@ -583,7 +582,7 @@ class Meme_Rus(commands.Cog):
             else:
                 await message.channel.send("Такого мема нет в модерации")
         elif payload.channel_id == meme_rus_settings["moderationChannel"] and str(payload.emoji) == "❌" and \
-                (author.id == settings["id"] or author.id == beta_settings["id"]):
+                (author.id == release_settings["id"] or author.id == beta_settings["id"]):
             if message.guild.id != meme_rus_settings["guild"]:
                 return
 

@@ -21,7 +21,8 @@ class Economic(commands.Cog):
 
     @Cog.listener("on_ready")
     async def on_ready(self):
-        self.bot.loop.create_task(self.check_server_members())
+        pass
+        #self.bot.loop.create_task(self.check_server_members())
 
     @Cog.listener("on_member_join")
     async def on_member_join(self, member):
