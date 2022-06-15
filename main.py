@@ -127,7 +127,7 @@ async def main():
     async with bot:
         await load_extensions()
         if settings["isBetaVersion"] is not True:
-            await bot.start(settings['token'])
+            await bot.start(release_settings['token'])
         else:
             await bot.start(beta_settings['token'])
 
