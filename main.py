@@ -22,7 +22,7 @@ async def on_ready():
     print(f'{datetime.datetime.now().strftime("%H:%M:%S")} | [INFO] Ready!')
 
 
-@tasks.loop(seconds=2)
+@tasks.loop(minutes=1)
 async def update_status():
     global status_id
     if status_id == 0:
