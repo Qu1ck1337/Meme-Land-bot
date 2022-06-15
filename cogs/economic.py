@@ -22,51 +22,15 @@ class Economic(commands.Cog):
     @Cog.listener("on_ready")
     async def on_ready(self):
         self.bot.loop.create_task(self.check_server_members())
-        self.leaderboard.start()
-
-    @tasks.loop(minutes=1)
-    async def leaderboard(self):
-        schedule_time_minutes = ["0", "15", "30", "45"]
-        try:
-            if str(datetime.datetime.now().minute) in schedule_time_minutes:
-                guild = self.bot.get_guild(economySettings["guild"])
-                channel = guild.get_channel(economySettings["leaderBoardChannel"])
-
-                await channel.purge(limit=2)
-
-                dbname = self.client["server_economy"]
-                collection_name = dbname["users_data"]
-                result = collection_name.find().sort("balance", pymongo.DESCENDING).limit(10)
-                embed = discord.Embed(title="Топ-10 самых богатых участников сервера Meme Land", color=0x42aaff)
-                for num, rez in enumerate(result):
-                    embed.add_field(name=f"**{ '🥇 ' if num == 0 else '🥈 ' if num == 1 else '🥉 ' if num == 2 else ''}{num + 1}. {guild.get_member(rez['id'])}**", value=f"**Memecoins:** {rez['balance']} <:memeland_coin:939265285767192626>", inline=False)
-                embed.set_thumbnail(url=guild.icon)
-                await channel.send(embed=embed)
-
-                meme_client = MongoClient(self.CONNECTION_STRING_TO_MEMES)
-                dbname = meme_client[profile_settings["db_profile"]]
-                collection_name = dbname[profile_settings["collection_profile"]]
-                result = collection_name.find().sort([("level", pymongo.DESCENDING), ("exp", pymongo.DESCENDING)]).limit(10)
-                embed = discord.Embed(title="Топ-10 лучших мемеров бота Meme Land", color=0x42aaff)
-                for num, rez in enumerate(result):
-                    embed.add_field(
-                        name=f"**{'🥇 ' if num == 0 else '🥈 ' if num == 1 else '🥉 ' if num == 2 else ''}{num + 1}. {self.bot.get_user(rez['user_id'])}**",
-                        value=f"**Уровень:** {rez['level']}\n**Опыт: {rez['exp']}**", inline=False)
-                embed.set_thumbnail(url=guild.icon)
-                await channel.send(embed=embed)
-
-                print(f"{datetime.datetime.now().strftime('%H:%M:%S')} | [INFO] Leaderboard was sent")
-        except AttributeError:
-            pass
 
     @Cog.listener("on_member_join")
     async def on_member_join(self, member):
-        if member.guild == self.bot.get_guild(economySettings["guild"]):
+        if member.guild.id == settings["guild"]:
             await self.create_user_data(member)
 
     @Cog.listener("on_member_remove")
     async def on_member_remove(self, member):
-        if member.guild == self.bot.get_guild(economySettings["guild"]):
+        if member.guild.id == settings["guild"]:
             await self.remove_user_data(member)
 
     async def check_server_members(self):
@@ -94,17 +58,12 @@ class Economic(commands.Cog):
             user_data = {
                 "id": member.id,
                 "balance": 0,
-                "nextReward": datetime.datetime.now() + datetime.timedelta(seconds=economySettings["delayRewardSeconds"]),
-                "exp": 0,
-                "level": 0,
-                "lucky_artefacts": 0,
-                "konch_artefacts": 0,
-                "shnip_shnap_artefacts": 0,
-                "ebolas_son_artefacts": 0,
-                "el_primo_artefacts": 0
+                "nextReward": datetime.datetime.now() + datetime.timedelta(
+                    seconds=economySettings["delayRewardSeconds"]),
             }
             collection_name.insert_one(user_data)
-            print(f"{datetime.datetime.now().strftime('%H:%M:%S')} | [INFO] Created and sent data of user {member.display_name}")
+            print(
+                f"{datetime.datetime.now().strftime('%H:%M:%S')} | [INFO] Created and sent data of user {member.display_name}")
             return True
         else:
             print(f"{datetime.datetime.now().strftime('%H:%M:%S')} | [INFO] Sent data of user {member.display_name}")
@@ -121,8 +80,6 @@ class Economic(commands.Cog):
     @app_commands.guilds(892493256129118260)
     @app_commands.describe(member="Участник, которому нужно добавить монетки")
     @app_commands.describe(money="Количество монеток, которое нужно добавить")
-    #@commands.is_owner()
-    #@commands.has_permissions(administrator=True)
     async def add_money(self, interaction: discord.Interaction, member: discord.Member, money: int):
         if interaction.guild == self.bot.get_guild(economySettings["guild"]):
             dbname = self.client['server_economy']
@@ -136,7 +93,8 @@ class Economic(commands.Cog):
                                                   f"\n> Состояние баланса: **{result['balance']} <:memeland_coin:939265285767192626>** >> **{result['balance'] + money}** <:memeland_coin:939265285767192626>",
                                       color=economySettings["success_color"])
                 embed.set_footer(
-                    text=f"Запрошено {interaction.user} • {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}", icon_url=interaction.user.avatar)
+                    text=f"Запрошено {interaction.user} • {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}",
+                    icon_url=interaction.user.avatar)
                 await interaction.response.send_message(embed=embed)
             else:
                 status = await self.create_user_data(member=member)
@@ -146,7 +104,8 @@ class Economic(commands.Cog):
                     embed = discord.Embed(title="Ошибка", description="Искомый пользователь не найден.",
                                           color=economySettings["error_color"])
                     embed.set_footer(
-                        text=f"Запрошено {interaction.user} • {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}", icon_url=interaction.user.avatar)
+                        text=f"Запрошено {interaction.user} • {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}",
+                        icon_url=interaction.user.avatar)
                     await interaction.response.send_message(embed=embed)
 
     @app_commands.command(description="Устанавливает баланс участнику сервера")
@@ -154,8 +113,6 @@ class Economic(commands.Cog):
     @app_commands.guilds(892493256129118260)
     @app_commands.describe(member="Участник, которому нужно установить монетки")
     @app_commands.describe(money="Количество монеток, которое нужно установить")
-    #@commands.is_owner()
-    #@commands.has_permissions(administrator=True)
     async def set_money(self, interaction: discord.Interaction, member: discord.Member, money: int):
         if interaction.guild == self.bot.get_guild(economySettings["guild"]):
             dbname = self.client['server_economy']
@@ -168,7 +125,8 @@ class Economic(commands.Cog):
                                                   f"\n> Состояние баланса: **{result['balance']} <:memeland_coin:939265285767192626>** >> **{money}** <:memeland_coin:939265285767192626>",
                                       color=economySettings["success_color"])
                 embed.set_footer(
-                    text=f"Запрошено {interaction.user} • {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}", icon_url=interaction.user.avatar)
+                    text=f"Запрошено {interaction.user} • {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}",
+                    icon_url=interaction.user.avatar)
                 await interaction.response.send_message(embed=embed)
             else:
                 status = await self.create_user_data(member=member)
@@ -178,7 +136,8 @@ class Economic(commands.Cog):
                     embed = discord.Embed(title="Ошибка", description="Искомый пользователь не найден.",
                                           color=economySettings["error_color"])
                     embed.set_footer(
-                        text=f"Запрошено {interaction.user} • {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}", icon_url=interaction.user.avatar)
+                        text=f"Запрошено {interaction.user} • {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}",
+                        icon_url=interaction.user.avatar)
                     await interaction.response.send_message(embed=embed)
 
     @app_commands.command(name="balance", description="Узнать свой баланс на сервере")
@@ -196,139 +155,32 @@ class Economic(commands.Cog):
                                       description=f"Баланс {member.mention} на текущий момент: **{result['balance']}** <:memeland_coin:939265285767192626>",
                                       color=economySettings["success_color"])
                 embed.set_footer(
-                    text=f"Запрошено {interaction.user} • {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}", icon_url=interaction.user.avatar)
+                    text=f"Запрошено {interaction.user} • {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}",
+                    icon_url=interaction.user.avatar)
                 await interaction.response.send_message(embed=embed)
             else:
                 await self.create_user_data(member=member)
                 await self.balance(interaction=interaction, member=member)
 
-    @app_commands.command(description="Посмотреть свой профиль на сервере")
-    @app_commands.guilds(892493256129118260)
-    async def sprofile(self, interaction: discord.Interaction):
-        dbname = self.client['server_economy']
-        collection_name = dbname["users_data"]
-        result = collection_name.find_one({"id": interaction.user.id})
-
-        if result is None:
-            await self.create_user_data(member=interaction.user)
-            result = collection_name.find_one({"id": interaction.user.id})
-            return
-
-        embed = discord.Embed(title="Профиль", description=f"Мемелендер <@{interaction.user.id}>", color=0x42aaff)
-        embed.add_field(name="Баланс", value=f'{result["balance"]} <:memeland_coin:939265285767192626>')
-        #embed.add_field(name="Уровень", value=f"{result['level']}")
-        #exp_for_lvl = 100
-        #for lvl in range(result["level"]):
-        #    exp_for_lvl += 55 + 10 * lvl
-        #embed.add_field(name="Опыт", value=f"{result['exp']} / {exp_for_lvl}")
-        embed.add_field(name="Присоединился", value=f'<t:{int(interaction.user.joined_at.timestamp())}:D>') #interaction.user.joined_at.strftime("%d %b. %Y")
-
-        roles_name = []
-        roles = list(filter(lambda role: role.id in luckyRoles_list.values(), interaction.user.roles))
-        for role in roles:
-            roles_name.append(role.name)
-        roles_name = "\n".join(roles_name)
-        embed.add_field(name="Предметы с удачи", value=f"Предметов: **{len(roles)} / {len(luckyRoles_list.values())}**\n```{roles_name}```", inline=True)
-
-        user_items_roles = list(filter(lambda role: role.id in roles_for_shop.values(), interaction.user.roles))
-        #roles_name = []
-        #for role in user_items_roles:
-        #    roles_name.append(role.name)
-        #roles_name = "\n".join(roles_name)
-        #embed.add_field(name="Купленные роли", value=f"Предметов: **{len(user_items_roles)} / {len(roles_for_shop.values())}**\n```{roles_name}```", inline=True)
-
-        dbname_item = self.client['server_economy_settings']
-        collection_name_item = dbname_item["server_shop"]
-        items_list = collection_name_item.find_one()
-        items_list_id = []
-        for item in list(items_list.values())[1:]:
-            items_list_id.append(item[1])
-        user_items_list = list(filter(lambda role: role.id in items_list_id and role.id not in roles_for_shop.values(), interaction.user.roles))
-
-        roles_name = []
-        for role in user_items_list:
-            roles_name.append(role.name)
-        roles_name = "\n".join(roles_name)
-
-        embed.add_field(name="Инвентарь", value=f"Всего: **{len(user_items_list)} / {len(items_list_id)}**\n```{roles_name}```", inline=True)
-        embed.set_thumbnail(url=interaction.user.avatar)
-        await interaction.response.send_message(embed=embed)
-
-    #@app_commands.command(name="send_money", description="Перевести монетки на баланс другого участника")
-    #@app_commands.guilds(892493256129118260)
-    #@app_commands.describe(member="Участник, которому нужно отправить монетки")
-    #@app_commands.describe(money="Количество монеток, которое нужно отправить получателю")
-    async def send_money(self, interaction: discord.Interaction, member: discord.Member, money: int):
-        if money <= 0:
-            embed = discord.Embed(title="Ошибка", description="Отправка невозможна",
-                                  color=economySettings["error_color"])
-            await interaction.response.send_message(embed=embed)
-            return
-        if interaction.guild == self.bot.get_guild(economySettings["guild"]):
-            dbname = self.client['server_economy']
-            collection_name = dbname["users_data"]
-
-            sender_result = collection_name.find_one({"id": interaction.user.id})
-
-            if sender_result is None:
-                await self.create_user_data(member=interaction.user)
-
-            if sender_result["balance"] >= money:
-                collection_name.update_one(sender_result, {"$set": {"balance": sender_result["balance"] - money}})
-
-                giver_result = collection_name.find_one({"id": member.id})
-                if giver_result is None:
-                    await interaction.response.send_message(embed=discord.Embed(
-                        title="Ошибка", description="Искомый получатель не найден.",
-                        color=economySettings["error_color"]))
-                    return
-                collection_name.update_one(giver_result, {"$set": {"balance": giver_result["balance"] + money}})
-                embed = discord.Embed(title="Успешный перевод",
-                                      description=f"**{money}** <:memeland_coin:939265285767192626> успешно переведены пользователю {member.mention}",
-                                      color=economySettings["success_color"])
-                embed.set_footer(
-                    text=f"Запрошено {interaction.user} • {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}", icon_url=interaction.user.avatar)
-                await interaction.response.send_message(embed=embed)
-            else:
-                embed = discord.Embed(
-                    title="Ошибка", description="Недостаточно средств", color=economySettings["error_color"])
-                embed.set_footer(
-                    text=f"Запрошено {interaction.user} • {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}", icon_url=interaction.user.avatar)
-                await interaction.response.send_message(embed=embed)
-
     @Cog.listener("on_message")
     async def check_message(self, message):
         try:
-            if message.guild == self.bot.get_guild(economySettings["guild"]) and message.channel.id not in economySettings["bannedChannelToGetMoney"]:
+            if message.guild == self.bot.get_guild(economySettings["guild"]) and message.channel.id not in \
+                    economySettings["bannedChannelToGetMoney"]:
                 dbname = self.client['server_economy']
                 collection_name = dbname["users_data"]
                 result = collection_name.find_one({"id": message.author.id})
                 if result["nextReward"] < datetime.datetime.now():
                     randomMoney = random.randint(economySettings["randomMoneyForMessageMin"],
                                                  economySettings["randomMoneyForMessageMax"])
-                    #randomExp = random.randint(economySettings["randomExpForMessageMin"],
-                    #                           economySettings["randomExpForMessageMax"])
-                    #exp_lvl = result["level"]
-                    #exp_for_lvl = 100
-                    #for lvl in range(exp_lvl):
-                    #    exp_for_lvl += 55 + 10 * lvl
-
                     if message.channel.id in economySettings["doubleMoneyChannel"]:
                         res_bal = result['balance'] + randomMoney * 2
-                        #res_exp = result['exp'] + randomExp * 2
                     else:
                         res_bal = result['balance'] + randomMoney
-                        #res_exp = result['exp'] + randomExp
-
-                    #if exp_for_lvl < res_exp:
-                    #    res_exp -= exp_for_lvl
-                    #    exp_lvl += 1
-                    #    await message.channel.send(f"{message.author.mention} апнулся до {exp_lvl} уровня! 🥳")
-                    collection_name.update_one({"id": message.author.id}, {"$set": {"balance": res_bal, #"exp": res_exp,
-                                                            "nextReward": datetime.datetime.now() + datetime.timedelta(
-                                                                     seconds=economySettings[
-                                                                         "delayRewardSeconds"])}})
-                                                                                    #"level": exp_lvl}
+                    collection_name.update_one({"id": message.author.id}, {"$set": {"balance": res_bal, "nextReward":
+                        datetime.datetime.now() + datetime.timedelta(
+                            seconds=economySettings[
+                                "delayRewardSeconds"])}})
                     print(f"{message.author.display_name} reached a reward."
                           f"\nAdded Money: {randomMoney}")
         except Exception as ex:
@@ -336,12 +188,12 @@ class Economic(commands.Cog):
 
     @app_commands.command(name="shop", description="Открывает магазин жорика")
     @app_commands.guilds(892493256129118260)
-    #@app_commands.describe(page="Страница магазина")
     async def shop(self, interaction: discord.Interaction):
         if interaction.guild == self.bot.get_guild(economySettings["guild"]):
             if interaction.channel.id in settings["ignored_commands_channels"]:
                 await interaction.response.send_message(embed=discord.Embed(
-                    title="Ошибка", description="Данная команда недоступна на этом канале, а вот в <#899672752494112829> можно использовать все мои команды)",
+                    title="Ошибка",
+                    description="Данная команда недоступна на этом канале, а вот в <#899672752494112829> можно использовать все мои команды)",
                     color=economySettings["error_color"]))
                 return
             page = 1
@@ -354,7 +206,8 @@ class Economic(commands.Cog):
                                   color=economySettings["attention_color"])
             embed.set_thumbnail(url=interaction.guild.icon)
             embed.set_footer(
-                text=f"Запрошено {interaction.user} • {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}", icon_url=interaction.user.avatar)
+                text=f"Запрошено {interaction.user} • {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}",
+                icon_url=interaction.user.avatar)
 
             result = collection_name.find_one()
             is_page_exists = False
@@ -370,7 +223,7 @@ class Economic(commands.Cog):
                                     inline=False)
             if is_page_exists is True:
                 embed.add_field(name=f"Страница",
-                                value=f"{page} / {max_item // 10 + 1}",
+                                value=f"{page} / {max_item // 10}",
                                 inline=False)
                 await interaction.response.send_message(embed=embed, view=ShopButtons(collection=collection_name))
 
@@ -381,7 +234,8 @@ class Economic(commands.Cog):
         if interaction.guild == self.bot.get_guild(economySettings["guild"]):
             if interaction.channel.id in settings["ignored_commands_channels"]:
                 await interaction.response.send_message(embed=discord.Embed(
-                    title="Ошибка", description="Данная команда недоступна на этом канале, а вот в <#899672752494112829> можно использовать все мои команды)",
+                    title="Ошибка",
+                    description="Данная команда недоступна на этом канале, а вот в <#899672752494112829> можно использовать все мои команды)",
                     color=economySettings["error_color"]))
                 return
             dbname = self.client['server_economy_settings']
@@ -411,7 +265,8 @@ class Economic(commands.Cog):
                                                       description=f"Покупка прошла успешно. Вы получили роль {role.mention}, купив за **{cost}** <:memeland_coin:939265285767192626>",
                                                       color=economySettings["success_color"])
                                 embed.set_footer(
-                                    text=f"Запрошено {interaction.user} • {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}", icon_url=interaction.user.avatar)
+                                    text=f"Запрошено {interaction.user} • {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}",
+                                    icon_url=interaction.user.avatar)
                                 await interaction.response.send_message(embed=embed)
                             else:
                                 embed = discord.Embed(title="Ошибка",
@@ -419,7 +274,8 @@ class Economic(commands.Cog):
                                                                   f"\nЧтобы купить {role.mention} вам нужно ещё **{cost - user_result['balance']}** <:memeland_coin:939265285767192626>",
                                                       color=economySettings["error_color"])
                                 embed.set_footer(
-                                    text=f"Запрошено {interaction.user} • {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}", icon_url=interaction.user.avatar)
+                                    text=f"Запрошено {interaction.user} • {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}",
+                                    icon_url=interaction.user.avatar)
                                 await interaction.response.send_message(embed=embed)
                                 return
                         else:
@@ -427,7 +283,8 @@ class Economic(commands.Cog):
                                                   description=f"У вас уже есть {role.mention}",
                                                   color=economySettings["error_color"])
                             embed.set_footer(
-                                text=f"Запрошено {interaction.user} • {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}", icon_url=interaction.user.avatar)
+                                text=f"Запрошено {interaction.user} • {datetime.datetime.now().strftime('%m.%d.%Y %H:%M:%S')}",
+                                icon_url=interaction.user.avatar)
                             await interaction.response.send_message(embed=embed)
                             return
 
@@ -483,14 +340,13 @@ class ShopButtons(discord.ui.View):
                 self.is_next_button_exists = True
                 self.is_prev_button_exists = True
             embed.add_field(name=f"Страница",
-                            value=f"{page} / {max_item // 10 + 1}",
+                            value=f"{page} / {max_item // 10}",
                             inline=False)
             await self.check_button_status()
             await interaction.response.edit_message(embed=embed, view=self)
             self.page -= 1
         else:
             await interaction.response.send_message(f"Предыдущей страницы нет в магазине :(", ephemeral=True)
-
 
     @discord.ui.button(label="▶", style=discord.ButtonStyle.blurple)
     async def next_button(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -525,7 +381,7 @@ class ShopButtons(discord.ui.View):
                 self.is_next_button_exists = True
                 self.is_prev_button_exists = True
             embed.add_field(name=f"Страница",
-                            value=f"{page} / {max_item // 10 + 1}",
+                            value=f"{page} / {max_item // 10}",
                             inline=False)
             await self.check_button_status()
             await interaction.response.edit_message(embed=embed, view=self)

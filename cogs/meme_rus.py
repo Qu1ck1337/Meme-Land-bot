@@ -6,7 +6,7 @@ import requests
 from discord.ext import commands, tasks
 from discord.ext.commands import Cog
 from pymongo import MongoClient
-from config import meme_rus_settings, settings, beta_settings, profile_settings, economySettings
+from config import meme_rus_settings, settings, beta_settings, profile_settings, economySettings, release_settings
 import random
 from discord import app_commands
 
@@ -20,9 +20,9 @@ client = MongoClient(CONNECTION_STRING)
 db_profile = client[profile_settings["db_profile"]]
 profile_collection = db_profile[profile_settings["collection_profile"]]
 
-db_memes = client['bot_memes']
-accepted_memes_collection = db_memes["accepted_memes"]
-memes_on_moderation_collection = db_memes["memes_on_moderation"]
+db_memes = client['bot_memes'] #bot_memes
+accepted_memes_collection = db_memes["accepted_memes"] #accepted_memes
+memes_on_moderation_collection = db_memes["memes_on_moderation"] #memes_on_moderation
 
 db_auto_post_guilds = client['auto_post_guilds']
 auto_post_guilds_collection = db_auto_post_guilds["guilds"]
@@ -39,7 +39,6 @@ class NextButton(discord.ui.View):
     @discord.ui.button(label="Следующий мем", style=discord.ButtonStyle.green)
     async def next_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         if self.is_next:
-            # button.style = discord.ButtonStyle.green
             meme_embed = discord.Embed(
                 title=f'{random.choice(meme_rus_settings["get_meme_phrases"])} <a:trippepe:901514564900913262>',
                 description=self.author_meme["description"], color=0x42aaff)
@@ -81,14 +80,12 @@ class LikeButton(discord.ui.View):
             if result is not None:
                 self.collection_name.update_one(result, {"$set": {"likes": result["likes"] + 1}})
 
-            dbname_p = self.client[profile_settings["db_profile"]]
-            profile_collection_name = dbname_p[profile_settings["collection_profile"]]
-            author_res = profile_collection_name.find_one({"user_id": self.interaction.user.id})
+            author_res = profile_collection.find_one({"user_id": self.interaction.user.id})
 
             if author_res is None:
-                self.create_user_profile(self.interaction.user.id)
-                author_res = profile_collection_name.find_one({"user_id": self.interaction.user.id})
-            profile_collection_name.update_one(author_res, {"$set": {"memes_likes": author_res["memes_likes"] + 1}})
+                Create_user_profile(self.interaction.user.id)
+                author_res = profile_collection.find_one({"user_id": self.interaction.user.id})
+            profile_collection.update_one(author_res, {"$set": {"memes_likes": author_res["memes_likes"] + 1}})
 
             button.disabled = True
             button.label = "Мем лайкнут 👍"
@@ -96,31 +93,6 @@ class LikeButton(discord.ui.View):
             print(
                 f"{datetime.datetime.now().strftime('%H:%M:%S')} | [USER] User {self.interaction.user} liked post with "
                 f"{self.meme_id} id")
-
-    def create_user_profile(self, author_id):
-        dbname = self.client[profile_settings["db_profile"]]
-        collection_name = dbname[profile_settings["collection_profile"]]
-
-        dbname_m = self.client['bot_memes']
-        accepted_memes_collection_name_m = dbname_m["accepted_memes"]
-        result = accepted_memes_collection_name_m.find({"author": author_id})
-
-        meme_count = 0
-        likes = 0
-
-        for meme in result:
-            meme_count += 1
-            likes += meme["likes"]
-
-        collection_name.insert_one({
-            "user_id": author_id,
-            "level": 0,
-            "exp": 0,
-            "memes_count": meme_count,
-            "memes_likes": likes,
-            "premium_status": False
-        })
-        print("Профиль пользователя создан")
 
 
 class RandomMemeButton(discord.ui.View):
@@ -138,27 +110,14 @@ class RandomMemeButton(discord.ui.View):
         super().__init__(timeout=timeout)
 
     @discord.ui.button(label="Случайный мем", style=discord.ButtonStyle.green)
-    async def randomMemeButton(self, interaction_b: discord.Interaction):
-        if interaction_b.user == self.interaction.user:
+    async def randomMemeButton(self, interaction_b: discord.Interaction, button: discord.ui.Button):
+        if interaction_b.user.id == self.interaction.user.id:
             random_record = None
-            search = True
-            while search:
-                result_r = self.collection_name.aggregate([{"$sample": {"size": 1}}])
-                for res in result_r:
-                    if await self.valid_meme_checker(res["url"]):
-                        search = False
-                        random_record = res
+            rand_rec = self.collection_name.aggregate([{"$sample": {"size": 1}}])
+            for rec in rand_rec:
+                random_record = rec
+            meme_embed = Create_meme_embed_message(self.bot, random_record)
 
-            meme_embed = discord.Embed(
-                title=f'{random.choice(meme_rus_settings["get_meme_phrases"])} <a:trippepe:901514564900913262>',
-                description=random_record["description"], color=0x42aaff)
-            meme_embed.add_field(name="Лайки:", value=f'{random_record["likes"]} 👍')
-            meme_embed.add_field(name="ID мема:", value=f'**{random_record["meme_id"]}**')
-            meme_embed.set_image(url=random_record["url"])
-            meme_embed.set_footer(text=f"Сервер поддержки: "
-                                       f"\nhttps://discord.gg/VB3CgP9XTW"
-                                       f"\n{random.choice(meme_rus_settings['advise_phrases'])}",
-                                  icon_url=self.bot.get_guild(meme_rus_settings["guild"]).icon)
             if self.likeButton is not None:
                 self.likeButton.label = "Лайкнуть мем"
                 self.likeButton.disabled = False
@@ -166,29 +125,25 @@ class RandomMemeButton(discord.ui.View):
             await interaction_b.response.edit_message(embed=meme_embed, view=self)
             self.meme_id = random_record["meme_id"]
 
-            dbname_u = self.client[profile_settings["db_profile"]]
-            collection_name_u = dbname_u[profile_settings["collection_profile"]]
-            user_res = collection_name_u.find_one({"user_id": self.interaction.user.id})
+            user_res = profile_collection.find_one({"user_id": self.interaction.user.id})
             if user_res is None:
-                self.create_user_profile(self.interaction.user.id)
-                user_res = collection_name_u.find_one({"user_id": self.interaction.user.id})
-            await add_user_exp(self.interaction, user_res, random.randint(1, 5))
+                Create_user_profile(self.interaction.user.id)
+                user_res = profile_collection.find_one({"user_id": self.interaction.user.id})
+            await Add_user_exp(self.interaction, user_res, random.randint(1, 5))
 
     @discord.ui.button(label="Лайкнуть мем", style=discord.ButtonStyle.blurple)
     async def likeButton(self, interaction_b: discord.Interaction, button: discord.ui.Button):
-        if interaction_b.user == self.interaction.user:
+        if interaction_b.user.id == self.interaction.user.id:
             result = self.collection_name.find_one({"meme_id": self.meme_id})
             if result is not None:
                 self.collection_name.update_one(result, {"$set": {"likes": result["likes"] + 1}})
 
-            dbname_p = self.client[profile_settings["db_profile"]]
-            profile_collection_name = dbname_p[profile_settings["collection_profile"]]
-            author_res = profile_collection_name.find_one({"user_id": self.interaction.user.id})
+            author_res = profile_collection.find_one({"user_id": self.interaction.user.id})
 
             if author_res is None:
-                self.create_user_profile(self.interaction.user.id)
-                author_res = profile_collection_name.find_one({"user_id": self.interaction.user.id})
-            profile_collection_name.update_one(author_res, {"$set": {"memes_likes": author_res["memes_likes"] + 1}})
+                Create_user_profile(self.interaction.user.id)
+                author_res = profile_collection.find_one({"user_id": self.interaction.user.id})
+            profile_collection.update_one(author_res, {"$set": {"memes_likes": author_res["memes_likes"] + 1}})
 
             button.disabled = True
             button.label = "Мем лайкнут 👍"
@@ -198,75 +153,8 @@ class RandomMemeButton(discord.ui.View):
                 f"{datetime.datetime.now().strftime('%H:%M:%S')} | [USER] User {self.interaction.user} liked post with "
                 f"{self.meme_id} id")
 
-    def create_user_profile(self, author_id):
-        dbname = self.client[profile_settings["db_profile"]]
-        collection_name = dbname[profile_settings["collection_profile"]]
 
-        dbname_m = self.client['bot_memes']
-        accepted_memes_collection_name_m = dbname_m["accepted_memes"]
-        result = accepted_memes_collection_name_m.find({"author": author_id})
-
-        meme_count = 0
-        likes = 0
-
-        for meme in result:
-            meme_count += 1
-            likes += meme["likes"]
-
-        collection_name.insert_one({
-            "user_id": author_id,
-            "level": 0,
-            "exp": 0,
-            "memes_count": meme_count,
-            "memes_likes": likes,
-            "premium_status": False
-        })
-        print("Профиль пользователя создан")
-
-    async def valid_meme_checker(self, url):
-        check = requests.head(url)
-        if check.status_code == 403:  # or check.status_code == 404:
-            await self.delete_meme_after_validation(url=url)
-            return False
-        else:
-            return True
-
-    async def delete_meme_after_validation(self, url):
-        dbname = self.client['bot_memes']
-        accepted_memes_collection_name = dbname["accepted_memes"]
-        meme_res = accepted_memes_collection_name.find_one({"url": url})
-        if meme_res is not None:
-            dbname_user = self.client[profile_settings["db_profile"]]
-            collection_name_user = dbname_user[profile_settings["collection_profile"]]
-            result_user = collection_name_user.find_one({"user_id": meme_res["author"]})
-            if result_user is None:
-                self.create_user_profile(meme_res["author"])
-                result_user = collection_name_user.find_one({"user_id": meme_res["author"]})
-            collection_name_user.update_one(
-                result_user,
-                {"$set": {"memes_count": result_user["memes_count"] - 1,
-                          "memes_likes": result_user["memes_likes"] - meme_res["likes"]}})
-            accepted_memes_collection_name.delete_one(meme_res)
-
-            user = self.bot.get_user(meme_res["author"])
-            if user is not None:
-                channel = await user.create_dm()
-
-                embed = discord.Embed(title="Ваш мем был удалён", description=f"Нам пришлось удалить ваш мем c ID: "
-                                                                              f"**{meme_res['meme_id']}**",
-                                      color=0xff0000)
-                embed.add_field(name="Причина:", value='Мема не существует, оригинал был удалён')
-
-                meme_embed = discord.Embed(title="Удалённый мем", description=meme_res["description"], color=0xff0000)
-                meme_embed.set_image(url=meme_res["url"])
-                try:
-                    await channel.send(embed=embed)
-                    await channel.send(embed=meme_embed)
-                except discord.errors.Forbidden:
-                    pass
-
-
-def create_user_profile(author_id):
+def Create_user_profile(author_id):
     result = accepted_memes_collection.find({"author": author_id})
 
     meme_count = 0
@@ -287,7 +175,7 @@ def create_user_profile(author_id):
     print("Профиль пользователя создан")
 
 
-async def add_user_exp(interaction: discord.Interaction, user_data, add_exp):
+async def Add_user_exp(interaction: discord.Interaction, user_data, add_exp):
     exp_to_new_level = user_data["level"] * 100 + 100
     exp = user_data["exp"] + add_exp
     update_level = True
@@ -308,20 +196,48 @@ async def add_user_exp(interaction: discord.Interaction, user_data, add_exp):
         profile_collection.update_one(user_data, {"$set": {"exp": exp}})
 
 
-def check_if_it_is_me(interaction: discord.Interaction) -> bool:
+def Check_if_it_is_me(interaction: discord.Interaction) -> bool:
     return interaction.user.id == 443337837455212545
+
+
+def Create_meme_embed_message(bot, result, title_text=None):
+    try:
+        embed = discord.Embed(
+            title=f'{random.choice(meme_rus_settings["get_meme_phrases"]) if title_text is None else title_text}',
+            description=result["description"], color=0x42aaff)
+        embed.add_field(name="Лайки:", value=f'{result["likes"]} 👍')
+        embed.add_field(name="ID мема:", value=f'**{result["meme_id"]}**')
+        embed.set_image(url=result["url"])
+        embed.set_footer(text=f"Сервер поддержки: "
+                              f"\nhttps://discord.gg/VB3CgP9XTW"
+                              f"\n{random.choice(meme_rus_settings['advise_phrases'])}",
+                         icon_url=bot.get_guild(meme_rus_settings["guild"]).icon)
+        return embed
+    except TypeError:
+        for res in result:
+            embed = discord.Embed(
+                title=f'{random.choice(meme_rus_settings["get_meme_phrases"]) if title_text is None else title_text}',
+                description=res["description"], color=0x42aaff)
+            embed.add_field(name="Лайки:", value=f'{res["likes"]} 👍')
+            embed.add_field(name="ID мема:", value=f'**{res["meme_id"]}**')
+            embed.set_image(url=res["url"])
+            embed.set_footer(text=f"Сервер поддержки: "
+                                  f"\nhttps://discord.gg/VB3CgP9XTW"
+                                  f"\n{random.choice(meme_rus_settings['advise_phrases'])}",
+                             icon_url=bot.get_guild(meme_rus_settings["guild"]).icon)
+            return embed
 
 
 class Meme_Rus(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.moderation_channel = self.bot.get_guild(meme_rus_settings["guild"]).get_channel(
-            meme_rus_settings["moderationChannel"])
+        self.moderation_channel = None
         self.post_meme = False
 
     @Cog.listener("on_ready")
     async def on_ready(self):
-        print("start")
+        self.moderation_channel = self.bot.get_guild(meme_rus_settings["guild"]).get_channel(
+            meme_rus_settings["moderationChannel"])
         self.auto_post_meme.start()
 
     @app_commands.command(description="Посмотреть свой мемный профиль")
@@ -329,9 +245,9 @@ class Meme_Rus(commands.Cog):
         result = profile_collection.find_one({"user_id": interaction.user.id})
 
         if result is None:
-            create_user_profile(interaction.user.id)
+            Create_user_profile(interaction.user.id)
             result = profile_collection.find_one({"user_id": interaction.user.id})
-        await add_user_exp(interaction, result, 0)
+        await Add_user_exp(interaction, result, 0)
         result = profile_collection.find_one({"user_id": interaction.user.id})
 
         embed = discord.Embed(title=f"Профиль пользователя {interaction.user.display_name}", color=0x42aaff)
@@ -374,12 +290,13 @@ class Meme_Rus(commands.Cog):
             return
 
         if meme.url.split('.')[-1].lower() not in ['png', 'jpg', 'gif', 'jpeg']:
-            await interaction.response.send_message("Выкладывание видео пока недоступно, в скором времени добавим)")
+            await interaction.response.send_message("Бот не поддерживает тип данного файла")
             return
         if memes_on_moderation_collection.find_one({"url": meme.url}) is None:
             embed = discord.Embed(title="Новый мем на модерацию", description=description, color=0xFFCC33)
             embed.add_field(name="Сервер:", value=f"{interaction.guild}")
             embed.add_field(name="Автор:", value=f"{interaction.user}")
+
             embed.set_image(url=meme)
             msg = await self.moderation_channel.send(embed=embed)
 
@@ -406,16 +323,8 @@ class Meme_Rus(commands.Cog):
         else:
             await interaction.response.send_message("Такой мем уже есть")
 
-    async def valid_meme_checker(self, url):
-        check = requests.head(url)
-        if check.status_code == 403:
-            await self.delete_meme_after_validation(url=url)
-            return False
-        else:
-            return True
-
     @app_commands.command(name="meme", description="Посмотреть мем")
-    @app_commands.describe(id="ID мема")
+    @app_commands.describe(meme_id="ID мема")
     async def meme(self, interaction: discord.Interaction, meme_id: int = None):
         if interaction.guild.id == settings["guild"] and \
                 interaction.channel.id in settings["ignored_commands_channels"]:
@@ -434,39 +343,17 @@ class Meme_Rus(commands.Cog):
 
         random_record = None
         if meme_id is None:
-            search = True
-            while search:
-                random_m = accepted_memes_collection.aggregate([{"$sample": {"size": 1}}])
-                for res in random_m:
-                    if await self.valid_meme_checker(res["url"]):
-                        search = False
-                        random_record = res
+            rand_rec = accepted_memes_collection.aggregate([{"$sample": {"size": 1}}])
+            for rec in rand_rec:
+                random_record = rec
         else:
-            if accepted_memes_collection.find_one({"meme_id": meme_id}) is None:
-                await interaction.edit_original_message(content="Мема с таким ID не существует :(")
-                return
             random_record = accepted_memes_collection.find_one({"meme_id": meme_id})
-            if not await self.valid_meme_checker(random_record["url"]):
+            if random_record is None:
                 await interaction.edit_original_message(content="Мема с таким ID не существует :(")
                 return
 
-        embed = discord.Embed(
-            title=f'{random.choice(meme_rus_settings["get_meme_phrases"])} <a:trippepe:901514564900913262>',
-            description=random_record["description"], color=0x42aaff)
+        embed = Create_meme_embed_message(self.bot, random_record)
 
-        try:
-            likes = random_record["likes"]
-        except KeyError:
-            accepted_memes_collection.update_one(random_record, {"$set": {"likes": 0}})
-            likes = random_record["likes"]
-
-        embed.add_field(name="Лайки:", value=f'{likes} 👍')
-        embed.add_field(name="ID мема:", value=f'**{random_record["meme_id"]}**')
-        embed.set_image(url=random_record["url"])
-        embed.set_footer(text=f"Сервер поддержки: "
-                              f"\nhttps://discord.gg/VB3CgP9XTW"
-                              f"\n{random.choice(meme_rus_settings['advise_phrases'])}",
-                         icon_url=self.bot.get_guild(meme_rus_settings["guild"]).icon)
         if meme_id is None:
             await interaction.edit_original_message(embed=embed,
                                                     view=RandomMemeButton(interaction=interaction,
@@ -481,9 +368,9 @@ class Meme_Rus(commands.Cog):
 
         user_res = profile_collection.find_one({"user_id": interaction.user.id})
         if user_res is None:
-            create_user_profile(interaction.user.id)
+            Create_user_profile(interaction.user.id)
             user_res = profile_collection.find_one({"user_id": interaction.user.id})
-        await add_user_exp(interaction, user_res, random.randint(1, 5))
+        await Add_user_exp(interaction, user_res, random.randint(1, 5))
 
         print(
             f"{datetime.datetime.now().strftime('%H:%M:%S')} | [USER] User {interaction.user} used <meme> command")
@@ -504,44 +391,17 @@ class Meme_Rus(commands.Cog):
                                 description=f"Ищу для вас мемчик <a:loading:971033648956579840>",
                                 color=0x42aaff))
 
-        search = True
-        meme_l = accepted_memes_collection.find().sort('_id', -1).limit(1)
-        last_meme = None
-        meme_id = 0
-        while search:
-            for meme in meme_l:
-                meme_id = meme["meme_id"]
-                if await self.valid_meme_checker(meme["url"]):
-                    last_meme = meme
-                    search = False
-            if search:
-                meme_l = accepted_memes_collection.find({"meme_id": meme_id - 1})
-
-        embed = discord.Embed(title="Самый свежий мемчик для тебя! 🍞",
-                              description=last_meme["description"], color=0x42aaff)
-
-        try:
-            likes = last_meme["likes"]
-        except KeyError:
-            accepted_memes_collection.update_one(last_meme, {"$set": {"likes": 0}})
-            likes = last_meme["likes"]
-
-        embed.add_field(name="Лайки:", value=f'{likes} 👍')
-        embed.add_field(name="ID мема:", value=f'**{last_meme["meme_id"]}**')
-        embed.set_image(url=last_meme["url"])
-        embed.set_footer(text=f"Сервер поддержки: "
-                              f"\nhttps://discord.gg/VB3CgP9XTW"
-                              f"\n{random.choice(meme_rus_settings['advise_phrases'])}",
-                         icon_url=self.bot.get_guild(meme_rus_settings["guild"]).icon)
+        last_meme = accepted_memes_collection.find().sort('meme_id', -1).limit(1)
+        embed = Create_meme_embed_message(self.bot, last_meme, "Самый свежий мемчик для тебя! 🍞")
         await interaction.edit_original_message(embed=embed, view=LikeButton(interaction=interaction,
                                                                              collection_name=accepted_memes_collection,
                                                                              meme_id=last_meme["meme_id"]))
 
         user_res = profile_collection.find_one({"user_id": interaction.user.id})
         if user_res is None:
-            create_user_profile(interaction.user.id)
+            Create_user_profile(interaction.user.id)
             user_res = profile_collection.find_one({"user_id": interaction.user.id})
-        await add_user_exp(interaction, user_res, random.randint(1, 5))
+        await Add_user_exp(interaction, user_res, random.randint(1, 5))
 
         print(
             f"{datetime.datetime.now().strftime('%H:%M:%S')} | [USER] User {interaction.user} used <last_meme> command")
@@ -564,22 +424,7 @@ class Meme_Rus(commands.Cog):
 
         last_meme = accepted_memes_collection.find().sort('likes', -1).limit(1)
         for result in last_meme:
-            embed = discord.Embed(title="Самый лучший мем! 🏆",
-                                  description=result["description"], color=0x42aaff)
-
-            try:
-                likes = result["likes"]
-            except KeyError:
-                accepted_memes_collection.update_one(result, {"$set": {"likes": 0}})
-                likes = result["likes"]
-
-            embed.add_field(name="Лайки:", value=f'{likes} 👍')
-            embed.add_field(name="ID мема:", value=f'**{result["meme_id"]}**')
-            embed.set_image(url=result["url"])
-            embed.set_footer(text=f"Сервер поддержки: "
-                                  f"\nhttps://discord.gg/VB3CgP9XTW"
-                                  f"\n{random.choice(meme_rus_settings['advise_phrases'])}",
-                             icon_url=self.bot.get_guild(meme_rus_settings["guild"]).icon)
+            embed = Create_meme_embed_message(self.bot, result, "Самый лучший мем! 🏆")
             await interaction.edit_original_message(embed=embed,
                                                     view=LikeButton(interaction=interaction,
                                                                     collection_name=accepted_memes_collection,
@@ -587,9 +432,9 @@ class Meme_Rus(commands.Cog):
 
             user_res = profile_collection.find_one({"user_id": interaction.user.id})
             if user_res is None:
-                create_user_profile(interaction.user.id)
+                Create_user_profile(interaction.user.id)
                 user_res = profile_collection.find_one({"user_id": interaction.user.id})
-            await add_user_exp(interaction, user_res, random.randint(1, 5))
+            await Add_user_exp(interaction, user_res, random.randint(1, 5))
 
             print(
                 f"{datetime.datetime.now().strftime('%H:%M:%S')} | [USER] User {interaction.user} used "
@@ -601,7 +446,7 @@ class Meme_Rus(commands.Cog):
             return
         message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
         author = message.author
-        if (author.id == settings["id"] or author.id == beta_settings["id"]) and str(payload.emoji) == "👍":
+        if (author.id == release_settings["id"] or author.id == beta_settings["id"]) and str(payload.emoji) == "👍":
             result = accepted_memes_collection.find_one({"url": message.embeds[0].image.url})
             if result is not None:
                 accepted_memes_collection.update_one(result, {"$set": {"likes": result["likes"] + 1}})
@@ -612,7 +457,7 @@ class Meme_Rus(commands.Cog):
                 author_res = profile_collection.find_one({"user_id": meme_res["author"]})
 
                 if author_res is None:
-                    create_user_profile(meme_res["author"])
+                    Create_user_profile(meme_res["author"])
                     author_res = profile_collection.find_one({"user_id": meme_res["author"]})
                 print(author_res)
                 profile_collection.update_one(author_res, {"$set": {"memes_likes": author_res["memes_likes"] + 1}})
@@ -620,7 +465,7 @@ class Meme_Rus(commands.Cog):
                 f"{datetime.datetime.now().strftime('%H:%M:%S')} | [USER] User {payload.member} liked post with "
                 f"{result['meme_id']} id")
         elif payload.channel_id == meme_rus_settings["moderationChannel"] and str(payload.emoji) == "✅" and \
-                (author.id == settings["id"] or author.id == beta_settings["id"]):
+                (author.id == release_settings["id"] or author.id == beta_settings["id"]):
             if message.guild.id != meme_rus_settings["guild"]:
                 return
 
@@ -641,7 +486,7 @@ class Meme_Rus(commands.Cog):
 
                 result_user = profile_collection.find_one({"user_id": result["author"]})
                 if result_user is None:
-                    create_user_profile(result["author"])
+                    Create_user_profile(result["author"])
                     result_user = profile_collection.find_one({"user_id": result["author"]})
                 profile_collection.update_one(result_user, {"$set": {"memes_count": result_user["memes_count"] + 1,
                                                                      "exp": result_user["exp"] + 25}})
@@ -670,7 +515,7 @@ class Meme_Rus(commands.Cog):
                 await msg.delete(delay=30)
                 await message.delete()
                 print(f"{datetime.datetime.now().strftime('%H:%M:%S')} | [MODERATION] accepted meme with id: "
-                      f"{result['meme_id']}")
+                      f"{meme_id}")
             else:
                 await message.channel.send("Такого мема нет в модерации")
         elif payload.channel_id == meme_rus_settings["moderationChannel"] and str(payload.emoji) == "❌" and \
@@ -702,7 +547,7 @@ class Meme_Rus(commands.Cog):
     async def on_raw_reaction_remove(self, payload):
         message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
         author = message.author
-        if (author.id == settings["id"] or author.id == beta_settings["id"]) and str(payload.emoji) == "👍":
+        if (author.id == release_settings["id"] or author.id == beta_settings["id"]) and str(payload.emoji) == "👍":
             result = accepted_memes_collection.find_one({"url": message.embeds[0].image.url})
             if result is not None:
                 accepted_memes_collection.update_one(result, {"$set": {"likes": result["likes"] - 1}})
@@ -713,22 +558,12 @@ class Meme_Rus(commands.Cog):
                 author_res = profile_collection.find_one({"user_id": meme_res["author"]})
 
                 if author_res is None:
-                    create_user_profile(meme_res["author"])
+                    Create_user_profile(meme_res["author"])
                     author_res = profile_collection.find_one({"user_id": meme_res["author"]})
                 profile_collection.update_one(author_res, {"$set": {"memes_likes": author_res["memes_likes"] - 1}})
             print(
                 f"{datetime.datetime.now().strftime('%H:%M:%S')} | [USER] User {payload.member} "
                 f"removed like from post with {result['meme_id']} id")
-
-    @commands.command()
-    @commands.is_owner()
-    async def add_ids(self):
-        count = 1
-        results = accepted_memes_collection.find()
-        for result in results:
-            accepted_memes_collection.update_one(result, {"$set": {"meme_id": count}})
-            count += 1
-        print("indexes ended")
 
     @app_commands.command(description="Устанавливает автопостинг мемов раз в 30 минут")
     @app_commands.describe(channel="Канал, где нужно постить мемы (по умолчанию этот канал)")
@@ -802,7 +637,7 @@ class Meme_Rus(commands.Cog):
                 pass
 
     @app_commands.command()
-    @app_commands.check(check_if_it_is_me)
+    @app_commands.check(Check_if_it_is_me)
     @app_commands.guilds(892493256129118260)
     @app_commands.describe(meme_id="id мема")
     @app_commands.describe(content="Описание причины")
@@ -815,10 +650,11 @@ class Meme_Rus(commands.Cog):
                                   description=f"Нам пришлось удалить ваш мем c ID: **{meme_id}**",
                                   color=0xff0000)
             embed.add_field(name="Причина:", value=f'{content}')
+            embed.add_field(name="Модератор:", value=interaction.user.display_name)
 
             result_user = profile_collection.find_one({"user_id": meme_res["author"]})
             if result_user is None:
-                create_user_profile(user.id)
+                Create_user_profile(user.id)
                 result_user = profile_collection.find_one({"user_id": user.id})
             profile_collection.update_one(result_user,
                                           {"$set": {"memes_count": result_user["memes_count"] - 1,
@@ -842,12 +678,33 @@ class Meme_Rus(commands.Cog):
                                     description=f"Мем с ID **{meme_id}** не существует!",
                                     color=0xff0000))
 
+    @app_commands.command(description="Таблица лидеров")
+    async def leaderboard(self, interaction: discord.Interaction):
+        result = profile_collection.find().sort([("level", pymongo.DESCENDING), ("exp", pymongo.DESCENDING)]).limit(10)
+        embed = discord.Embed(title="Топ-10 лучших мемеров бота Meme Land", color=0x42aaff)
+        for num, rez in enumerate(result):
+            embed.add_field(
+                name=f"**{'🥇 ' if num == 0 else '🥈 ' if num == 1 else '🥉 ' if num == 2 else ''}{num + 1}. {self.bot.get_user(rez['user_id']).name if self.bot.get_user(rez['user_id']) else 'user id: ' + str(rez['user_id'])}**",
+                value=f"**Уровень:** {rez['level']}\n**Опыт: {rez['exp']}**", inline=False)
+        embed.set_thumbnail(url=interaction.guild.icon)
+        embed.set_footer(text=f"Запрошено {interaction.user.name} в {datetime.datetime.now().strftime('%H:%M')}",
+                         icon_url=interaction.user.avatar)
+        await interaction.response.send_message(embed=embed)
+
+    async def valid_meme_checker(self, url):
+        check = requests.head(url)
+        if check.status_code == 403 or check.status_code == 404:
+            await self.delete_meme_after_validation(url=url)
+            return False
+        else:
+            return True
+
     async def delete_meme_after_validation(self, url):
         meme_res = accepted_memes_collection.find_one({"url": url})
         if meme_res is not None:
             result_user = profile_collection.find_one({"user_id": meme_res["author"]})
             if result_user is None:
-                create_user_profile(meme_res["author"])
+                Create_user_profile(meme_res["author"])
                 result_user = profile_collection.find_one({"user_id": meme_res["author"]})
             profile_collection.update_one(result_user,
                                           {"$set": {"memes_count": result_user["memes_count"] - 1,
@@ -871,18 +728,15 @@ class Meme_Rus(commands.Cog):
                 except discord.errors.Forbidden:
                     pass
 
-    @app_commands.command(description="Таблица лидеров")
-    async def leaderboard(self, interaction: discord.Interaction):
-        result = profile_collection.find().sort([("level", pymongo.DESCENDING), ("exp", pymongo.DESCENDING)]).limit(10)
-        embed = discord.Embed(title="Топ-10 лучших мемеров бота Meme Land", color=0x42aaff)
-        for num, rez in enumerate(result):
-            embed.add_field(
-                name=f"**{'🥇 ' if num == 0 else '🥈 ' if num == 1 else '🥉 ' if num == 2 else ''}{num + 1}. {self.bot.get_user(rez['user_id']).name if self.bot.get_user(rez['user_id']) else 'user id: ' + str(rez['user_id'])}**",
-                value=f"**Уровень:** {rez['level']}\n**Опыт: {rez['exp']}**", inline=False)
-        embed.set_thumbnail(url=interaction.guild.icon)
-        embed.set_footer(text=f"Запрошено {interaction.user.name} в {datetime.datetime.now().strftime('%H:%M')}",
-                         icon_url=interaction.user.avatar)
-        await interaction.response.send_message(embed=embed)
+    @app_commands.command()
+    @app_commands.check(Check_if_it_is_me)
+    @app_commands.guilds(892493256129118260)
+    async def delete_all_nonValidate_memes(self, interaction: discord.Interaction):
+        memes = accepted_memes_collection.find()
+        for meme in memes:
+            await self.valid_meme_checker(meme["url"])
+
+
 
 
 async def setup(bot):
