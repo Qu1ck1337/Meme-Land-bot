@@ -10,6 +10,8 @@ intents = discord.Intents(guilds=True, members=True, emojis=True, messages=True,
 bot = commands.Bot(command_prefix=settings['prefix'], help_command=None, intents=intents,
                    application_id=release_settings["application_id"] if settings["isBetaVersion"] is False else
                    beta_settings["application_id"])
+status_id = 0
+
 
 @bot.event
 async def on_ready():
@@ -17,12 +19,10 @@ async def on_ready():
     await bot.tree.sync(guild=bot.get_guild(766386682047365190))
     await bot.tree.sync()
     update_status.start()
-    print(await bot.tree.fetch_commands())
     print(f'{datetime.datetime.now().strftime("%H:%M:%S")} | [INFO] Ready!')
 
 
-status_id = 0
-@tasks.loop(minutes=1)
+@tasks.loop(seconds=2)
 async def update_status():
     global status_id
     if status_id == 0:
@@ -106,23 +106,6 @@ async def send_info_to_all_servers(ctx):
         await ctx.reply("Done!")
 
 
-'''@bot.command()
-async def dele(ctx):
-    print(bot.remove_command("help"))
-
-
-@bot.command()
-async def fetc(ctx):
-    print(await bot.tree.fetch_commands())
-    print(bot.tree.get_command("help"))
-
-@bot.command()
-async def sync_bot(ctx):
-    print("sync commands")
-    await bot.tree.sync(guild=ctx.guild)
-    await bot.tree.sync()'''
-
-
 async def main():
     async with bot:
         await load_extensions()
@@ -137,5 +120,6 @@ async def load_extensions():
         if filename.endswith(".py"):
             # cut off the .py from the file name
             await bot.load_extension(f"cogs.{filename[:-3]}")
+
 
 asyncio.run(main())
