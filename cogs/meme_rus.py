@@ -731,7 +731,7 @@ class Meme_Rus(commands.Cog):
     @app_commands.command()
     @app_commands.check(Check_if_it_is_me)
     @app_commands.guilds(892493256129118260)
-    async def delete_all_nonValidate_memes(self, interaction: discord.Interaction):
+    async def delete_all_non_validate_memes(self, interaction: discord.Interaction):
         memes = accepted_memes_collection.find()
         for meme in memes:
             await self.valid_meme_checker(meme["url"])
