@@ -271,6 +271,14 @@ def Create_meme_embed_message(bot, result, title_text=None):
             return embed
 
 
+def Loading_Embed():
+    embed = discord.Embed(title="Загружаюсь...",
+                         description=f"Ищу для вас мемчик <a:loading:971033648956579840>",
+                         color=0x42aaff)
+    embed.set_footer(text=f"🔥 Интересный факт: {random.choice(meme_rus_settings['loading_phrases'])}")
+    return embed
+
+
 class Meme_Rus(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -378,11 +386,7 @@ class Meme_Rus(commands.Cog):
                 color=economySettings["error_color"]))
             return
 
-        await interaction.response.send_message(
-            embed=discord.Embed(
-                title="Загружаюсь...",
-                description=f"Ищу для вас мемчик <a:loading:971033648956579840>",
-                color=0x42aaff))
+        await interaction.response.send_message(embed=Loading_Embed())
         #try:
         random_record = None
         if meme_id is None:
@@ -431,7 +435,6 @@ class Meme_Rus(commands.Cog):
             #await interaction.edit_original_message(content="Произошла ошибка во время выполнения команды, обратитесь к"
             #                                                " разработчику - https://discord.gg/VB3CgP9XTW", embed=None)
 
-
     @app_commands.command(name="last_meme", description="Посмотреть последний одобренный мем")
     async def last_meme(self, interaction: discord.Interaction):
         if interaction.guild.id == settings["guild"] and \
@@ -443,22 +446,20 @@ class Meme_Rus(commands.Cog):
                 color=economySettings["error_color"]))
             return
 
-        await interaction.response.send_message(
-            embed=discord.Embed(title="Загружаюсь...",
-                                description=f"Ищу для вас мемчик <a:loading:971033648956579840>",
-                                color=0x42aaff))
+        await interaction.response.send_message(embed=Loading_Embed())
 
-        last_meme = accepted_memes_collection.find().sort('meme_id', -1).limit(1)
-        embed = Create_meme_embed_message(self.bot, last_meme, "Самый свежий мемчик для тебя! 🍞")
-        await interaction.edit_original_message(embed=embed, view=LikeButton(interaction=interaction,
-                                                                             collection_name=accepted_memes_collection,
-                                                                             meme_id=last_meme["meme_id"]))
+        last_meme_result = accepted_memes_collection.find().sort('meme_id', -1).limit(1)
+        for last_meme in last_meme_result:
+            embed = Create_meme_embed_message(self.bot, last_meme, "Самый свежий мемчик для тебя! 🍞")
+            await interaction.edit_original_message(embed=embed, view=LikeButton(interaction=interaction,
+                                                                                 collection_name=accepted_memes_collection,
+                                                                                 meme_id=last_meme["meme_id"]))
 
-        user_res = profile_collection.find_one({"user_id": interaction.user.id})
-        if user_res is None:
-            Create_user_profile(interaction.user.id)
             user_res = profile_collection.find_one({"user_id": interaction.user.id})
-        await Add_user_exp(interaction, user_res, random.randint(1, 5))
+            if user_res is None:
+                Create_user_profile(interaction.user.id)
+                user_res = profile_collection.find_one({"user_id": interaction.user.id})
+            await Add_user_exp(interaction, user_res, random.randint(1, 5))
 
         print(
             f"{datetime.datetime.now().strftime('%H:%M:%S')} | [USER] User {interaction.user} used <last_meme> command")
@@ -474,10 +475,7 @@ class Meme_Rus(commands.Cog):
                 color=economySettings["error_color"]))
             return
 
-        await interaction.response.send_message(
-            embed=discord.Embed(title="Загружаюсь...",
-                                description=f"Ищу для вас мемчик <a:loading:971033648956579840>",
-                                color=0x42aaff))
+        await interaction.response.send_message(embed=Loading_Embed())
 
         last_meme = accepted_memes_collection.find().sort('likes', -1).limit(1)
         for result in last_meme:
@@ -516,7 +514,6 @@ class Meme_Rus(commands.Cog):
                 if author_res is None:
                     Create_user_profile(meme_res["author"])
                     author_res = profile_collection.find_one({"user_id": meme_res["author"]})
-                print(author_res)
                 profile_collection.update_one(author_res, {"$set": {"memes_likes": author_res["memes_likes"] + 1}})
 
                 print(
