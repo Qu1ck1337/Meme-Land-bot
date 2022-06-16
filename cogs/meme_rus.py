@@ -394,12 +394,15 @@ class Meme_Rus(commands.Cog):
                         search = False
                         random_record = res
         else:
+            embed_not_founded_meme = discord.Embed(title="Ошибка",
+                                                   description="Мема с таким ID не существует :(",
+                                                   color=0xff0000)
             if accepted_memes_collection.find_one({"meme_id": meme_id}) is None:
-                await interaction.edit_original_message(content="Мема с таким ID не существует :(")
+                await interaction.edit_original_message(embed=embed_not_founded_meme)
                 return
             random_record = accepted_memes_collection.find_one({"meme_id": meme_id})
             if not await self.valid_meme_checker(random_record["url"]):
-                await interaction.edit_original_message(content="Мема с таким ID не существует :(")
+                await interaction.edit_original_message(embed=embed_not_founded_meme)
                 return
 
         embed = Create_meme_embed_message(self.bot, random_record)
@@ -557,7 +560,7 @@ class Meme_Rus(commands.Cog):
                         await channel.send(embed=discord.Embed(title="Ваш мем был одобрен!",
                                                                description="Поздравляем, ваш мем был одобрен ^-^! "
                                                                            "Из-за политики безопасности дискорда мы не "
-                                                                           "гарантируем, что ваш мем сможет размещён "
+                                                                           "гарантируем, что ваш мем сможет пробыть "
                                                                            "у бота более **2х** недель.",
                                                                color=0x33FF66))
                         await channel.send(embed=embed)
