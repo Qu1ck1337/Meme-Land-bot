@@ -79,7 +79,7 @@ async def help(interaction: discord.Interaction):
     await interaction.response.send_message(embed=embed)
 
 
-@bot.tree.error
+#@bot.tree.error
 async def on_slash_command_error(interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
     print(error)
     if error == discord.app_commands.errors.MissingPermissions:

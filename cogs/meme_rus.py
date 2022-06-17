@@ -121,7 +121,8 @@ class RandomMemeButton(discord.ui.View):
                     if await self.valid_meme_checker(res["url"]):
                         search = False
                         random_record = res
-            meme_embed = Create_meme_embed_message(self.bot, random_record)
+
+            meme_embed = Create_meme_embed_message(self.bot, interaction_b, random_record)
 
             if self.likeButton is not None:
                 self.likeButton.label = "Лайкнуть мем"
@@ -213,9 +214,13 @@ def Create_user_profile(author_id):
         "exp": 0,
         "memes_count": meme_count,
         "memes_likes": likes,
-        "premium_status": False
+        "premium_status": False,
+        "meme_color": [66, 170, 255],
+        "show_nickname": False,
+        "show_tag": False,
+        "show_url": False,
+        "custom_url": ""
     })
-    print("Профиль пользователя создан")
 
 
 async def Add_user_exp(interaction: discord.Interaction, user_data, add_exp):
@@ -243,14 +248,42 @@ def Check_if_it_is_me(interaction: discord.Interaction) -> bool:
     return interaction.user.id == 443337837455212545
 
 
-def Create_meme_embed_message(bot, result, title_text=None):
+def Create_meme_embed_message(bot, interaction: discord.Interaction, result, title_text=None):
+    default_color = discord.Colour.from_rgb(r=66, g=170, b=255)
+    current_color = default_color
+    premium_user = False
+    premium_author = False
+
+    meme_author = profile_collection.find_one({"user_id": result["author"]})
+    if meme_author is not None and meme_author["premium_status"]:
+        premium_author = True
+        if meme_author["meme_color"] is not None:
+            color_user = meme_author["meme_color"]
+            current_color = discord.Colour.from_rgb(color_user[0], color_user[1], color_user[2])
+
+    user_data = profile_collection.find_one({"user_id": interaction.user.id})
+    if user_data is not None and user_data["premium_status"]:
+        premium_user = True
+
     try:
         embed = discord.Embed(
             title=f'{random.choice(meme_rus_settings["get_meme_phrases"]) if title_text is None else title_text}',
-            description=result["description"], color=0x42aaff)
+            description=result["description"], colour=current_color, url=f'{meme_author["custom_url"] if premium_author and meme_author["show_url"] else ""}')
         embed.add_field(name="Лайки:", value=f'{result["likes"]} 👍')
         embed.add_field(name="ID мема:", value=f'**{result["meme_id"]}**')
         embed.set_image(url=result["url"])
+
+        if premium_author:
+            if meme_author["show_nickname"]:
+                if meme_author["show_tag"]:
+                    embed.add_field(name="Автор:", value=f"**{bot.get_user(meme_author['user_id']) if bot.get_user(meme_author['user_id']) else 'user id: ' + str(meme_author['user_id'])}**")
+                else:
+                    embed.add_field(name="Автор:",
+                                    value=f"**{bot.get_user(meme_author['user_id']).display_name if bot.get_user(meme_author['user_id']) else 'user id: ' + str(meme_author['user_id'])}**")
+
+        if premium_user:
+            embed.set_footer(text=f'Запрошено в {datetime.datetime.now().strftime("%H:%M:%S")}')
+            return embed
         embed.set_footer(text=f"Сервер поддержки: "
                               f"\nhttps://discord.gg/VB3CgP9XTW"
                               f"\n{random.choice(meme_rus_settings['advise_phrases'])}",
@@ -260,10 +293,24 @@ def Create_meme_embed_message(bot, result, title_text=None):
         for res in result:
             embed = discord.Embed(
                 title=f'{random.choice(meme_rus_settings["get_meme_phrases"]) if title_text is None else title_text}',
-                description=res["description"], color=0x42aaff)
+                description=res["description"], colour=current_color, url=f'{user_data["custom_url"] if premium_author and user_data["show_url"] else None}')
             embed.add_field(name="Лайки:", value=f'{res["likes"]} 👍')
             embed.add_field(name="ID мема:", value=f'**{res["meme_id"]}**')
             embed.set_image(url=res["url"])
+
+            if premium_author:
+                if meme_author["show_nickname"]:
+                    if meme_author["show_tag"]:
+                        embed.add_field(name="Автор:",
+                                        value=f"**{bot.get_user(meme_author['user_id']) if bot.get_user(meme_author['user_id']) else 'user id: ' + str(meme_author['user_id'])}**")
+                    else:
+                        embed.add_field(name="Автор:",
+                                        value=f"**{bot.get_user(meme_author['user_id']).display_name if bot.get_user(meme_author['user_id']) else 'user id: ' + str(meme_author['user_id'])}**")
+                    embed.set_footer(text=f'Запрошено в {datetime.datetime.now().strftime("%H:%M:%S")}')
+
+            if premium_user:
+                embed.set_footer(text=f'Запрошено в {datetime.datetime.now().strftime("%H:%M:%S")}')
+                return embed
             embed.set_footer(text=f"Сервер поддержки: "
                                   f"\nhttps://discord.gg/VB3CgP9XTW"
                                   f"\n{random.choice(meme_rus_settings['advise_phrases'])}",
@@ -409,7 +456,7 @@ class Meme_Rus(commands.Cog):
                 await interaction.edit_original_message(embed=embed_not_founded_meme)
                 return
 
-        embed = Create_meme_embed_message(self.bot, random_record)
+        embed = Create_meme_embed_message(self.bot, interaction, random_record)
 
         if meme_id is None:
             await interaction.edit_original_message(embed=embed,
@@ -450,7 +497,7 @@ class Meme_Rus(commands.Cog):
 
         last_meme_result = accepted_memes_collection.find().sort('meme_id', -1).limit(1)
         for last_meme in last_meme_result:
-            embed = Create_meme_embed_message(self.bot, last_meme, "Самый свежий мемчик для тебя! 🍞")
+            embed = Create_meme_embed_message(self.bot, interaction, last_meme, "Самый свежий мемчик для тебя! 🍞")
             await interaction.edit_original_message(embed=embed, view=LikeButton(interaction=interaction,
                                                                                  collection_name=accepted_memes_collection,
                                                                                  meme_id=last_meme["meme_id"]))
@@ -479,7 +526,7 @@ class Meme_Rus(commands.Cog):
 
         last_meme = accepted_memes_collection.find().sort('likes', -1).limit(1)
         for result in last_meme:
-            embed = Create_meme_embed_message(self.bot, result, "Самый лучший мем! 🏆")
+            embed = Create_meme_embed_message(self.bot, interaction, result, "Самый лучший мем! 🏆")
             await interaction.edit_original_message(embed=embed,
                                                     view=LikeButton(interaction=interaction,
                                                                     collection_name=accepted_memes_collection,
@@ -813,6 +860,102 @@ class Meme_Rus(commands.Cog):
     async def backup(self, interaction: discord.Interaction):
         memes = accepted_memes_collection.find()
         db_memes["backup_accepted_memes"].insert_many(memes)
+
+    #todo 2x опыт надо добавить
+    #todo убрать guilds в будущем
+    @app_commands.guilds(892493256129118260)
+    @app_commands.command()
+    async def premium_settings(self, interaction: discord.Interaction):
+        user = profile_collection.find_one({"user_id": interaction.user.id})
+        if user is not None and user["premium_status"]:
+            r = user['meme_color'][0]
+            g = user['meme_color'][1]
+            b = user['meme_color'][2]
+            embed = discord.Embed(title="⭐ Настройки вашего премиум профиля ⭐",
+                                  description=f"\n🔸 [/meme_color] **Цвет у мемов:** `{r} {g} {b}`"
+                                              f"\n"
+                                              f"\n🔸 [/author_display] **Показывать никнейм:** `{user['show_nickname']}`"
+                                              f"\n🔸 [/author_display] **Показывать тег рядом с ником:** `{user['show_tag']}`"
+                                              f"\n"
+                                              f"\n🔸 [/set_url] **Ссылки в мемах:** `{user['show_url']}`"
+                                              f"\n🔸 [/set_url] **Текущая ссылка:** ```{user['custom_url']}```",
+                                  colour=discord.Colour.from_rgb(r=r, g=g, b=b))
+            embed.set_author(name=f"[meme+] {interaction.user.display_name}",
+                             icon_url=interaction.user.avatar)
+            embed.set_footer(text=f'🚀 Команда только для поддержавших бота')
+            await interaction.response.send_message(embed=embed)
+            return
+        await interaction.response.send_message(embed=discord.Embed(title="Ошибка",
+                                                                    description=f"Только пользователи с meme+ могут смотреть премиум настройки",
+                                                                    color=0xff0000))
+
+    @app_commands.guilds(892493256129118260)
+    @app_commands.command()
+    async def meme_color(self, interaction: discord.Interaction, red: int, green: int, blue: int):
+        red = red % 256
+        blue = blue % 256
+        green = green % 256
+        user = profile_collection.find_one({"user_id": interaction.user.id})
+        if user is not None and user["premium_status"]:
+            profile_collection.update_one(user, {"$set": {"meme_color": [red, green, blue]}})
+            embed = discord.Embed(title="Успешная смена цвета!",
+                                  description=f"Цвет ваших мемов сменён на цвет: "
+                                              f"`{red} {green} {blue}`",
+                                  color=discord.Colour.from_rgb(r=red,
+                                                                g=green,
+                                                                b=blue))
+            embed.set_author(name=f"[meme+] {interaction.user.display_name}",
+                             icon_url=interaction.user.avatar)
+            embed.set_footer(text=f'🚀 Команда только для поддержавших бота')
+            await interaction.response.send_message(embed=embed)
+            return
+        await interaction.response.send_message(embed=discord.Embed(title="Ошибка",
+                                                                    description=f"Только пользователи с meme+ могут установить цвет мемов",
+                                                                    color=0xff0000))
+
+    @app_commands.guilds(892493256129118260)
+    @app_commands.command()
+    async def author_display(self, interaction: discord.Interaction, show_nickname: bool, show_tag: bool):
+        user = profile_collection.find_one({"user_id": interaction.user.id})
+        if user is not None and user["premium_status"]:
+            profile_collection.update_one(user, {"$set": {"show_nickname": show_nickname, "show_tag": show_tag}})
+            embed = discord.Embed(title="Успешная настройка публичности!",
+                                  description=f"Вы сменили настройки публичности на:"
+                                              f"\n\n**Показ ника в мемах:** `{show_nickname}`"
+                                              f"\n**Вывод тега рядом с ником:** `{show_tag}`",
+                                  color=0x00ff00)
+            embed.set_author(name=f"[meme+] {interaction.user.display_name}",
+                             icon_url=interaction.user.avatar)
+            embed.set_footer(text=f'🚀 Команда только для поддержавших бота')
+            await interaction.response.send_message(embed=embed)
+            return
+        await interaction.response.send_message(embed=discord.Embed(title="Ошибка",
+                                                                    description=f"Только пользователи с meme+ могут настроить публичность",
+                                                                    color=0xff0000))
+
+    @app_commands.guilds(892493256129118260)
+    @app_commands.command()
+    async def set_url(self, interaction: discord.Interaction, show_url: bool, url: str):
+        user = profile_collection.find_one({"user_id": interaction.user.id})
+        if user is not None and user["premium_status"]:
+            if url[0:8] == "https://" or str(url[0:7]) == "http://":
+                profile_collection.update_one(user, {"$set": {"show_url": show_url, "custom_url": url}})
+                embed = discord.Embed(title="Настрока URL успешно установлена!",
+                                      description=f"**Отображение URL в мемах:** `{show_url}`"
+                                                  f"\n**Текущая ссылка:** ```{url}```",
+                                      color=0x00ff00)
+                embed.set_author(name=f"[meme+] {interaction.user.display_name}",
+                                 icon_url=interaction.user.avatar)
+                embed.set_footer(text=f'🚀 Команда только для поддержавших бота')
+            else:
+                embed = discord.Embed(title="Ошибка",
+                                      description=f"Ссылка всегда должна начинаться с `https://` или `http://`",
+                                      color=0xff0000)
+            await interaction.response.send_message(embed=embed)
+            return
+        await interaction.response.send_message(embed=discord.Embed(title="Ошибка",
+                                                                    description=f"Только пользователи с meme+ могут устанавливать ссылки",
+                                                                    color=0xff0000))
 
 
 async def setup(bot):

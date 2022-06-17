@@ -1,5 +1,5 @@
 settings = {
-    "isBetaVersion": False,
+    "isBetaVersion": True,
     "guild": 892493256129118260,
     "prefix": "ml/",
     "defaul_colour_of_embed": 0x42aaff,
