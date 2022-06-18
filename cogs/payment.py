@@ -28,7 +28,6 @@ PUBLIC_KEY = "48e7qUxn9T7RyYE1MVZswX1FRSbE6iyCj2gCRwwF3Dnh5XrasNTx3BGPiMsyXQFNKQ
 SECRET_KEY = "eyJ2ZXJzaW9uIjoiUDJQIiwiZGF0YSI6eyJwYXlpbl9tZXJjaGFudF9zaXRlX3VpZCI6IjZlOWljbC0wMCIsInVzZXJfaWQiOiI3OT" \
              "E1ODE1NzcwOSIsInNlY3JldCI6ImQ0NGM0MmY1MDQzMDQ1YjJmZjJjNGI0ZmI0YmEyZDdhOGZmNzRlM2NmY2IxNGIwNjRmZTcwNjQw" \
              "NDUyOGY2NjAifX0="
-BILL = None
 
 
 def Create_user_profile(author_id):
@@ -87,7 +86,7 @@ class Payment(commands.Cog):
             "custom_url": ""
             }})
 
-    @tasks.loop(seconds=10)
+    @tasks.loop(minutes=1)
     async def billsChecker(self):
         bills = NOT_APPROVED_BILLS_COLLECTION.find()
         for bill_result in bills:
@@ -118,7 +117,7 @@ class Payment(commands.Cog):
                                                                                                          f"\nДата окончания **meme+**: `{user['premium_status_end'].strftime('%d.%m.%Y')}`"
                                                                                                          f"\n"
                                                                                                          f"\n**Преимущества meme+**"
-                                                                                                         f"\n🔹 Роль спонсора на официальном сервере бота"
+                                                                                                         f"\n🔹 Роль спонсора на официальном сервере бота (ссылка в профиле бота)"
                                                                                                          f"\n└ Специальный чат для спонсоров"
                                                                                                          f"\n└ Приоритетная поддержка"
                                                                                                          f"\n"
@@ -168,11 +167,10 @@ class Payment(commands.Cog):
             except KeyError:
                 pass
 
-    @app_commands.guilds(892493256129118260)
     @app_commands.command(description="Узнать преимущества поддержки бота")
     async def plus_info(self, interaction: discord.Interaction):
         embed = discord.Embed(title="⭐ Преимущества meme+ ⭐",
-                              description=f"🔹 **Роль спонсора на официальном сервере бота**"
+                              description=f"🔹 **Роль спонсора на официальном сервере бота** (ссылка в профиле бота)"
                                           f"\n└ **Специальный чат для спонсоров**"
                                           f"\n└ **Приоритетная поддержка**"
                                           f"\n"
@@ -294,7 +292,6 @@ class Payment(commands.Cog):
                                                                         description=f"Пользователь под id **{user_id}** не найден",
                                                                         colour=discord.Colour.red()))
 
-    @app_commands.guilds(892493256129118260)
     @app_commands.command(description="[Только для поддеравших] Ваши meme+ настройки профиля")
     async def plus_settings(self, interaction: discord.Interaction):
         user = PROFILE_COLLECTION.find_one({"user_id": interaction.user.id})
@@ -305,7 +302,7 @@ class Payment(commands.Cog):
             embed = discord.Embed(title="⭐ Настройки вашего meme+ профиля ⭐",
                                   description=f"\n🚀 Ваша поддержка активна до: `{user['premium_status_end'].strftime('%d.%m.%Y')}`"
                                               f"\n"
-                                              f"\n🔸 [/meme_color] **Цвет у мемов:** `{r} {g} {b}`"
+                                              f"\n🔸 [/meme_color] **Цвет у мемов:** `{r} {g} {b}` (RGB)"
                                               f"\n"
                                               f"\n🔸 [/set_publicity] **Показывать никнейм:** `{user['show_nickname']}`"
                                               f"\n🔸 [/set_publicity] **Показывать тег рядом с ником:** `{user['show_tag']}`"
