@@ -273,6 +273,9 @@ def Create_meme_embed_message(bot, interaction: discord.Interaction, result, tit
                 else:
                     embed.add_field(name="Автор:",
                                     value=f"**{bot.get_user(meme_author['user_id']).display_name if bot.get_user(meme_author['user_id']) else 'user id: ' + str(meme_author['user_id'])}**")
+            if not premium_user:
+                embed.add_field(name="У этого автора есть meme+",
+                                value="🚀 Поддержать нас: `/meme_plus`")
 
         if premium_user:
             embed.set_footer(text=f'Запрошено в {datetime.datetime.now().strftime("%H:%M:%S")}')
@@ -300,6 +303,9 @@ def Create_meme_embed_message(bot, interaction: discord.Interaction, result, tit
                         embed.add_field(name="Автор:",
                                         value=f"**{bot.get_user(meme_author['user_id']).display_name if bot.get_user(meme_author['user_id']) else 'user id: ' + str(meme_author['user_id'])}**")
                     embed.set_footer(text=f'Запрошено в {datetime.datetime.now().strftime("%H:%M:%S")}')
+                if not premium_user:
+                    embed.add_field(name="У этого автора есть meme+",
+                                    value="🚀 Поддержать нас: `/meme_plus`")
 
             if premium_user:
                 embed.set_footer(text=f'Запрошено в {datetime.datetime.now().strftime("%H:%M:%S")}')
@@ -356,7 +362,10 @@ class Meme_Rus(commands.Cog):
         embed.add_field(name="Лайков за всё время:", value=f'{result["memes_likes"]} 👍', inline=True)
 
         if result["premium_status"]:
-            embed.add_field(name="Поддержка бота до:", value=f'`🚀 {result["premium_status_end"].strftime("%d.%m.%Y")}`', inline=True)
+            try:
+                embed.add_field(name="Поддержка бота до:", value=f'`🚀 {result["premium_status_end"].strftime("%d.%m.%Y")}`', inline=True)
+            except KeyError:
+                embed.add_field(name="Поддержка бота до:", value=f'`🚀 Навсегда`', inline=True)
 
         embed.set_thumbnail(url=interaction.user.avatar)
 

@@ -136,7 +136,7 @@ class Payment(commands.Cog):
     @app_commands.command(description="Поддержать бота")
     async def meme_plus(self, interaction: discord.Interaction):
         await interaction.user.send(embed=discord.Embed(title="Хотите поддержать бота?",
-                                                        description="\nПодробности про meme+ `/premium_info`"
+                                                        description="\nПодробности про meme+: `/premium_info`"
                                                                     "\n"
                                                                     "\nВыберите способ оплаты в окне выбора ниже 😀",
                                                         colour=discord.Colour.gold()),
@@ -225,8 +225,12 @@ class Payment(commands.Cog):
                                                                 f"\nОзнакомиться со всеми плюшками meme+: `/plus_info`",
                                                     colour=discord.Colour.gold()))
             else:
-                PROFILE_COLLECTION.update_one(result,
-                                              {"$set": {"premium_status": True}})
+                try:
+                    PROFILE_COLLECTION.update_one(result,
+                                                  {"$set": {"premium_status": True}, "$unset": {"premium_status_end": result["premium_status_end"]}})
+                except KeyError:
+                    PROFILE_COLLECTION.update_one(result,
+                                                  {"$set": {"premium_status": True}})
                 await interaction.response.send_message(embed=discord.Embed(title="Пользователю был добавлен meme+",
                                                                             description=f"Пользователь **{user.name}** получил meme+"
                                                                                         f"\nДата окончания поддержки: `навсегда`",
