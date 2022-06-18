@@ -10,7 +10,7 @@ intents = discord.Intents(guilds=True, members=True, emojis=True, messages=True,
 bot = commands.Bot(command_prefix=settings['prefix'], help_command=None, intents=intents,
                    application_id=release_settings["application_id"] if settings["isBetaVersion"] is False else
                    beta_settings["application_id"])
-status_id = 5
+status_id = 0
 
 
 @bot.event
@@ -27,11 +27,11 @@ async def update_status():
     global status_id
     if status_id == 0:
         await bot.change_presence(
-            activity=discord.Activity(type=discord.ActivityType.watching, name=f"/help | {len(bot.guilds)} серверов!"))
+            activity=discord.Activity(type=discord.ActivityType.playing, name=f"/help | {len(bot.guilds)} серверов!"))
         status_id += 1
     elif status_id == 1:
         await bot.change_presence(
-            activity=discord.Activity(type=discord.ActivityType.watching, name=f"/help | {len(bot.users)} пользователей!"))
+            activity=discord.Activity(type=discord.ActivityType.playing, name=f"/help | {len(bot.users)} пользователей!"))
         status_id = 0
 
 
@@ -53,9 +53,17 @@ async def help(interaction: discord.Interaction):
                                                                            f"\n/last_meme - показывает последний залитый мем"
                                                                            f"\n/top_meme - показывает самый лучший мем бота"
                                                                            f"\n/profile - показывает ваш мемный профиль"
-                                                                           f"\n/leaderboard - показывает таблицу лидеров```"
+                                                                           f"\n/leaderboard - показывает таблицу лидеров"
+                                                                           f"\n/plus_info - узнать преимущества поддержки бота"
+                                                                           f"\n/meme_plus - поддержать бота```"
                                                                            f"\n"
-                                                                           f"\n**Для администраторов** (`Администратор` / `Управлять сервером` права)"
+                                                                           f"\n**Для meme+ пользователей**"
+                                                                           f"\n```/plus_settings - ваши meme+ настройки профиля"
+                                                                           f"\n/meme_color <red> <green> <blue> - настроить цвет ваших мемов, параметр RGB"
+                                                                           f"\n/set_publicity <показать ник> <показать тег> - настроить публичность"
+                                                                           f"\n/set_url <показать URL> <URL> - встроить URL ссылку в мем```"
+                                                                           f"\n"
+                                                                           f"\n**Для администраторов серверов** (`Администратор` / `Управлять сервером` права)"
                                                                            f"\n```/auto_meme - устанавливает канал, где была использована команда, для автопостинга мема раз в 30 минут"
                                                                            f"\n/auto_meme <#канал> - устанавливает канал, который был задан в параметре, для автопостинга мема раз в 30 минут"
                                                                            f"\n/stop_auto_meme - приостанавливает автопостинг мемов на данном сервере```",
@@ -68,9 +76,17 @@ async def help(interaction: discord.Interaction):
                                                                            f"\n/last_meme - показывает последний залитый мем"
                                                                            f"\n/top_meme - показывает самый лучший мем бота"
                                                                            f"\n/profile - показывает ваш мемный профиль"
-                                                                           f"\n/leaderboard - показывает таблицу лидеров```"
+                                                                           f"\n/leaderboard - показывает таблицу лидеров"
+                                                                           f"\n/plus_info - узнать преимущества поддержки бота"
+                                                                           f"\n/meme_plus - поддержать бота```"
                                                                            f"\n"
-                                                                           f"\n**Для администраторов** (`Администратор` / `Управлять сервером` права)"
+                                                                           f"\n**Для meme+ пользователей**"
+                                                                           f"\n```/plus_settings - ваши meme+ настройки профиля"
+                                                                           f"\n/meme_color <red> <green> <blue> - настроить цвет ваших мемов, параметр RGB"
+                                                                           f"\n/set_publicity <показать ник> <показать тег> - настроить публичность"
+                                                                           f"\n/set_url <показать URL> <URL> - встроить URL ссылку в мем```"
+                                                                           f"\n"
+                                                                           f"\n**Для администраторов серверов** (`Администратор` / `Управлять сервером` права)"
                                                                            f"\n```/auto_meme - устанавливает канал, где была использована команда, для автопостинга мема раз в 30 минут"
                                                                            f"\n/auto_meme <#канал> - устанавливает канал, который был задан в параметре, для автопостинга мема раз в 30 минут"
                                                                            f"\n/stop_auto_meme - приостанавливает автопостинг мемов на данном сервере```",

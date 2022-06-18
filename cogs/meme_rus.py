@@ -904,7 +904,7 @@ class Meme_Rus(commands.Cog):
                                                                     description=f"Только пользователи с meme+ могут настроить публичность",
                                                                     color=0xff0000))
 
-    @app_commands.command(description="[Только для поддеравших] Встроить URL ссылку в мем")
+    @app_commands.command(description="[Только для поддеравших] Встроить URL ссылку в ваши мемы")
     @app_commands.describe(show_url="Встраивать ссылку в ваши мемы")
     @app_commands.describe(url="Ссылка")
     async def set_url(self, interaction: discord.Interaction, show_url: bool, url: str):
