@@ -857,7 +857,7 @@ class Meme_Rus(commands.Cog):
         memes = accepted_memes_collection.find()
         db_memes["backup_accepted_memes"].insert_many(memes)
 
-    @app_commands.command(description="[Только для поддеравших] Настроить цвет ваших мемов, параметр RGB")
+    @app_commands.command(description="[Только для поддержавших] Настроить цвет ваших мемов, параметр RGB")
     @app_commands.describe(red="Параметр красного")
     @app_commands.describe(green="Параметр зелёного")
     @app_commands.describe(blue="Параметр синего")
@@ -883,7 +883,7 @@ class Meme_Rus(commands.Cog):
                                                                     description=f"Только пользователи с meme+ могут установить цвет мемов",
                                                                     color=0xff0000))
 
-    @app_commands.command(description="[Только для поддеравших] Настроить публичность")
+    @app_commands.command(description="[Только для поддержавших] Настроить публичность")
     @app_commands.describe(show_nickname="Показывать ник")
     @app_commands.describe(show_tag="Показывать тег рядом с ником")
     async def set_publicity(self, interaction: discord.Interaction, show_nickname: bool, show_tag: bool):
@@ -904,7 +904,7 @@ class Meme_Rus(commands.Cog):
                                                                     description=f"Только пользователи с meme+ могут настроить публичность",
                                                                     color=0xff0000))
 
-    @app_commands.command(description="[Только для поддеравших] Встроить URL ссылку в ваши мемы")
+    @app_commands.command(description="[Только для поддержавших] Встроить URL ссылку в ваши мемы")
     @app_commands.describe(show_url="Встраивать ссылку в ваши мемы")
     @app_commands.describe(url="Ссылка")
     async def set_url(self, interaction: discord.Interaction, show_url: bool, url: str):

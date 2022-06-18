@@ -295,7 +295,7 @@ class Payment(commands.Cog):
                                                                         description=f"Пользователь под id **{user_id}** не найден",
                                                                         colour=discord.Colour.red()))
 
-    @app_commands.command(description="[Только для поддеравших] Ваши meme+ настройки профиля")
+    @app_commands.command(description="[Только для поддержавших] Ваши meme+ настройки профиля")
     async def plus_settings(self, interaction: discord.Interaction):
         user = PROFILE_COLLECTION.find_one({"user_id": interaction.user.id})
         if user is not None and user["premium_status"]:
