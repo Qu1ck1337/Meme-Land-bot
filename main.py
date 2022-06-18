@@ -10,7 +10,7 @@ intents = discord.Intents(guilds=True, members=True, emojis=True, messages=True,
 bot = commands.Bot(command_prefix=settings['prefix'], help_command=None, intents=intents,
                    application_id=release_settings["application_id"] if settings["isBetaVersion"] is False else
                    beta_settings["application_id"])
-status_id = 0
+status_id = 5
 
 
 @bot.event
