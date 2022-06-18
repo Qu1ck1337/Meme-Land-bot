@@ -85,6 +85,7 @@ class Payment(commands.Cog):
             "show_url": False,
             "custom_url": ""
             }})
+        print("done!")
 
     @tasks.loop(minutes=1)
     async def billsChecker(self):
