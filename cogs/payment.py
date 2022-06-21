@@ -306,19 +306,34 @@ class Payment(commands.Cog):
             r = user['meme_color'][0]
             g = user['meme_color'][1]
             b = user['meme_color'][2]
-            embed = discord.Embed(title="⭐ Настройки вашего meme+ профиля ⭐",
-                                  description=f"\n🚀 Ваша поддержка активна до: `{user['premium_status_end'].strftime('%d.%m.%Y')}`"
-                                              f"\n"
-                                              f"\n🔸 [/meme_color] **Цвет у мемов:** `{r} {g} {b}` (RGB)"
-                                              f"\n"
-                                              f"\n🔸 [/set_publicity] **Показывать никнейм:** `{user['show_nickname']}`"
-                                              f"\n🔸 [/set_publicity] **Показывать тег рядом с ником:** `{user['show_tag']}`"
-                                              f"\n"
-                                              f"\n🔸 [/set_url] **Ссылки в мемах:** `{user['show_url']}`"
-                                              f"\n🔸 [/set_url] **Текущая ссылка:** ```{user['custom_url']}```"
-                                              f"\n"
-                                              f"\n[скоро] **Интервал времени между авто-мемами**",
-                                  colour=discord.Colour.from_rgb(r=r, g=g, b=b))
+            try:
+                embed = discord.Embed(title="⭐ Настройки вашего meme+ профиля ⭐",
+                                      description=f"\n🚀 Ваша поддержка активна до: `{user['premium_status_end'].strftime('%d.%m.%Y')}`"
+                                                  f"\n"
+                                                  f"\n🔸 [/meme_color] **Цвет у мемов:** `{r} {g} {b}` (RGB)"
+                                                  f"\n"
+                                                  f"\n🔸 [/set_publicity] **Показывать никнейм:** `{user['show_nickname']}`"
+                                                  f"\n🔸 [/set_publicity] **Показывать тег рядом с ником:** `{user['show_tag']}`"
+                                                  f"\n"
+                                                  f"\n🔸 [/set_url] **Ссылки в мемах:** `{user['show_url']}`"
+                                                  f"\n🔸 [/set_url] **Текущая ссылка:** ```{user['custom_url']}```"
+                                                  f"\n"
+                                                  f"\n[скоро] **Интервал времени между авто-мемами**",
+                                      colour=discord.Colour.from_rgb(r=r, g=g, b=b))
+            except KeyError:
+                embed = discord.Embed(title="⭐ Настройки вашего meme+ профиля ⭐",
+                                      description=f"\n🚀 Ваша поддержка активна: `навсегда`"
+                                                  f"\n"
+                                                  f"\n🔸 [/meme_color] **Цвет у мемов:** `{r} {g} {b}` (RGB)"
+                                                  f"\n"
+                                                  f"\n🔸 [/set_publicity] **Показывать никнейм:** `{user['show_nickname']}`"
+                                                  f"\n🔸 [/set_publicity] **Показывать тег рядом с ником:** `{user['show_tag']}`"
+                                                  f"\n"
+                                                  f"\n🔸 [/set_url] **Ссылки в мемах:** `{user['show_url']}`"
+                                                  f"\n🔸 [/set_url] **Текущая ссылка:** ```{user['custom_url']}```"
+                                                  f"\n"
+                                                  f"\n[скоро] **Интервал времени между авто-мемами**",
+                                      colour=discord.Colour.from_rgb(r=r, g=g, b=b))
             embed.set_author(name=f"[meme+] {interaction.user.display_name}",
                              icon_url=interaction.user.avatar)
             embed.set_footer(text=f'🚀 Команда только для поддержавших бота')

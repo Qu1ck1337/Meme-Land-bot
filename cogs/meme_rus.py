@@ -317,6 +317,17 @@ def Create_meme_embed_message(bot, interaction: discord.Interaction, result, tit
             return embed
 
 
+def Adverts():
+    if meme_rus_settings["enable_ads"]:
+        embed = discord.Embed(title="Розыгрыш от создателя бота! 🥳",
+                             description="⚡ На нашем официальном сервере в честь **1000** участников "
+                                         "проходит розыгрыш в общей сумме на `1000 рублей`, включая 🚀 **meme+**! Всего **3** победителя)",
+                             colour=discord.Colour.gold())
+        embed.add_field(name="\nСкорее участвуй:", value="👉 https://discord.gg/D84dsWug9d",)
+        return embed
+    return None
+
+
 def Loading_Embed():
     embed = discord.Embed(title="Загружаюсь...",
                          description=f"Ищу для вас мемчик <a:loading:971033648956579840>",
@@ -462,6 +473,10 @@ class Meme_Rus(commands.Cog):
                 return
 
         embed = Create_meme_embed_message(self.bot, interaction, random_record)
+        ads = Adverts()
+        if ads is not None:
+            adverb = await interaction.channel.send(embed=ads)
+            await adverb.delete(delay=60)
 
         if meme_id is None:
             await interaction.edit_original_message(embed=embed,
@@ -503,6 +518,10 @@ class Meme_Rus(commands.Cog):
         last_meme_result = accepted_memes_collection.find().sort('meme_id', -1).limit(1)
         for last_meme in last_meme_result:
             embed = Create_meme_embed_message(self.bot, interaction, last_meme, "Самый свежий мемчик для тебя! 🍞")
+            ads = Adverts()
+            if ads is not None:
+                adverb = await interaction.channel.send(embed=ads)
+                await adverb.delete(delay=60)
             await interaction.edit_original_message(embed=embed, view=LikeButton(interaction=interaction,
                                                                                  collection_name=accepted_memes_collection,
                                                                                  meme_id=last_meme["meme_id"]))
@@ -532,6 +551,10 @@ class Meme_Rus(commands.Cog):
         last_meme = accepted_memes_collection.find().sort('likes', -1).limit(1)
         for result in last_meme:
             embed = Create_meme_embed_message(self.bot, interaction, result, "Самый лучший мем! 🏆")
+            ads = Adverts()
+            if ads is not None:
+                adverb = await interaction.channel.send(embed=ads)
+                await adverb.delete(delay=60)
             await interaction.edit_original_message(embed=embed,
                                                     view=LikeButton(interaction=interaction,
                                                                     collection_name=accepted_memes_collection,
