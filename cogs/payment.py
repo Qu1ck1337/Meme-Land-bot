@@ -210,7 +210,7 @@ class Payment(commands.Cog):
                 result = PROFILE_COLLECTION.find_one({"user_id": user_id})
             if is_permanent is False:
                 if result["premium_status"]:
-                    end_time = user['premium_status_end'] + datetime.timedelta(days=time_in_days)
+                    end_time = result['premium_status_end'] + datetime.timedelta(days=time_in_days)
                     PROFILE_COLLECTION.update_one(result, {"$set": {"premium_status": True, "premium_status_end": end_time}})
                 else:
                     end_time = datetime.datetime.now() + datetime.timedelta(days=time_in_days)
