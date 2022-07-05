@@ -5,8 +5,8 @@ import discord
 from discord.ext import commands, tasks
 from config import settings, beta_settings, release_settings
 
-intents = discord.Intents(guilds=True, members=True, emojis=True, messages=True, reactions=True, typing=True,
-                          message_content=True)
+intents = discord.Intents(guilds=True, members=True, emojis=True, messages=True, reactions=True, typing=True)
+                          #message_content=True)
 
 bot = commands.Bot(command_prefix=settings['prefix'], help_command=None, intents=intents,
                    application_id=release_settings["application_id"] if settings["isBetaVersion"] is False else
