@@ -3,6 +3,11 @@ import datetime
 import os
 import discord
 from discord.ext import commands, tasks
+
+from classes import StaticParameters
+from classes.DataBase import get_all_memes_in_moderation
+from classes.User import User
+from cogs.meme_moderation import ModerationButtons
 from config import settings, beta_settings, release_settings
 
 intents = discord.Intents(guilds=True, members=True, emojis=True, messages=True, reactions=True, typing=True)
@@ -16,24 +21,35 @@ status_id = 0
 
 @bot.event
 async def on_ready():
+    StaticParameters.meme_land_guild = bot.get_guild(892493256129118260)
     await bot.tree.sync(guild=bot.get_guild(892493256129118260))
     await bot.tree.sync(guild=bot.get_guild(766386682047365190))
     await bot.tree.sync()
-    update_status.start()
+    #update_status.start()
     print(f'{datetime.datetime.now().strftime("%H:%M:%S")} | [INFO] Ready!')
+    # user = User(443337837455212545)
+    # await user.update_local_data()
+    # await user.push_data()
+    await bot.change_presence(
+        activity=discord.Activity(type=discord.ActivityType.playing, name=f"Testing Version 3 Alpha"))
+
+@bot.event
+async def setup_hook():
+    for meme in get_all_memes_in_moderation():
+        bot.add_view(ModerationButtons(), message_id=meme["msg_id"])
 
 
-@tasks.loop(minutes=1)
-async def update_status():
-    global status_id
-    if status_id == 0:
-        await bot.change_presence(
-            activity=discord.Activity(type=discord.ActivityType.playing, name=f"/help | {len(bot.guilds)} серверов!"))
-        status_id += 1
-    elif status_id == 1:
-        await bot.change_presence(
-            activity=discord.Activity(type=discord.ActivityType.playing, name=f"/help | {len(bot.users)} пользователей!"))
-        status_id = 0
+# @tasks.loop(minutes=1)
+# async def update_status():
+    # global status_id
+    # if status_id == 0:
+    #     await bot.change_presence(
+    #         activity=discord.Activity(type=discord.ActivityType.playing, name=f"/help | {len(bot.guilds)} серверов!"))
+    #     status_id += 1
+    # elif status_id == 1:
+    #     await bot.change_presence(
+    #         activity=discord.Activity(type=discord.ActivityType.playing, name=f"/help | {len(bot.users)} пользователей!"))
+    #     status_id = 0
 
 
 @bot.tree.command(name="help", description="Помощь по командам бота")
@@ -106,7 +122,9 @@ async def on_slash_command_error(interaction: discord.Interaction, error: discor
         await interaction.response.send_message(f"Произошла ошибка во время выполнения команды, возможно у вас недостаточно прав, чтобы использовать команду, либо произошла ошибка в самом боте.")
 
 
+
 async def main():
+    print("Starting Bot")
     async with bot:
         await load_extensions()
         if settings["isBetaVersion"] is not True:
@@ -116,10 +134,17 @@ async def main():
 
 
 async def load_extensions():
+    print("Loading extensions from Cogs \n---------------------")
     for filename in os.listdir("./cogs"):
         if filename.endswith(".py"):
             # cut off the .py from the file name
             await bot.load_extension(f"cogs.{filename[:-3]}")
+
+    # print("Loading extensions from Classes \n---------------------")
+    # for filename in os.listdir("./classes"):
+    #     if filename.endswith(".py"):
+    #         # cut off the .py from the file name
+    #         await bot.load_extension(f"classes.{filename[:-3]}")
 
 
 asyncio.run(main())

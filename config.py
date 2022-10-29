@@ -1,5 +1,5 @@
 settings = {
-    "isBetaVersion": False,
+    "isBetaVersion": True,
     "guild": 892493256129118260,
     "prefix": "ml/",
     "defaul_colour_of_embed": 0x42aaff,
@@ -101,9 +101,4 @@ meme_rus_settings = {
                         "а где видео-мемы?",
                         "с meme+ вы получите возможность сменить цвет у ваших мемов, ставить URL ссылки в мемы, а также показывать свой ник!",],
     "enable_ads": False
-}
-
-profile_settings = {
-    "db_profile": "Users_Data",
-    "collection_profile": "Data"
 }

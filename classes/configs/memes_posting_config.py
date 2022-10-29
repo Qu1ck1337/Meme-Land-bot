@@ -1,0 +1,2 @@
+meme_moderation_channel_id = 953368175246966814
+#todo after_moderated_channel_id
