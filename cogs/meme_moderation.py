@@ -5,6 +5,7 @@ from discord.ext.commands import Cog
 
 from classes import StaticParameters
 from classes.DataBase import add_meme_in_moderation_collection
+from classes.configs import memes_posting_config
 
 
 class MemeModeration(commands.Cog):
@@ -13,7 +14,7 @@ class MemeModeration(commands.Cog):
 
     @Cog.listener("on_ready")
     async def on_ready(self):
-        StaticParameters.moderation_channel = self.bot.get_channel(953368175246966814)
+        StaticParameters.moderation_channel = self.bot.get_channel(memes_posting_config.meme_moderation_channel_id)
 
 
 async def process_and_send_meme_to_moderation_channel(embed: discord.Embed, interaction: discord.Interaction):
@@ -21,6 +22,7 @@ async def process_and_send_meme_to_moderation_channel(embed: discord.Embed, inte
     embed.add_field(name="Пользователь", value=interaction.user)
     embed.set_footer(text="Соответствует ли этот мем правилам бота?\n"
                           '"Одобрить" - да | "Отклонить" - нет')
+    print(StaticParameters.moderation_channel)
     message = await StaticParameters.moderation_channel.send(embed=embed, view=ModerationButtons())
 
     await add_meme_in_moderation_collection(url=embed.image.url,

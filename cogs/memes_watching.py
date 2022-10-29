@@ -3,7 +3,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from classes.DataBase import like_meme
-from classes.MemeObject import MemeObj
+from classes.MemeObjects import Meme
 
 
 class MemesWatching(commands.Cog):
@@ -16,7 +16,7 @@ class MemesWatching(commands.Cog):
     @app_commands.command(name="meme", description="Посмотреть мем")
     @app_commands.describe(meme_id="ID мема")
     async def meme(self, interaction: discord.Interaction, meme_id: int = None):
-        meme = MemeObj(None if meme_id is None else meme_id)
+        meme = Meme(None if meme_id is None else meme_id)
         await interaction.response.send_message(embed=meme.get_embed(),
                                                 view=RandomMeme(interaction, meme.get_meme_id(), meme)
                                                 if meme.is_meme_exists else None)
@@ -24,16 +24,16 @@ class MemesWatching(commands.Cog):
     @app_commands.guilds(766386682047365190)
     @app_commands.command(name="last_meme", description="Посмотреть свеженький мемчик")
     async def last_meme(self, interaction: discord.Interaction):
-        await interaction.response.send_message(embed=MemeObj().get_reversed_meme_embed())
+        await interaction.response.send_message(embed=Meme().get_reversed_meme_embed())
 
     @app_commands.guilds(766386682047365190)
     @app_commands.command(name="top_meme", description="Увидеть самый лучший мем в боте")
     async def top_meme(self, interaction: discord.Interaction):
-        await interaction.response.send_message(embed=MemeObj().get_top_meme_embed())
+        await interaction.response.send_message(embed=Meme().get_top_meme_embed())
 
 
 class LikeMeme(discord.ui.View):
-    def __init__(self, command_author: discord.Interaction, meme_id: int, meme_obj: MemeObj):
+    def __init__(self, command_author: discord.Interaction, meme_id: int, meme_obj: Meme):
         self.command_author = command_author
         self.meme_id = meme_id
         self.meme_obj = meme_obj
@@ -60,7 +60,7 @@ class RandomMeme(LikeMeme, discord.ui.View):
     @discord.ui.button(label="Следующий мем", style=discord.ButtonStyle.green)
     async def randomise_meme(self, interaction_button: discord.Interaction, button: discord.ui.Button):
         if interaction_button.user.id == self.command_author.user.id:
-            meme = MemeObj()
+            meme = Meme()
             embed = meme.get_embed()
             self.meme_id = meme.get_meme_id()
             await interaction_button.response.edit_message(embed=embed,

@@ -1,10 +1,10 @@
 import discord
 
 from classes import StaticParameters
-from classes.DataBase import get_meme, get_reversed_meme, get_top_meme, get_random_meme
+from classes.DataBase import get_meme, get_reversed_meme, get_top_meme, get_random_meme, get_user
 
 
-class MemeObj:
+class Meme:
     def __init__(self, meme_id: int = None):
         self.meme_id = meme_id
         self.is_reverse = False
@@ -60,3 +60,19 @@ class MemeObj:
 
     # def add_like(self):
     # await DataBase.update_meme(self.meme_id, "likes", (self.meme["likes"] + 1))
+
+
+class Profile:
+    def __init__(self, user: discord.User):
+        self.user = user
+
+    async def get_user_profile(self):
+        user = await get_user(self.user.id)
+        embed = discord.Embed(title="Профиль самого лучшего юзера", colour=discord.Colour.blue())
+        embed.add_field(name="Уровень:", value=f"**{user['level']}** 📈")
+        embed.add_field(name="Текущий опыт:", value=f"**{user['exp']}** ⚡")
+        embed.add_field(name="Мемов за всё время:", value=f"**{user['memes_count']}** 🗂️")
+        embed.add_field(name="Лайков за всё время:", value=f"**{user['memes_likes']}** 👍")
+        embed.set_thumbnail(url=self.user.avatar)
+        print(user)
+        return embed
