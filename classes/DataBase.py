@@ -1,4 +1,5 @@
 import discord
+import pymongo
 import requests
 from pymongo import MongoClient
 
@@ -66,13 +67,28 @@ def get_top_meme():
         return meme
 
 
-async def get_user(_id: int):
+def get_user(_id: int):
     user = profile_collection.find_one({"user_id": _id})
     return user
 
 
+def update_user_exp(user: dict, exp: int, level: int):
+    profile_collection.update_one(user, {"$set": {"level": level, "exp": exp}})
+
+
 async def get_guilds():
     return auto_post_guilds_collection.find()
+
+
+async def get_meme_ids_from_user(user_id: int):
+    memes = accepted_memes_collection.find({"author": user_id})
+    ids = [i["meme_id"] for i in memes]
+    return ids
+
+
+def get_top_users():
+    return profile_collection.find().sort([("level", pymongo.DESCENDING), ("exp", pymongo.DESCENDING)]).limit(10)
+
 
     # async def update_user_data(self, user_data: dict):
     #     print("start1")

@@ -22,7 +22,6 @@ async def process_and_send_meme_to_moderation_channel(embed: discord.Embed, inte
     embed.add_field(name="Пользователь", value=interaction.user)
     embed.set_footer(text="Соответствует ли этот мем правилам бота?\n"
                           '"Одобрить" - да | "Отклонить" - нет')
-    print(StaticParameters.moderation_channel)
     message = await StaticParameters.moderation_channel.send(embed=embed, view=ModerationButtons())
 
     await add_meme_in_moderation_collection(url=embed.image.url,

@@ -2,6 +2,7 @@ import discord
 
 from classes import StaticParameters
 from classes.DataBase import get_meme, get_reversed_meme, get_top_meme, get_random_meme, get_user
+from classes.Exp import count_to_next_level, add_user_exp
 
 
 class Meme:
@@ -36,7 +37,7 @@ class Meme:
         if self.is_random: return get_random_meme()
         return get_meme(self.meme_id)
 
-    def get_embed(self):
+    def get_embed(self, title: str="Мем"):
         meme = self.find_meme()
         if meme is None:
             return discord.Embed(title="Ощибка!!!",
@@ -44,7 +45,7 @@ class Meme:
                                  colour=discord.Colour.red())
 
         embed = discord.Embed(
-            title=f'Мем',
+            title=f'{title}',
             description=f'{"📔 **Описание:**" if meme["description"] != "" else ""} {meme["description"]}',
             colour=discord.Colour.blue())
         embed.add_field(name="Просмотры:", value="None 👁️")
@@ -67,12 +68,11 @@ class Profile:
         self.user = user
 
     async def get_user_profile(self):
-        user = await get_user(self.user.id)
+        user = get_user(self.user.id)
         embed = discord.Embed(title="Профиль самого лучшего юзера", colour=discord.Colour.blue())
-        embed.add_field(name="Уровень:", value=f"**{user['level']}** 📈")
-        embed.add_field(name="Текущий опыт:", value=f"**{user['exp']}** ⚡")
-        embed.add_field(name="Мемов за всё время:", value=f"**{user['memes_count']}** 🗂️")
-        embed.add_field(name="Лайков за всё время:", value=f"**{user['memes_likes']}** 👍")
+        embed.add_field(name="Уровень:", value=f"```{user['level']} 📈```")
+        embed.add_field(name="Текущий опыт:", value=f"```{user['exp']} / {count_to_next_level(current_level=user['level'])} ⚡``` ")
+        embed.add_field(name="Мемов за всё время:", value=f"```{user['memes_count']} 🗂️```")
+        embed.add_field(name="Лайков за всё время:", value=f"```{user['memes_likes']} 👍```")
         embed.set_thumbnail(url=self.user.avatar)
-        print(user)
         return embed
