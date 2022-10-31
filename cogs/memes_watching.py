@@ -18,7 +18,7 @@ class MemesWatching(commands.Cog):
     async def meme(self, interaction: discord.Interaction, meme_id: int = None):
         meme = Meme(None if meme_id is None else meme_id)
         await interaction.response.send_message(embed=meme.get_embed(),
-                                                view=RandomMeme(interaction, meme.get_meme_id(), meme)
+                                                view=RandomMeme(meme.get_meme_id(), interaction)
                                                 if meme.is_meme_exists else None)
 
     @app_commands.guilds(766386682047365190)
@@ -33,10 +33,9 @@ class MemesWatching(commands.Cog):
 
 
 class LikeMeme(discord.ui.View):
-    def __init__(self, command_author: discord.Interaction, meme_id: int, meme_obj: Meme):
+    def __init__(self, meme_id: int, command_author: discord.Interaction=discord.Interaction):
         self.command_author = command_author
         self.meme_id = meme_id
-        self.meme_obj = meme_obj
         super().__init__()
 
     @discord.ui.button(label="Лайкнуть", style=discord.ButtonStyle.blurple)
@@ -64,9 +63,7 @@ class RandomMeme(LikeMeme, discord.ui.View):
             embed = meme.get_embed()
             self.meme_id = meme.get_meme_id()
             await interaction_button.response.edit_message(embed=embed,
-                                                           view=RandomMeme(self.command_author,
-                                                                           self.meme_id,
-                                                                           self.meme_obj))
+                                                           view=RandomMeme(self.meme_id, self.command_author))
 
 
 async def setup(bot):

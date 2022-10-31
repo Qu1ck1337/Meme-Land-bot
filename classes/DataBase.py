@@ -76,10 +76,6 @@ def update_user_exp(user: dict, exp: int, level: int):
     profile_collection.update_one(user, {"$set": {"level": level, "exp": exp}})
 
 
-async def get_guilds():
-    return auto_post_guilds_collection.find()
-
-
 async def get_meme_ids_from_user(user_id: int):
     memes = accepted_memes_collection.find({"author": user_id})
     ids = [i["meme_id"] for i in memes]
@@ -88,6 +84,29 @@ async def get_meme_ids_from_user(user_id: int):
 
 def get_top_users():
     return profile_collection.find().sort([("level", pymongo.DESCENDING), ("exp", pymongo.DESCENDING)]).limit(10)
+
+
+def get_auto_meme_guilds():
+    return auto_post_guilds_collection.find()
+
+
+def get_auto_meme_guild(guild_id: int):
+    return auto_post_guilds_collection.find_one({"guild_id": guild_id})
+
+
+def add_auto_meme_guild(guild_id: int, channel_id: int):
+    auto_post_guilds_collection.insert_one({
+        "guild_id": guild_id,
+        "channel_id": channel_id
+    })
+
+
+def update_channel_in_guild(guild_data: dict, new_channel_id: int):
+    auto_post_guilds_collection.update_one(guild_data, {"$set": {"channel_id": new_channel_id}})
+
+
+def delete_guild_from_auto_meme_list(guild_data: dict):
+    auto_post_guilds_collection.delete_one(guild_data)
 
 
     # async def update_user_data(self, user_data: dict):
