@@ -147,4 +147,9 @@ async def load_extensions():
     #         await bot.load_extension(f"classes.{filename[:-3]}")
 
 
+def get_user_name(user_id: int):
+    return bot.get_user(user_id).display_name
+
+
+
 asyncio.run(main())

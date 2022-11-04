@@ -109,6 +109,11 @@ def delete_guild_from_auto_meme_list(guild_data: dict):
     auto_post_guilds_collection.delete_one(guild_data)
 
 
+def save_user_memes_color(user_id: int, color: str):
+    user = get_user(user_id)
+    profile_collection.update_one(user, {"$set": {"memes_color": color}})
+
+
     # async def update_user_data(self, user_data: dict):
     #     print("start1")
     #     user_data["exp"] = 0  # 571

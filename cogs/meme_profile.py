@@ -16,7 +16,7 @@ class MemeProfile(commands.Cog):
     @app_commands.command(name="profile", description="Увидеть себя в зеркале")
     async def profile(self, interaction: discord.Interaction):
         await interaction.response.send_message(embed=await Profile(interaction.user).get_user_profile(),
-                                                view=MemeLibraryCheckButton(interaction.user.id))
+                                                view=MemeLibraryCheckButton(interaction.user.id, self.bot))
 
     @app_commands.guilds(766386682047365190)
     @app_commands.command(description="Таблица лидеров")
@@ -37,25 +37,27 @@ class MemeProfile(commands.Cog):
 
 
 class MemeLibraryCheckButton(ui.View):
-    def __init__(self, author_id: int):
+    def __init__(self, author_id: int, bot):
         super().__init__(timeout=None)
         self.author_id = author_id
+        self.bot = bot
 
     @discord.ui.button(label="Заглянуть в архив", emoji="🗂️", style=discord.ButtonStyle.green)
     async def accept_button(self, interaction_button: discord.Interaction, button: discord.ui.Button):
         ids = await get_meme_ids_from_user(self.author_id)
         profile_embed = interaction_button.message.embeds
-        profile_embed.append(Meme(ids[0]).get_embed(f"Мем 1 / {len(ids)}"))
+        profile_embed.append(Meme(self.bot, ids[0]).get_embed(f"Мем 1 / {len(ids)}"))
         await interaction_button.response.edit_message(embeds=profile_embed,
-                                                       view=MemeLibraryScroller(interaction_button, ids) if len(ids) > 1 else None)
+                                                       view=MemeLibraryScroller(interaction_button, ids, self.bot) if len(ids) > 1 else None)
 
 
 class MemeLibraryScroller(ui.View):
-    def __init__(self, interaction: discord.Interaction, author_meme_ids: list):
+    def __init__(self, interaction: discord.Interaction, author_meme_ids: list, bot):
         super().__init__(timeout=None)
         self.interaction = interaction
         self.author_meme_ids = author_meme_ids
         self.current_meme_id_index = 0
+        self.bot = bot
 
     # async def on_timeout(self):
     #     for child in self.children:
@@ -88,7 +90,7 @@ class MemeLibraryScroller(ui.View):
 
     def replace_embed(self, interaction_button):
         profile_embed = interaction_button.message.embeds
-        profile_embed[1] = Meme(self.author_meme_ids[self.current_meme_id_index]).get_embed(
+        profile_embed[1] = Meme(self.bot, self.author_meme_ids[self.current_meme_id_index]).get_embed(
             f"Мем {self.current_meme_id_index + 1} / {len(self.author_meme_ids)}")
         return profile_embed
 
