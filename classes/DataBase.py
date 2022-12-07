@@ -22,6 +22,7 @@ db_auto_post_guilds = client['auto_post_guilds']
 auto_post_guilds_collection = db_auto_post_guilds["guilds"]
 
 
+# region Memes_Interaction
 def get_meme(meme_id: int):
     return accepted_memes_collection.find_one({"meme_id": meme_id})
 
@@ -43,7 +44,8 @@ async def like_meme(meme_id: int):
     accepted_memes_collection.update_one(meme, {"$set": {"likes": meme["likes"] + 1}})
 
 
-async def add_meme_in_moderation_collection(url: str, description: str, message_id: int, interaction: discord.Interaction):
+async def add_meme_in_moderation_collection(url: str, description: str, message_id: int,
+                                            interaction: discord.Interaction):
     memes_on_moderation_collection.insert_one({
         "url": url,
         "description": description,
@@ -67,13 +69,45 @@ def get_top_meme():
         return meme
 
 
+# endregion
+
+
 def get_user(_id: int):
     user = profile_collection.find_one({"user_id": _id})
-    return user
+    if user is not None: return user
+
+    result = accepted_memes_collection.find({"author": _id})
+
+    memes_count = 0
+    likes = 0
+
+    for meme in result:
+        memes_count += 1
+        likes += meme["likes"]
+
+    user_document = {
+        "user_id": _id,
+        "exp": 0,
+        "level": 0,
+        "memes_count": memes_count,
+        "memes_likes": likes,
+        "memes_color": "0x3498db"
+    }
+
+    profile_collection.insert_one(user_document)
+    return profile_collection.find_one({"user_id": _id})
 
 
 def update_user_exp(user: dict, exp: int, level: int):
     profile_collection.update_one(user, {"$set": {"level": level, "exp": exp}})
+
+
+def get_user_level(_id: int):
+    return get_user(_id)["level"]
+
+
+def update_user_color(_id: int, color: str):
+    profile_collection.update_one(get_user(_id), {"$set": {"memes_color": color}})
 
 
 async def get_meme_ids_from_user(user_id: int):
@@ -107,12 +141,6 @@ def update_channel_in_guild(guild_data: dict, new_channel_id: int):
 
 def delete_guild_from_auto_meme_list(guild_data: dict):
     auto_post_guilds_collection.delete_one(guild_data)
-
-
-def save_user_memes_color(user_id: int, color: str):
-    user = get_user(user_id)
-    profile_collection.update_one(user, {"$set": {"memes_color": color}})
-
 
     # async def update_user_data(self, user_data: dict):
     #     print("start1")

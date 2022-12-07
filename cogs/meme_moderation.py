@@ -40,7 +40,20 @@ class ModerationButtons(ui.View):
 
     @discord.ui.button(label="Отклонить", custom_id="persistent_view:reject", style=discord.ButtonStyle.red)
     async def reject_button(self, interaction_button: discord.Interaction, button: discord.ui.Button):
-        await interaction_button.response.send_message("Отклонить")
+        await interaction_button.response.send_modal(RejectReason(interaction_button.message))
+
+
+class RejectReason(ui.Modal, title="Причина отклонения"):
+    def __init__(self, meme_in_moderation: discord.Message):
+        self.meme_in_moderation = meme_in_moderation
+        super().__init__()
+
+    reason = ui.TextInput(label="Причина", placeholder="Мем не понравился(", style=discord.TextStyle.long,
+                          max_length=1024, required=False)
+
+    async def on_submit(self, interaction: discord.Interaction):
+        await self.meme_in_moderation.delete()
+        await interaction.response.send_message("Мем отклонён", ephemeral=True)
 
 
 async def setup(bot):

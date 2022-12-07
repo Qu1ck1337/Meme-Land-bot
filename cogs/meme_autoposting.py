@@ -24,7 +24,7 @@ class MemeAutoPosting(commands.Cog):
     async def auto_post_meme(self):
         for guild in get_auto_meme_guilds():
             try:
-                meme = Meme()
+                meme = Meme(self.bot)
                 await self.bot.get_channel(guild["channel_id"]).send(embed=meme.get_embed(), view=LikeMeme(meme_id=meme.get_meme_id()))
             except AttributeError as ex:
                 pass

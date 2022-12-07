@@ -2,7 +2,7 @@ import discord
 
 from classes import StaticParameters
 from classes.DataBase import get_meme, get_reversed_meme, get_top_meme, get_random_meme, get_user
-from classes.Exp import count_to_next_level, add_user_exp
+from classes.Exp import count_to_next_level
 
 
 class Meme:
@@ -49,7 +49,8 @@ class Meme:
         embed = discord.Embed(
             title=f'{title}',
             description=f'{"📔 **Описание:**" if meme["description"] != "" else ""} {meme["description"]}',
-            colour=discord.Colour.from_str(author["memes_color"]))
+            colour=discord.Colour.blue()) #discord.Colour.from_str(author["memes_color"])
+        #todo убрать коментирование
         embed.add_field(name="Просмотры:", value="None 👁️")
         embed.add_field(name="Лайки:", value=f'{meme["likes"]} 👍')
         embed.add_field(name="Автор", value=f"```{self.bot.get_user(meme['author'])}```")

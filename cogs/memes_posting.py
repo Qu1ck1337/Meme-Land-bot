@@ -30,14 +30,12 @@ class SendingMemeContextMenu(ui.Modal, title="Выложить мем"):
                                    required=False)
 
     async def on_submit(self, interaction: discord.Interaction):
-        embed = discord.Embed(description=f"📔 **Описание:** {self.description}",
+        embed = discord.Embed(description=f"📔 **Описание:** {self.description}" if len(self.description.value.strip()) > 0 else None,
                               colour=discord.Colour.blue())
         embed.set_author(icon_url=interaction.user.avatar, name=f'{interaction.user.name} отправляет мем на модерацию!')
         embed.set_image(url=self.attachment.url)
 
-        print("test")
         await process_and_send_meme_to_moderation_channel(embed, interaction)
-        print("test1")
 
         embed.set_footer(text="Обычно мемы проверяются меньше 24 часов ^-^")
         await interaction.response.send_message(embed=embed)

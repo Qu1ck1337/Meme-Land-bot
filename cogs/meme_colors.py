@@ -2,21 +2,22 @@ import discord
 from discord import app_commands, ui
 from discord.ext import commands
 
-from classes.DataBase import get_user, save_user_memes_color
+from classes.DataBase import get_user, get_user_level, update_user_color
 
 colors = {
-    "0xe74c3c": ["🔴", "Красный"],
-    "0xe67e22": ["🟠", "Оранжевый"],
-    "0xFEE75C": ["🟡", "Жёлтый"],
-    "0x1f8b4c": ["🟢", "Зелёный"],
-    "0x3498db": ["🔵", "Голубой"],
-    "0x7289da": ["🟣", "Фиолетовый"],
-    "rgb(0, 0, 0)": ["⚫", "Чёрный"],
-    "rgb(255, 255, 255)": ["⚪", "Белый"]
+    "0xe74c3c": ["🔴", "Красный", 2],
+    "0xe67e22": ["🟠", "Оранжевый", 4],
+    "0xFEE75C": ["🟡", "Жёлтый", 6],
+    "0x1f8b4c": ["🟢", "Зелёный", 8],
+    "0x3498db": ["🔵", "Голубой", 10],
+    "0x7289da": ["🟣", "Фиолетовый", 12],
+    "0x000000": ["⚫", "Чёрный", 14],
+    "0xFFFFFF": ["⚪", "Белый", 16]
 }
 options = []
+
 for key in colors:
-    options.append(discord.SelectOption(label=colors[key][1], emoji=colors[key][0], value=key))
+    options.append(discord.SelectOption(label=f'[{colors[key][2]} уровень] {colors[key][1]}', emoji=colors[key][0], value=key))
 
 
 class MemeColors(commands.Cog):
@@ -26,44 +27,50 @@ class MemeColors(commands.Cog):
     @app_commands.guilds(766386682047365190)
     @app_commands.command(description="Поставить крутой цвет для твоих мемов!")
     async def color_memes(self, interaction: discord.Interaction):
-        embed = discord.Embed(title="Установить цвет мемов",
-                              description="Текущий цвет:"
-                                          "\n```🔵 Голубой```",
-                              colour=discord.Colour.blue())
-        await interaction.response.send_message(embed=embed, view=ChangeColor(embed.color))
+        try:
+            user_level = get_user_level(interaction.user.id)
+            color = get_user(interaction.user.id)["memes_color"]
+            if color is None:
+                update_user_color(interaction.user.id, "0x3498db")
+                color = get_user(interaction.user.id)["memes_color"]
+            color_list = colors[color]
+            embed = discord.Embed(title="Установить цвет мемов",
+                                  description=f"Текущий цвет:"
+                                              f"\n```{' '.join(color_list[0:2])}```",
+                                  colour=discord.Colour.from_str(color))
+            await interaction.response.send_message(embed=embed, view=ChangeColor(user_level))
+        except Exception as ex:
+            print(ex)
 
 
 class ChangeColor(ui.View):
-    def __init__(self, color_before):
-        super().__init__(timeout=180)
-        self.current_color = color_before
-        print(self.current_color)
+    def __init__(self, user_level):
+        super().__init__(timeout=None)
+        self.user_level = user_level
 
-    @ui.select(placeholder="Стандартные цвета", options=options)
+    @ui.select(placeholder="Сменить цвет", options=options)
     async def change_color(self, selector_interaction: discord.Interaction, selector: ui.Select):
-        original_embed = selector_interaction.message.embeds[0]
-        description = f"Текущий цвет: \n```{' '.join(colors[selector.values[0]])}```"
-        self.current_color = discord.Colour.from_str(selector.values[0])
-        await selector_interaction.response.edit_message(embed=discord.Embed(title=original_embed.title,
-                                                                             description=description,
-                                                                             colour=self.current_color),
-                                                         view=self)
+        if self.user_level >= colors[selector.values[0]][2]:
+            original_embed = selector_interaction.message.embeds[0]
+            description = f"Текущий цвет: \n```{' '.join(colors[selector.values[0]][0:2])}```"
+            update_user_color(selector_interaction.user.id, selector.values[0])
+            await selector_interaction.response.edit_message(embed=discord.Embed(title=original_embed.title,
+                                                                                 description=description,
+                                                                                 colour=discord.Colour.from_str(selector.values[0])),
+                                                             view=ChangeColor(self.user_level))
+        else:
+            await selector_interaction.response.send_message(f"Нужно достигнуть уровня **{colors[selector.values[0]][2]}**,"
+                                                             f" чтобы разблокировать этот цвет.",
+                                                             ephemeral=True)
 
-    @ui.button(label="Случайный цвет", style=discord.ButtonStyle.blurple)
-    async def random_color(self, button_interaction: discord.Interaction, button: ui.button):
-        original_embed = button_interaction.message.embeds[0]
-        self.current_color = discord.Colour.random()
-        description = f"Текущий цвет: \n```{self.current_color}```"
-        await button_interaction.response.edit_message(embed=discord.Embed(title=original_embed.title,
-                                                                           description=description,
-                                                                           colour=self.current_color),
-                                                       view=self)
-
-    @ui.button(label="Применить", style=discord.ButtonStyle.green)
-    async def accept_button(self, button_interaction: discord.Interaction, button: ui.button):
-        original_embed = button_interaction.message.embeds[0]
-        save_user_memes_color(button_interaction.user.id, str(self.current_color))
-        await button_interaction.response.edit_message(content="Успех!", embed=original_embed, view=self)
+    # @ui.button(label="Случайный цвет")
+    # async def random_color(self, selector_interaction: discord.Interaction, button: ui.button):
+    #     original_embed = selector_interaction.message.embeds[0]
+    #     description = f"Текущий цвет: \n```Кастомный - ```"
+    #     await selector_interaction.response.edit_message(embed=discord.Embed(title=original_embed.title,
+    #                                                                          description=description,
+    #                                                                          colour=discord.Colour.random()),
+    #                                                      view=ChangeColor())
 
 
 async def setup(bot):

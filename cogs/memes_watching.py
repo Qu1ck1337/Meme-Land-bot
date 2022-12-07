@@ -1,8 +1,11 @@
+import random
+
 import discord
 from discord import app_commands
 from discord.ext import commands
 
 from classes.DataBase import like_meme
+from classes.Exp import add_user_exp
 from classes.MemeObjects import Meme
 
 
@@ -20,16 +23,19 @@ class MemesWatching(commands.Cog):
         await interaction.response.send_message(embed=meme.get_embed(),
                                                 view=RandomMeme(meme.get_meme_id(), self.bot, interaction)
                                                 if meme.is_meme_exists else None)
+        add_user_exp(interaction.user.id, random.randint(1, 5))
 
     @app_commands.guilds(766386682047365190)
     @app_commands.command(name="last_meme", description="Посмотреть свеженький мемчик")
     async def last_meme(self, interaction: discord.Interaction):
         await interaction.response.send_message(embed=Meme(self.bot, None).get_reversed_meme_embed())
+        add_user_exp(interaction.user.id, random.randint(1, 5))
 
     @app_commands.guilds(766386682047365190)
     @app_commands.command(name="top_meme", description="Увидеть самый лучший мем в боте")
     async def top_meme(self, interaction: discord.Interaction):
         await interaction.response.send_message(embed=Meme(self.bot, None).get_top_meme_embed())
+        add_user_exp(interaction.user.id, random.randint(1, 5))
 
 
 class LikeMeme(discord.ui.View):
@@ -54,17 +60,19 @@ class LikeMeme(discord.ui.View):
                            inline=likes_field.inline)
 
         await interaction_button.response.edit_message(embed=embed, view=self)
+        add_user_exp(interaction_button.user.id, 5)
 
 
 class RandomMeme(LikeMeme, discord.ui.View):
     @discord.ui.button(label="Смотреть дальше", style=discord.ButtonStyle.green)
     async def randomise_meme(self, interaction_button: discord.Interaction, button: discord.ui.Button):
         if interaction_button.user.id == self.command_author.user.id:
-            meme = Meme()
+            meme = Meme(self.bot)
             embed = meme.get_embed()
             self.meme_id = meme.get_meme_id()
             await interaction_button.response.edit_message(embed=embed,
                                                            view=self)
+            add_user_exp(interaction_button.user.id, random.randint(1, 3))
 
 
 async def setup(bot):
