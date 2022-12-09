@@ -10,15 +10,16 @@ class MemesPosting(commands.Cog):
         self.bot = bot
 
     @app_commands.guilds(766386682047365190)
-    @app_commands.command(name="send_meme", description="Запостить мемчик")
+    @app_commands.command(name="upload_meme", description="Запостить мемчик")
     @app_commands.describe(attachment="Мем")
-    async def send_meme(self, interaction: discord.Interaction, attachment: discord.Attachment):
-        await interaction.response.send_modal(SendingMemeContextMenu(attachment))
+    async def upload_meme(self, interaction: discord.Interaction, attachment: discord.Attachment):
+        await interaction.response.send_modal(SendingMemeContextMenu(self.bot, attachment))
 
 
 class SendingMemeContextMenu(ui.Modal, title="Выложить мем"):
-    def __init__(self, attachment: discord.Attachment):
+    def __init__(self, bot, attachment: discord.Attachment):
         self.attachment = attachment
+        self.bot = bot
         super().__init__()
 
     description = ui.TextInput(label="Описание", placeholder="Я люблю Meme Land!", style=discord.TextStyle.short,
@@ -34,11 +35,10 @@ class SendingMemeContextMenu(ui.Modal, title="Выложить мем"):
                               colour=discord.Colour.blue())
         embed.set_author(icon_url=interaction.user.avatar, name=f'{interaction.user.name} отправляет мем на модерацию!')
         embed.set_image(url=self.attachment.url)
-
-        await process_and_send_meme_to_moderation_channel(embed, interaction)
-
-        embed.set_footer(text="Обычно мемы проверяются меньше 24 часов ^-^")
+        embed.set_footer(text="Обычно мемы проверяются меньше 24 часов 😋")
         await interaction.response.send_message(embed=embed)
+
+        await process_and_send_meme_to_moderation_channel(self.bot, embed, interaction)
 
 
 async def setup(bot):

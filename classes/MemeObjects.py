@@ -1,7 +1,7 @@
 import discord
 
 from classes import StaticParameters
-from classes.DataBase import get_meme, get_reversed_meme, get_top_meme, get_random_meme, get_user
+from classes.DataBase import get_meme, get_reversed_meme, get_top_meme, get_random_meme, get_user, add_viewing_to_meme
 from classes.Exp import count_to_next_level
 
 
@@ -50,10 +50,14 @@ class Meme:
             title=f'{title}',
             description=f'{"📔 **Описание:**" if meme["description"] != "" else ""} {meme["description"]}',
             colour=discord.Colour.blue()) #discord.Colour.from_str(author["memes_color"])
-        #todo убрать коментирование
-        embed.add_field(name="Просмотры:", value="None 👁️")
-        embed.add_field(name="Лайки:", value=f'{meme["likes"]} 👍')
-        embed.add_field(name="Автор", value=f"```{self.bot.get_user(meme['author'])}```")
+        #todo убрать коментирование и exception
+        try:
+            views = meme["views"]
+        except Exception:
+            views = 0
+        embed.add_field(name="👁️ Просмотры", value=f"```{views} 👁️```")
+        embed.add_field(name="👍 Лайки", value=f'```{meme["likes"]} 👍```')
+        embed.add_field(name="😀 Автор", value=f"```{self.bot.get_user(meme['author'])}```")
         # embed.add_field(name="ID мема:", value=f'{meme["meme_id"]}')
         embed.set_image(url=meme["url"])
         embed.set_footer(text=f"🔨 Сервер поддержки: /support | 🏷️ ID мема: {meme['meme_id']}", icon_url=StaticParameters.meme_land_guild.icon)
@@ -61,6 +65,7 @@ class Meme:
         self.embed = embed
         self.meme_id = meme["meme_id"]
         self.is_meme_exists = True
+        add_viewing_to_meme(self.meme_id)
         return embed
 
     # def add_like(self):

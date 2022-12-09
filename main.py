@@ -36,7 +36,7 @@ async def on_ready():
 @bot.event
 async def setup_hook():
     for meme in get_all_memes_in_moderation():
-        bot.add_view(ModerationButtons(), message_id=meme["msg_id"])
+        bot.add_view(ModerationButtons(bot), message_id=meme["message_id"])
 
 
 # @tasks.loop(minutes=1)
@@ -112,14 +112,14 @@ async def help(interaction: discord.Interaction):
     await interaction.response.send_message(embed=embed)
 
 
-#@bot.tree.error
+@bot.tree.error
 async def on_slash_command_error(interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
     print(error)
-    if error == discord.app_commands.errors.MissingPermissions:
-        await interaction.response.send_message(f"У вас недостаточно прав, чтобы использовать эту команду"
-                                                f"\n`Администратор` / `Управлять сервером` права нужны для этой команды.")
-    else:
-        await interaction.response.send_message(f"Произошла ошибка во время выполнения команды, возможно у вас недостаточно прав, чтобы использовать команду, либо произошла ошибка в самом боте.")
+    # if error == discord.app_commands.errors.MissingPermissions:
+    #     await interaction.response.send_message(f"У вас недостаточно прав, чтобы использовать эту команду"
+    #                                             f"\n`Администратор` / `Управлять сервером` права нужны для этой команды.")
+    # else:
+    #     await interaction.response.send_message(f"Произошла ошибка во время выполнения команды, возможно у вас недостаточно прав, чтобы использовать команду, либо произошла ошибка в самом боте.")
 
 
 

@@ -44,15 +44,24 @@ async def like_meme(meme_id: int):
     accepted_memes_collection.update_one(meme, {"$set": {"likes": meme["likes"] + 1}})
 
 
-async def add_meme_in_moderation_collection(url: str, description: str, message_id: int,
+def add_meme_in_moderation_collection(url: str, description: str, message_id: int,
                                             interaction: discord.Interaction):
+    description = description[16:] if description is not None else ""
     memes_on_moderation_collection.insert_one({
         "url": url,
         "description": description,
-        "msg_id": message_id,
+        "message_id": message_id,
         "author_id": interaction.user.id,
         "guild": interaction.guild.id
     })
+
+
+def remove_meme_from_moderation_collection(message_id: int):
+    memes_on_moderation_collection.delete_one({"message_id": message_id})
+
+
+def get_meme_from_moderation_collection(message_id: int):
+    return memes_on_moderation_collection.find_one({"message_id": message_id})
 
 
 def get_all_memes_in_moderation():
@@ -67,6 +76,34 @@ def get_reversed_meme():
 def get_top_meme():
     for meme in accepted_memes_collection.find().sort('likes', -1).limit(1):
         return meme
+
+
+def add_viewing_to_meme(meme_id: int):
+    meme = get_meme(meme_id)
+    #todo убрать exception
+    try:
+        views = meme["views"] + 1
+    except Exception:
+        views = 1
+    accepted_memes_collection.update_one(meme, {"$set": {"views": views}})
+
+
+def transform_meme_from_moderation_to_accepted(message_id: int) -> int:
+    moderation_meme = get_meme_from_moderation_collection(message_id)
+    meme_id = 1
+    for last_meme in accepted_memes_collection.find().sort('_id', -1).limit(1):
+        meme_id = last_meme["meme_id"] + 1
+
+    accepted_memes_collection.insert_one({
+        "meme_id": meme_id,
+        "author": moderation_meme["author_id"],
+        "description": moderation_meme["description"],
+        "url": moderation_meme["url"],
+        "views": 0,
+        "likes": 0
+    })
+    remove_meme_from_moderation_collection(message_id)
+    return meme_id
 
 
 # endregion

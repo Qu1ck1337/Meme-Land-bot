@@ -5,6 +5,6 @@ profile_settings = {
 
 memes_settings = {
     "db_memes": "bot_memes",
-    "accepted_memes_collection": "accepted_memes",
+    "accepted_memes_collection": "accepted_memes_test", #todo тестовая коллекция
     "memes_on_moderation_collection": "memes_on_moderation"
 }

@@ -45,7 +45,7 @@ class LikeMeme(discord.ui.View):
         self.meme_id = meme_id
         self.bot = bot
 
-    @discord.ui.button(label="Лайкнуть", style=discord.ButtonStyle.blurple)
+    @discord.ui.button(label="Лайкнуть", emoji="♥", style=discord.ButtonStyle.blurple)
     async def like_button(self, interaction_button: discord.Interaction, button: discord.ui.Button):
         await like_meme(self.meme_id)
         button.disabled = True
@@ -64,7 +64,7 @@ class LikeMeme(discord.ui.View):
 
 
 class RandomMeme(LikeMeme, discord.ui.View):
-    @discord.ui.button(label="Смотреть дальше", style=discord.ButtonStyle.green)
+    @discord.ui.button(label="Смотреть дальше", emoji="🔀", style=discord.ButtonStyle.green)
     async def randomise_meme(self, interaction_button: discord.Interaction, button: discord.ui.Button):
         if interaction_button.user.id == self.command_author.user.id:
             meme = Meme(self.bot)

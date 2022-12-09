@@ -38,13 +38,14 @@ class MemeColors(commands.Cog):
                                   description=f"Текущий цвет:"
                                               f"\n```{' '.join(color_list[0:2])}```",
                                   colour=discord.Colour.from_str(color))
-            await interaction.response.send_message(embed=embed, view=ChangeColor(user_level))
+            await interaction.response.send_message(embed=embed, view=ChangeColor(user_level),
+                                                    ephemeral=True)
         except Exception as ex:
             print(ex)
 
 
 class ChangeColor(ui.View):
-    def __init__(self, user_level):
+    def __init__(self, user_level: int):
         super().__init__(timeout=None)
         self.user_level = user_level
 
