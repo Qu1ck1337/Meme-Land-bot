@@ -76,5 +76,5 @@ class RandomMeme(LikeMeme, discord.ui.View):
 
 
 async def setup(bot):
-    print("Setup Meme_Rus")
+    print("Setup MemesWatching")
     await bot.add_cog(MemesWatching(bot))

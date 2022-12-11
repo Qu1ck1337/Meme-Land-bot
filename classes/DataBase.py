@@ -106,6 +106,11 @@ def transform_meme_from_moderation_to_accepted(message_id: int) -> int:
     return meme_id
 
 
+def delete_meme_by_id_from_accepted_collection(meme_id: int):
+    result = accepted_memes_collection.delete_one({"meme_id": meme_id})
+    return True if result.deleted_count > 0 else False
+
+
 # endregion
 
 

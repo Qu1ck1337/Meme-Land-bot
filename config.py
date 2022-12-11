@@ -14,7 +14,7 @@ release_settings = {
 
 beta_settings = {
     "id": 934900322634190878,
-    "token": "OTM0OTAwMzIyNjM0MTkwODc4.Ye2zxg.1eOMvHDt0nYoZJANKgG7qIzbwxo",
+    "token": "OTM0OTAwMzIyNjM0MTkwODc4.GAJ4_g.jSSiA1xnuFmpQ80Kr5ub6LOS7gDRQFEen-VLl4",
     "application_id": 934900322634190878
 }
 

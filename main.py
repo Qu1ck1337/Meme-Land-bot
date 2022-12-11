@@ -122,7 +122,6 @@ async def on_slash_command_error(interaction: discord.Interaction, error: discor
     #     await interaction.response.send_message(f"Произошла ошибка во время выполнения команды, возможно у вас недостаточно прав, чтобы использовать команду, либо произошла ошибка в самом боте.")
 
 
-
 async def main():
     print("Starting Bot")
     async with bot:

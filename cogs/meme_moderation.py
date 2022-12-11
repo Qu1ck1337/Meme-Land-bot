@@ -1,13 +1,15 @@
 import discord
-from discord import ui
+from discord import ui, app_commands
 from discord.ext import commands
 from discord.ext.commands import Cog
 
 from classes import StaticParameters
 from classes.DataBase import add_meme_in_moderation_collection, remove_meme_from_moderation_collection, \
-    transform_meme_from_moderation_to_accepted
+    transform_meme_from_moderation_to_accepted, delete_meme_by_id_from_accepted_collection, get_meme
+from classes.MemeObjects import Meme
 from classes.configs import memes_posting_config
-from classes.dm_manager import send_user_reject_meme_dm_message, send_user_accept_meme_dm_message
+from classes.dm_manager import send_user_reject_meme_dm_message, send_user_accept_meme_dm_message, \
+    send_user_deleted_meme_dm_message
 
 
 class MemeModeration(commands.Cog):
@@ -17,6 +19,26 @@ class MemeModeration(commands.Cog):
     @Cog.listener("on_ready")
     async def on_ready(self):
         StaticParameters.moderation_channel = self.bot.get_channel(memes_posting_config.meme_moderation_channel_id)
+
+    @app_commands.guilds(766386682047365190)
+    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.command(name="delete_meme", description="Удалить мем под id")
+    @app_commands.describe(meme_id="id мема для удаления")
+    @app_commands.describe(reason="причина удаления")
+    async def delete_meme(self, interaction: discord.Interaction, meme_id: int, reason: str="Причина не указана"):
+        meme = Meme(self.bot, meme_id)
+        if delete_meme_by_id_from_accepted_collection(meme_id):
+            meme_embed = meme.get_embed()
+            meme_embed.colour = discord.Colour.red()
+            await send_user_deleted_meme_dm_message(self.bot,
+                                                    user_id=meme.get_author_id(),
+                                                    moderator=interaction.user,
+                                                    reason=reason,
+                                                    meme_embed=meme_embed,
+                                                    meme_id=meme_id)
+            await interaction.response.send_message("done!")
+        else:
+            await interaction.response.send_message("not done!")
 
 
 async def process_and_send_meme_to_moderation_channel(bot, embed: discord.Embed, interaction: discord.Interaction):
