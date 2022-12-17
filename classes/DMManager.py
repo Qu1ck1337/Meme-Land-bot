@@ -1,7 +1,7 @@
 import discord
 
 
-async def send_user_reject_meme_dm_message(bot: discord.Client, user_id: int, moderator: discord.User, reason: str,
+async def send_user_reject_meme_dm_message(meme_author: discord.User, moderator: discord.User, reason: str,
                                            image_url: str, meme_description: str):
     try:
         embed = discord.Embed(title="Уведомление от модерации",
@@ -14,13 +14,13 @@ async def send_user_reject_meme_dm_message(bot: discord.Client, user_id: int, mo
         meme_embed.set_image(url=image_url)
         meme_embed.set_footer(text="🔨 Остались вопросы? Обратитесь в нашу поддержку /support")
 
-        await bot.get_user(user_id).send(embeds=[embed, meme_embed])
+        await meme_author.send(embeds=[embed, meme_embed])
     except Exception:
         pass
 
 
-async def send_user_accept_meme_dm_message(bot: discord.Client, user_id: int, moderator: discord.User, meme_id: int,
-                                           image_url: str, meme_description: str):
+async def send_user_accepted_meme_dm_message(meme_author: discord.User, moderator: discord.User, meme_id: int,
+                                             image_url: str, meme_description: str):
     try:
         embed = discord.Embed(title="Уведомление от модерации",
                               description=f"Поздравляем, ваш мем одобрен! "
@@ -36,13 +36,13 @@ async def send_user_accept_meme_dm_message(bot: discord.Client, user_id: int, mo
         meme_embed.set_image(url=image_url)
         meme_embed.set_footer(text="🔨 Остались вопросы? Обратитесь в нашу поддержку /support")
 
-        await bot.get_user(user_id).send(embeds=[embed, meme_embed])
+        await meme_author.send(embeds=[embed, meme_embed])
     except Exception:
         pass
 
 
-async def send_user_deleted_meme_dm_message(bot: discord.Client, user_id: int, moderator: discord.User, reason: str,
-                                           meme_embed: discord.Embed, meme_id: int):
+async def send_user_deleted_meme_dm_message(meme_author: discord.User, moderator, reason: str,
+                                            meme_embed: discord.Embed, meme_id: int):
     try:
         embed = discord.Embed(title="Уведомление от модерации",
                               description=f"Нам пришлось удалить ваш мем под ID: **{meme_id}** по следующей причине.",
@@ -52,6 +52,6 @@ async def send_user_deleted_meme_dm_message(bot: discord.Client, user_id: int, m
 
         meme_embed.set_footer(text="🔨 Остались вопросы? Обратитесь в нашу поддержку /support")
 
-        await bot.get_user(user_id).send(embeds=[embed, meme_embed])
+        await meme_author.send(embeds=[embed, meme_embed])
     except Exception:
         pass

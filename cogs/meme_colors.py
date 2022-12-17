@@ -5,14 +5,14 @@ from discord.ext import commands
 from classes.DataBase import get_user, get_user_level, update_user_color
 
 colors = {
-    "0xe74c3c": ["🔴", "Красный", 2],
+    "0x3498db": ["🔵", "Голубой", 0],
+    "0xFEE75C": ["🟡", "Жёлтый", 2],
     "0xe67e22": ["🟠", "Оранжевый", 4],
-    "0xFEE75C": ["🟡", "Жёлтый", 6],
+    "0xe74c3c": ["🔴", "Красный", 6],
     "0x1f8b4c": ["🟢", "Зелёный", 8],
-    "0x3498db": ["🔵", "Голубой", 10],
-    "0x7289da": ["🟣", "Фиолетовый", 12],
-    "0x000000": ["⚫", "Чёрный", 14],
-    "0xFFFFFF": ["⚪", "Белый", 16]
+    "0x7289da": ["🟣", "Фиолетовый", 10],
+    "0x000000": ["⚫", "Чёрный", 12],
+    "0xFFFFFF": ["⚪", "Белый", 14],
 }
 options = []
 
@@ -26,7 +26,7 @@ class MemeColors(commands.Cog):
 
     @app_commands.guilds(766386682047365190)
     @app_commands.command(description="Поставить крутой цвет для твоих мемов!")
-    async def color_memes(self, interaction: discord.Interaction):
+    async def set_color(self, interaction: discord.Interaction):
         try:
             user_level = get_user_level(interaction.user.id)
             color = get_user(interaction.user.id)["memes_color"]

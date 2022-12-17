@@ -5,10 +5,9 @@ from discord import app_commands
 from discord.ext import commands, tasks
 from discord.ext.commands import Cog
 
-from classes import StaticParameters
 from classes.DataBase import get_auto_meme_guilds, get_auto_meme_guild, add_auto_meme_guild, update_channel_in_guild, \
     delete_guild_from_auto_meme_list
-from classes.MemeObjects import Meme
+from classes.MemeObjects import RandomedMeme
 from cogs.memes_watching import LikeMeme
 
 
@@ -20,12 +19,14 @@ class MemeAutoPosting(commands.Cog):
     async def on_ready(self):
         self.auto_post_meme.start()
 
-    @tasks.loop(seconds=5)
+    @tasks.loop(minutes=30)
     async def auto_post_meme(self):
         for guild in get_auto_meme_guilds():
             try:
-                meme = Meme(self.bot)
-                await self.bot.get_channel(guild["channel_id"]).send(embed=meme.get_embed(), view=LikeMeme(meme_id=meme.get_meme_id()))
+                meme = RandomedMeme(self.bot)
+                await self.bot.get_channel(guild["channel_id"]).send(embed=meme.get_embed(title="❄ Случайный мемчик! ❄"), view=LikeMeme(
+                    meme_id=meme.get_meme_id(),
+                    bot=self.bot))
             except AttributeError as ex:
                 pass
 

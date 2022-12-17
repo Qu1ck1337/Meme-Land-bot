@@ -5,7 +5,7 @@ from discord import app_commands, ui
 from discord.ext import commands
 
 from classes.DataBase import get_meme_ids_from_user, get_top_users
-from classes.MemeObjects import Profile, Meme
+from classes.MemeObjects import Profile, Meme, SearchedMeme
 
 
 class MemeProfile(commands.Cog):
@@ -15,8 +15,9 @@ class MemeProfile(commands.Cog):
     @app_commands.guilds(766386682047365190)
     @app_commands.command(name="profile", description="Увидеть себя в зеркале")
     async def profile(self, interaction: discord.Interaction):
-        await interaction.response.send_message(embed=await Profile(interaction.user).get_user_profile(),
-                                                view=MemeLibraryCheckButton(interaction.user.id, self.bot))
+        profile = Profile(interaction.user)
+        await interaction.response.send_message(embed=await profile.get_user_profile_embed(),
+                                                view=MemeLibraryCheckButton(interaction.user.id, self.bot) if profile.get_user_memes_count() else None)
 
     @app_commands.guilds(766386682047365190)
     @app_commands.command(description="Таблица лидеров")
@@ -46,7 +47,7 @@ class MemeLibraryCheckButton(ui.View):
     async def accept_button(self, interaction_button: discord.Interaction, button: discord.ui.Button):
         ids = await get_meme_ids_from_user(self.author_id)
         profile_embed = interaction_button.message.embeds
-        profile_embed.append(Meme(self.bot, ids[0]).get_embed(f"Мем 1 / {len(ids)}"))
+        profile_embed.append(SearchedMeme(self.bot, ids[0]).get_embed(f"Мем 1 / {len(ids)}"))
         await interaction_button.response.edit_message(embeds=profile_embed,
                                                        view=MemeLibraryScroller(interaction_button, ids, self.bot) if len(ids) > 1 else None)
 
@@ -90,7 +91,7 @@ class MemeLibraryScroller(ui.View):
 
     def replace_embed(self, interaction_button):
         profile_embed = interaction_button.message.embeds
-        profile_embed[1] = Meme(self.bot, self.author_meme_ids[self.current_meme_id_index]).get_embed(
+        profile_embed[1] = SearchedMeme(self.bot, self.author_meme_ids[self.current_meme_id_index], add_view=False).get_embed(
             f"Мем {self.current_meme_id_index + 1} / {len(self.author_meme_ids)}")
         return profile_embed
 

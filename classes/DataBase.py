@@ -1,9 +1,12 @@
+import asyncio
+
 import discord
 import pymongo
 import requests
 from pymongo import MongoClient
 
 from classes.configs.DataBase_config import profile_settings, memes_settings
+from classes.DMManager import send_user_deleted_meme_dm_message
 
 CONNECTION_STRING = \
     "mongodb+srv://dbBot:j5x-Pkq-Q8u-mW2@data.frvp6.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
@@ -27,12 +30,34 @@ def get_meme(meme_id: int):
     return accepted_memes_collection.find_one({"meme_id": meme_id})
 
 
-def get_random_meme():
+async def get_random_meme(bot):
     while True:
         meme_col = accepted_memes_collection.aggregate([{"$sample": {"size": 1}}])
         for meme in meme_col:
             if requests.get(meme["url"]).ok:
                 return meme
+            else:
+                print("ban")
+                embed = discord.Embed(
+                    description=f'{"📔 **Описание:**" if meme["description"] != "" else ""} {meme["description"]}',
+                    colour=discord.Colour.red())
+                # todo убрать коментирование и exception
+                try:
+                    views = meme["views"]
+                except Exception:
+                    views = 0
+                embed.add_field(name="👁️ Просмотры", value=f"```{views} 👁️```")
+                embed.add_field(name="👍 Лайки", value=f'```{meme["likes"]} 👍```')
+                embed.add_field(name="🏷️ ID", value=f'```{meme["meme_id"]} 🏷```')
+                embed.set_image(url=meme["url"])
+                await send_user_deleted_meme_dm_message(
+                                                        meme_author=bot.get_user(meme["author"]),
+                                                        moderator=None,
+                                                        reason="Мем устарел (пробыл в боте больше 2х недель)",
+                                                        meme_embed=embed,
+                                                        meme_id=meme["meme_id"])
+                delete_meme_by_id_from_accepted_collection(meme["meme_id"])
+                continue
 
 
 async def update_meme(object, arg_name: str, value):
@@ -42,6 +67,7 @@ async def update_meme(object, arg_name: str, value):
 async def like_meme(meme_id: int):
     meme = get_meme(meme_id)
     accepted_memes_collection.update_one(meme, {"$set": {"likes": meme["likes"] + 1}})
+    profile_collection.update_one({"user_id": meme["author"]}, {"$inc": {"memes_likes": 1}})
 
 
 def add_meme_in_moderation_collection(url: str, description: str, message_id: int,
@@ -102,6 +128,7 @@ def transform_meme_from_moderation_to_accepted(message_id: int) -> int:
         "views": 0,
         "likes": 0
     })
+    profile_collection.update_one({"user_id": moderation_meme["author_id"]}, {"$inc": {"memes_count": 1}})
     remove_meme_from_moderation_collection(message_id)
     return meme_id
 
