@@ -15,9 +15,12 @@ class MemeProfile(commands.Cog):
     @app_commands.guilds(766386682047365190)
     @app_commands.command(name="profile", description="Увидеть себя в зеркале")
     async def profile(self, interaction: discord.Interaction):
+        await interaction.response.send_message(embed=discord.Embed(description="Взламываю Пентагон...",
+                                                                    colour=discord.Colour.blue()))
         profile = Profile(interaction.user)
-        await interaction.response.send_message(embed=await profile.get_user_profile_embed(),
-                                                view=MemeLibraryCheckButton(interaction.user.id, self.bot) if profile.get_user_memes_count() else None)
+        await interaction.edit_original_response(embed=await profile.get_user_profile_embed(),
+                                                 view=MemeLibraryCheckButton(interaction.user.id,
+                                                                             self.bot) if profile.get_user_memes_count() else _())
 
     @app_commands.guilds(766386682047365190)
     @app_commands.command(description="Таблица лидеров")
@@ -94,6 +97,10 @@ class MemeLibraryScroller(ui.View):
         profile_embed[1] = SearchedMeme(self.bot, self.author_meme_ids[self.current_meme_id_index], add_view=False).get_embed(
             f"Мем {self.current_meme_id_index + 1} / {len(self.author_meme_ids)}")
         return profile_embed
+
+
+class _(ui.View):
+    pass
 
 
 async def setup(bot):

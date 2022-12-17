@@ -19,12 +19,21 @@ class MemeAutoPosting(commands.Cog):
     async def on_ready(self):
         self.auto_post_meme.start()
 
-    @tasks.loop(minutes=30)
+    @tasks.loop(seconds=1)
     async def auto_post_meme(self):
+        channels = self.bot.get_all_channels()
+        channels_in_guilds = []
+        sorted_channels_in_guilds = []
         for guild in get_auto_meme_guilds():
+            channels_in_guilds.append(guild["channel_id"])
+        for channel in channels:
+            if channel.id in channels_in_guilds:
+                sorted_channels_in_guilds.append(channel)
+
+        for channel in sorted_channels_in_guilds:
             try:
                 meme = RandomedMeme(self.bot)
-                await self.bot.get_channel(guild["channel_id"]).send(embed=meme.get_embed(title="❄ Случайный мемчик! ❄"), view=LikeMeme(
+                await channel.send(embed=meme.get_embed(title="❄ Случайный мемчик! ❄"), view=LikeMeme(
                     meme_id=meme.get_meme_id(),
                     bot=self.bot))
             except AttributeError as ex:

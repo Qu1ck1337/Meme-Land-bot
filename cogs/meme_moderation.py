@@ -75,35 +75,31 @@ class ModerationButtons(ui.View):
 
     @discord.ui.button(label="Одобрить", custom_id="persistent_view:accept", style=discord.ButtonStyle.green)
     async def accept_button(self, interaction_button: discord.Interaction, button: discord.ui.Button):
-        try:
-            meme_id = transform_meme_from_moderation_to_accepted(interaction_button.message.id)
-            meme_author = self.bot.get_user(int(interaction_button.message.embeds[0].fields[2].value.split("\n")[1][3:]))
-            meme_description = interaction_button.message.embeds[0].description
-            await send_user_accepted_meme_dm_message(meme_author=meme_author,
-                                                   moderator=interaction_button.user,
-                                                   meme_id=meme_id,
-                                                   image_url=interaction_button.message.embeds[0].image.url,
-                                                   meme_description=meme_description)
+        meme_id = transform_meme_from_moderation_to_accepted(interaction_button.message.id)
+        meme_author = self.bot.get_user(int(interaction_button.message.embeds[0].fields[2].value.split("\n")[1][3:]))
+        meme_description = interaction_button.message.embeds[0].description
+        await send_user_accepted_meme_dm_message(meme_author=meme_author,
+                                                 moderator=interaction_button.user,
+                                                 meme_id=meme_id,
+                                                 image_url=interaction_button.message.embeds[0].image.url,
+                                                 meme_description=meme_description)
 
-            new_meme_embed = discord.Embed(title="🎄 Новый мем! 🎄",
-                                    description=meme_description,
-                                    colour=discord.Colour.blue(),
-                                    timestamp=datetime.datetime.now())
-            new_meme_embed.set_image(url=interaction_button.message.embeds[0].image.url)
-            new_meme_embed.add_field(name="🏷️ ID мема", value=f"```{meme_id} 🏷️```")
-            new_meme_embed.set_footer(text=f'⚡ Выкладывайте свои мемы: /upload_meme')
-            new_meme_embed.add_field(name="😎 Автор", value=f'```{meme_author}```')
-            new_meme_embed.add_field(name="👮 Одобрил модератор", value=f"```{interaction_button.user}```")
+        new_meme_embed = discord.Embed(title="🎄 Новый мем! 🎄",
+                                       description=meme_description,
+                                       colour=discord.Colour.blue(),
+                                       timestamp=datetime.datetime.now())
+        new_meme_embed.set_image(url=interaction_button.message.embeds[0].image.url)
+        new_meme_embed.add_field(name="🏷️ ID мема", value=f"```{meme_id} 🏷️```")
+        new_meme_embed.set_footer(text=f'⚡ Выкладывайте свои мемы: /upload_meme')
+        new_meme_embed.add_field(name="😎 Автор", value=f'```{meme_author}```')
+        new_meme_embed.add_field(name="👮 Одобрил модератор", value=f"```{interaction_button.user}```")
 
-            add_user_exp(user_id=meme_author.id, exp=25)
-
-            await StaticParameters.new_memes_channel.send(embed=new_meme_embed)
-            await interaction_button.message.delete()
-            await interaction_button.response.send_message("Мем принят", ephemeral=True)
-            await log_message(
-                f"Был принят мем модератором {interaction_button.user.mention} под ID: {meme_id}")
-        except Exception as ex:
-            print(ex)
+        add_user_exp(user_id=meme_author.id, exp=25)
+        await StaticParameters.new_memes_channel.send(embed=new_meme_embed)
+        await interaction_button.message.delete()
+        await interaction_button.response.send_message("Мем принят", ephemeral=True)
+        await log_message(
+            f"Был принят мем модератором {interaction_button.user.mention} под ID: {meme_id}")
 
     @discord.ui.button(label="Отклонить", custom_id="persistent_view:reject", style=discord.ButtonStyle.red)
     async def reject_button(self, interaction_button: discord.Interaction, button: discord.ui.Button):

@@ -68,7 +68,7 @@ class HelpSliders(discord.ui.View):
 class SupportView(discord.ui.View):
     @ui.button(label="Получить ссылку", emoji="🔗", style=discord.ButtonStyle.blurple)
     async def invite_button(self, interaction, button):
-        await interaction.user_data.send("Ссылка на сервер поддержки:\nhttps://discord.gg/meme-land-server-podderzhki-bota-892493256129118260")
+        await interaction.user.send("Ссылка на сервер поддержки:\nhttps://discord.gg/meme-land-server-podderzhki-bota-892493256129118260")
         await interaction.response.send_message("Ссылка на сервер отправлена в личные сообщения", ephemeral=True)
 
 
