@@ -1,12 +1,12 @@
 import asyncio
-import datetime
 import os
 import discord
+from discord import app_commands
 from discord.ext import commands, tasks
 
 from classes import StaticParameters
 from classes.DataBase import get_all_memes_in_moderation
-from classes.User import User
+from classes.Logger import log_to_console, error_to_console, success_to_console
 from classes.configs.memes_channels_config import logs_moderation_logs, new_memes_channel
 from cogs.meme_moderation import ModerationButtons
 from config import settings, beta_settings, release_settings
@@ -17,7 +17,6 @@ intents = discord.Intents(guilds=True, members=True, emojis=True, messages=True,
 bot = commands.Bot(command_prefix=settings['prefix'], help_command=None, intents=intents,
                    application_id=release_settings["application_id"] if settings["isBetaVersion"] is False else
                    beta_settings["application_id"])
-status_id = 0
 
 
 @bot.event
@@ -28,9 +27,9 @@ async def on_ready():
     await bot.tree.sync(guild=bot.get_guild(892493256129118260))
     await bot.tree.sync(guild=bot.get_guild(766386682047365190))
     await bot.tree.sync()
-    print(f'{datetime.datetime.now().strftime("%H:%M:%S")} | [INFO] Ready!')
-    await bot.change_presence(
-        activity=discord.Activity(type=discord.ActivityType.playing, name=f"Testing Version 3 Alpha"))
+    update_status.start()
+    success_to_console("Bot is ready")
+
 
 @bot.event
 async def setup_hook():
@@ -38,31 +37,25 @@ async def setup_hook():
         bot.add_view(ModerationButtons(bot), message_id=meme["message_id"])
 
 
-# @tasks.loop(minutes=1)
-# async def update_status():
-    # global status_id
-    # if status_id == 0:
-    #     await bot.change_presence(
-    #         activity=discord.Activity(type=discord.ActivityType.playing, name=f"/help | {len(bot.guilds)} серверов!"))
-    #     status_id += 1
-    # elif status_id == 1:
-    #     await bot.change_presence(
-    #         activity=discord.Activity(type=discord.ActivityType.playing, name=f"/help | {len(bot.users)} пользователей!"))
-    #     status_id = 0
+@tasks.loop(minutes=60)
+async def update_status():
+    count = len(bot.guilds) // 1000
+    await bot.change_presence(
+        activity=discord.Activity(type=discord.ActivityType.watching, name=f"/help | {count}К серверов"))
+    log_to_console("Update Bot activity")
 
 
 @bot.tree.error
 async def on_slash_command_error(interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
-    print(error)
-    # if error == discord.app_commands.errors.MissingPermissions:
-    #     await interaction.response.send_message(f"У вас недостаточно прав, чтобы использовать эту команду"
-    #                                             f"\n`Администратор` / `Управлять сервером` права нужны для этой команды.")
-    # else:
-    #     await interaction.response.send_message(f"Произошла ошибка во время выполнения команды, возможно у вас недостаточно прав, чтобы использовать команду, либо произошла ошибка в самом боте.")
+    if isinstance(error, app_commands.MissingPermissions):
+        await interaction.response.send_message(str(error), ephemeral=True)
+    else:
+        error_to_console(error)
 
 
 async def main():
-    print("Starting Bot")
+    print("Bot powered by Qu1ck_1337 (AKA EBOLA)")
+    log_to_console(f"Starting bot")
     async with bot:
         await load_extensions()
         if settings["isBetaVersion"] is not True:
@@ -72,22 +65,15 @@ async def main():
 
 
 async def load_extensions():
-    print("Loading extensions from Cogs \n---------------------")
+    log_to_console("Loading extensions from Cogs...")
     for filename in os.listdir("./cogs"):
         if filename.endswith(".py"):
             # cut off the .py from the file name
             await bot.load_extension(f"cogs.{filename[:-3]}")
 
-    # print("Loading extensions from Classes \n---------------------")
-    # for filename in os.listdir("./classes"):
-    #     if filename.endswith(".py"):
-    #         # cut off the .py from the file name
-    #         await bot.load_extension(f"classes.{filename[:-3]}")
-
 
 def get_user_name(user_id: int):
     return bot.get_user(user_id).display_name
-
 
 
 asyncio.run(main())

@@ -9,7 +9,7 @@ from classes import StaticParameters
 from classes.DataBase import add_meme_in_moderation_collection, remove_meme_from_moderation_collection, \
     transform_meme_from_moderation_to_accepted, delete_meme_by_id_from_accepted_collection, get_meme
 from classes.Exp import add_user_exp
-from classes.Logger import log_message
+from classes.Logger import log_message, log_to_console, error_to_console
 from classes.MemeObjects import Meme, SearchedMeme
 from classes.configs import memes_channels_config
 from classes.DMManager import send_user_reject_meme_dm_message, send_user_accepted_meme_dm_message, \
@@ -95,11 +95,15 @@ class ModerationButtons(ui.View):
         new_meme_embed.add_field(name="👮 Одобрил модератор", value=f"```{interaction_button.user}```")
 
         add_user_exp(user_id=meme_author.id, exp=25)
-        await StaticParameters.new_memes_channel.send(embed=new_meme_embed)
+        message = await StaticParameters.new_memes_channel.send(embed=new_meme_embed)
         await interaction_button.message.delete()
         await interaction_button.response.send_message("Мем принят", ephemeral=True)
         await log_message(
             f"Был принят мем модератором {interaction_button.user.mention} под ID: {meme_id}")
+        try:
+            await message.publish()
+        except discord.Forbidden or discord.HTTPException:
+            pass
 
     @discord.ui.button(label="Отклонить", custom_id="persistent_view:reject", style=discord.ButtonStyle.red)
     async def reject_button(self, interaction_button: discord.Interaction, button: discord.ui.Button):
@@ -129,5 +133,5 @@ class RejectReason(ui.Modal, title="Причина отклонения"):
 
 
 async def setup(bot):
-    print("Setup MemeModeration")
+    log_to_console(f"Loaded {__file__}")
     await bot.add_cog(MemeModeration(bot))

@@ -5,6 +5,7 @@ from discord import app_commands, ui
 from discord.ext import commands
 
 from classes.DataBase import get_meme_ids_from_user, get_top_users
+from classes.Logger import log_to_console
 from classes.MemeObjects import Profile, Meme, SearchedMeme
 
 
@@ -15,10 +16,8 @@ class MemeProfile(commands.Cog):
     @app_commands.guilds(766386682047365190)
     @app_commands.command(name="profile", description="Увидеть себя в зеркале")
     async def profile(self, interaction: discord.Interaction):
-        await interaction.response.send_message(embed=discord.Embed(description="Взламываю Пентагон...",
-                                                                    colour=discord.Colour.blue()))
         profile = Profile(interaction.user)
-        await interaction.edit_original_response(embed=await profile.get_user_profile_embed(),
+        await interaction.response.send_message(embed=await profile.get_user_profile_embed(),
                                                  view=MemeLibraryCheckButton(interaction.user.id,
                                                                              self.bot) if profile.get_user_memes_count() else _())
 
@@ -104,5 +103,5 @@ class _(ui.View):
 
 
 async def setup(bot):
-    print(f"Setup MemeProfile")
+    log_to_console(f"Loaded {__file__}")
     await bot.add_cog(MemeProfile(bot))

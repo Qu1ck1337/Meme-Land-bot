@@ -6,7 +6,8 @@ from discord.ext import commands
 
 from classes.DataBase import like_meme
 from classes.Exp import add_user_exp
-from classes.MemeObjects import Meme, RandomedMeme, SearchedMeme, NewMeme, PopularMeme
+from classes.Logger import log_to_console
+from classes.MemeObjects import RandomedMeme, SearchedMeme, NewMeme, PopularMeme
 
 
 class MemesWatching(commands.Cog):
@@ -23,7 +24,7 @@ class MemesWatching(commands.Cog):
             meme = RandomedMeme(self.bot)
         else:
             meme = SearchedMeme(self.bot, meme_id)
-        await interaction.response.send_message(embed=meme.get_embed(),
+        await interaction.response.send_message(embed=meme.get_embed("Мемчик"),
                                                 view=RandomMeme(meme.get_meme_id(), self.bot, interaction)
                                                 if meme_id is None or (meme_id is not None and meme.is_meme_exist()) else _())
         add_user_exp(interaction.user.id, random.randint(1, 5))
@@ -31,13 +32,13 @@ class MemesWatching(commands.Cog):
     @app_commands.guilds(766386682047365190)
     @app_commands.command(name="last_meme", description="Посмотреть свеженький мемчик")
     async def last_meme(self, interaction: discord.Interaction):
-        await interaction.response.send_message(embed=NewMeme(self.bot).get_embed())
+        await interaction.response.send_message(embed=NewMeme(self.bot).get_embed("Мем прямо из печи!"))
         add_user_exp(interaction.user.id, random.randint(1, 5))
 
     @app_commands.guilds(766386682047365190)
-    @app_commands.command(name="popular_meme", description="Увидеть самый лучший мем в боте")
-    async def popular_meme(self, interaction: discord.Interaction):
-        await interaction.response.send_message(embed=PopularMeme(self.bot).get_embed())
+    @app_commands.command(name="top_meme", description="Увидеть самый лучший мем в боте")
+    async def top_meme(self, interaction: discord.Interaction):
+        await interaction.response.send_message(embed=PopularMeme(self.bot).get_embed("Самый популярный мем"))
         add_user_exp(interaction.user.id, random.randint(1, 5))
 
 
@@ -76,7 +77,7 @@ class RandomMeme(LikeMeme, discord.ui.View):
     async def randomise_meme(self, interaction_button: discord.Interaction, button: discord.ui.Button):
         if interaction_button.user.id == self.command_author.user.id:
             meme = RandomedMeme(self.bot)
-            embed = meme.get_embed()
+            embed = meme.get_embed("Рандомный мемчик")
             self.meme_id = meme.get_meme_id()
             await interaction_button.response.edit_message(embed=embed,
                                                            view=RandomMeme(self.meme_id, self.bot, interaction_button))
@@ -84,5 +85,5 @@ class RandomMeme(LikeMeme, discord.ui.View):
 
 
 async def setup(bot):
-    print("Setup MemesWatching")
+    log_to_console(f"Loaded {__file__}")
     await bot.add_cog(MemesWatching(bot))

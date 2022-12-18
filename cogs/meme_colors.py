@@ -3,6 +3,7 @@ from discord import app_commands, ui
 from discord.ext import commands
 
 from classes.DataBase import get_user, get_user_level, update_user_color
+from classes.Logger import log_to_console
 
 colors = {
     "0x3498db": ["🔵", "Голубой", 0],
@@ -26,7 +27,7 @@ class MemeColors(commands.Cog):
 
     @app_commands.guilds(766386682047365190)
     @app_commands.command(description="Поставить крутой цвет для твоих мемов!")
-    async def set_color(self, interaction: discord.Interaction):
+    async def meme_color(self, interaction: discord.Interaction):
         try:
             user_level = get_user_level(interaction.user.id)
             color = get_user(interaction.user.id)["memes_color"]
@@ -75,5 +76,5 @@ class ChangeColor(ui.View):
 
 
 async def setup(bot):
-    print("Setup MemeColors")
+    log_to_console(f"Loaded {__file__}")
     await bot.add_cog(MemeColors(bot))

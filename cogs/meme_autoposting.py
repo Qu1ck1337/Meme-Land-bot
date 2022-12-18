@@ -7,6 +7,7 @@ from discord.ext.commands import Cog
 
 from classes.DataBase import get_auto_meme_guilds, get_auto_meme_guild, add_auto_meme_guild, update_channel_in_guild, \
     delete_guild_from_auto_meme_list
+from classes.Logger import log_to_console
 from classes.MemeObjects import RandomedMeme
 from cogs.memes_watching import LikeMeme
 
@@ -80,5 +81,5 @@ class MemeAutoPosting(commands.Cog):
 
 
 async def setup(bot):
-    print("Setup MemeAutoPosting")
+    log_to_console(f"Loaded {__file__}")
     await bot.add_cog(MemeAutoPosting(bot))

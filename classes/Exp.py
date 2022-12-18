@@ -1,5 +1,3 @@
-import discord
-
 from classes.DataBase import update_user_exp, get_user
 
 

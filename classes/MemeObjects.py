@@ -1,4 +1,5 @@
 import asyncio
+import random
 
 import discord
 import nest_asyncio
@@ -7,6 +8,9 @@ from classes import StaticParameters
 from classes.DataBase import get_reversed_meme, get_top_meme, get_random_meme, get_meme, get_user, add_viewing_to_meme
 from classes.Exp import count_to_next_level
 nest_asyncio.apply()
+
+
+christmas_emoji = ["❄", "🎄", "🎅", "<a:peeposnow:1050783484035203133>", "<a:peepochristmasdance:1050783481237606410>", "🎁"]
 
 
 class Meme:
@@ -20,8 +24,9 @@ class Meme:
             return discord.Embed(title="Ощибка!!!",
                                  description=f"Дядя я не найти ващ меме",
                                  colour=discord.Colour.red())
+        random_emoji = random.choice(christmas_emoji)
         embed = discord.Embed(
-            title=title if title is not None else None,
+            title=f"{random_emoji} {title} {random_emoji}" if title is not None else None,
             description=f'{"📔 **Описание:**" if self.meme_data["description"] != "" else ""} {self.meme_data["description"]}',
             colour=discord.Colour.from_str(get_user(self.meme_data['author'])["memes_color"]))
         #todo убрать коментирование и exception
@@ -84,12 +89,14 @@ class Profile:
         self.user_data = get_user(user.id)
 
     async def get_user_profile_embed(self):
-        embed = discord.Embed(title="Профиль самого лучшего юзера", colour=discord.Colour.from_str(self.user_data["memes_color"]))
+        random_emoji = random.choice(christmas_emoji)
+        embed = discord.Embed(title=f"{random_emoji} Профиль самого лучшего юзера {random_emoji}", colour=discord.Colour.from_str(self.user_data["memes_color"]))
         embed.add_field(name="Уровень:", value=f"```{self.user_data['level']} 📈```")
         embed.add_field(name="Текущий опыт:", value=f"```{self.user_data['exp']} / {count_to_next_level(current_level=self.user_data['level'])} ⚡``` ")
         embed.add_field(name="Мемов за всё время:", value=f"```{self.user_data['memes_count']} 🗂️```")
         embed.add_field(name="Лайков за всё время:", value=f"```{self.user_data['memes_likes']} 👍```")
         embed.set_thumbnail(url=self.user.avatar)
+        embed.set_footer(text="🖌️ Сменить цвет своих мемов: /meme_color")
         return embed
 
     def get_user_memes_count(self):

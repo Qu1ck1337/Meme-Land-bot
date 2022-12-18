@@ -2,6 +2,7 @@ import discord
 from discord import app_commands, ui
 from discord.ext import commands
 
+from classes.Logger import log_to_console
 from cogs.meme_moderation import process_and_send_meme_to_moderation_channel
 
 
@@ -42,5 +43,5 @@ class SendingMemeContextMenu(ui.Modal, title="Выложить мем"):
 
 
 async def setup(bot):
-    print("Setup MemesPosting")
+    log_to_console(f"Loaded {__file__}")
     await bot.add_cog(MemesPosting(bot))

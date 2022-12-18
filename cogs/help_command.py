@@ -2,6 +2,8 @@ import discord
 from discord import app_commands, ui
 from discord.ext import commands
 
+from classes.Logger import log_to_console
+
 
 class HelpCommand(commands.Cog):
     def __init__(self, bot):
@@ -73,5 +75,5 @@ class SupportView(discord.ui.View):
 
 
 async def setup(bot):
-    print("Setup HelpCommand")
+    log_to_console(f"Loaded {__file__}")
     await bot.add_cog(HelpCommand(bot))
