@@ -27,8 +27,8 @@ async def on_ready():
     await bot.tree.sync(guild=bot.get_guild(892493256129118260))
     await bot.tree.sync(guild=bot.get_guild(766386682047365190))
     await bot.tree.sync()
-    update_status.start()
     success_to_console("Bot is ready")
+    update_status.start()
 
 
 @bot.event

@@ -13,7 +13,6 @@ class MemeProfile(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @app_commands.guilds(766386682047365190)
     @app_commands.command(name="profile", description="Увидеть себя в зеркале")
     async def profile(self, interaction: discord.Interaction):
         profile = Profile(interaction.user)
@@ -21,7 +20,6 @@ class MemeProfile(commands.Cog):
                                                  view=MemeLibraryCheckButton(interaction.user.id,
                                                                              self.bot) if profile.get_user_memes_count() else _())
 
-    @app_commands.guilds(766386682047365190)
     @app_commands.command(description="Таблица лидеров")
     async def leaderboard(self, interaction: discord.Interaction):
         result = get_top_users()
