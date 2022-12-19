@@ -16,7 +16,6 @@ class MemesWatching(commands.Cog):
         self.moderation_channel = None
         self.post_meme = False
 
-    @app_commands.guilds(766386682047365190)
     @app_commands.command(name="meme", description="Посмотреть мем")
     @app_commands.describe(meme_id="ID мема")
     async def meme(self, interaction: discord.Interaction, meme_id: int = None):
@@ -29,13 +28,11 @@ class MemesWatching(commands.Cog):
                                                 if meme_id is None or (meme_id is not None and meme.is_meme_exist()) else _())
         add_user_exp(interaction.user.id, random.randint(1, 5))
 
-    @app_commands.guilds(766386682047365190)
     @app_commands.command(name="last_meme", description="Посмотреть свеженький мемчик")
     async def last_meme(self, interaction: discord.Interaction):
         await interaction.response.send_message(embed=NewMeme(self.bot).get_embed("Мем прямо из печи!"))
         add_user_exp(interaction.user.id, random.randint(1, 5))
 
-    @app_commands.guilds(766386682047365190)
     @app_commands.command(name="top_meme", description="Увидеть самый лучший мем в боте")
     async def top_meme(self, interaction: discord.Interaction):
         await interaction.response.send_message(embed=PopularMeme(self.bot).get_embed("Самый популярный мем"))

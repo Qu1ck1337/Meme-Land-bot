@@ -6,7 +6,7 @@ from discord.ext import commands, tasks
 
 from classes import StaticParameters
 from classes.DataBase import get_all_memes_in_moderation
-from classes.Logger import log_to_console, error_to_console, success_to_console
+from classes.Logger import log_to_console, error_to_console, success_to_console, warn_to_console
 from classes.configs.memes_channels_config import logs_moderation_logs, new_memes_channel
 from cogs.meme_moderation import ModerationButtons
 from config import settings, beta_settings, release_settings
@@ -39,9 +39,8 @@ async def setup_hook():
 
 @tasks.loop(minutes=60)
 async def update_status():
-    count = len(bot.guilds) // 1000
     await bot.change_presence(
-        activity=discord.Activity(type=discord.ActivityType.watching, name=f"/help | {count}К серверов"))
+        activity=discord.Activity(type=discord.ActivityType.watching, name=f"/help | {(len(bot.guilds) / 1000):.1f}К серверов"))
     log_to_console("Update Bot activity")
 
 
@@ -61,6 +60,7 @@ async def main():
         if settings["isBetaVersion"] is not True:
             await bot.start(release_settings['token'])
         else:
+            warn_to_console("Test version is running")
             await bot.start(beta_settings['token'])
 
 

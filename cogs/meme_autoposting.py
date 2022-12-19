@@ -20,7 +20,7 @@ class MemeAutoPosting(commands.Cog):
     async def on_ready(self):
         self.auto_post_meme.start()
 
-    @tasks.loop(seconds=1)
+    @tasks.loop(minutes=30)
     async def auto_post_meme(self):
         channels = self.bot.get_all_channels()
         channels_in_guilds = []
@@ -40,7 +40,6 @@ class MemeAutoPosting(commands.Cog):
             except AttributeError as ex:
                 pass
 
-    @app_commands.guilds(766386682047365190)
     @app_commands.command(description="Устанавливает автопостинг мемов раз в 30 минут")
     @app_commands.describe(channel="Канал, где нужно постить мемы (по умолчанию этот канал)")
     @app_commands.checks.has_permissions(administrator=True, manage_guild=True)
@@ -60,7 +59,6 @@ class MemeAutoPosting(commands.Cog):
                                 colour=discord.Colour.green(),
                                 timestamp=datetime.datetime.now()))
 
-    @app_commands.guilds(766386682047365190)
     @app_commands.command(description="Останавливает автопостинг мемов на этом сервере")
     @app_commands.checks.has_permissions(administrator=True, manage_guild=True)
     async def stop_auto_meme(self, interaction: discord.Interaction):

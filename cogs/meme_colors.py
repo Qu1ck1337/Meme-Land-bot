@@ -25,7 +25,6 @@ class MemeColors(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @app_commands.guilds(766386682047365190)
     @app_commands.command(description="Поставить крутой цвет для твоих мемов!")
     async def meme_color(self, interaction: discord.Interaction):
         try:
@@ -64,15 +63,6 @@ class ChangeColor(ui.View):
             await selector_interaction.response.send_message(f"Нужно достигнуть уровня **{colors[selector.values[0]][2]}**,"
                                                              f" чтобы разблокировать этот цвет.",
                                                              ephemeral=True)
-
-    # @ui.button(label="Случайный цвет")
-    # async def random_color(self, selector_interaction: discord.Interaction, button: ui.button):
-    #     original_embed = selector_interaction.message.embeds[0]
-    #     description = f"Текущий цвет: \n```Кастомный - ```"
-    #     await selector_interaction.response.edit_message(embed=discord.Embed(title=original_embed.title,
-    #                                                                          description=description,
-    #                                                                          colour=discord.Colour.random()),
-    #                                                      view=ChangeColor())
 
 
 async def setup(bot):

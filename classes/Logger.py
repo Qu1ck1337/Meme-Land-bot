@@ -19,3 +19,7 @@ def log_to_console(message: str):
 
 def error_to_console(message):
     print(f'\033[31m{datetime.datetime.now().strftime("%H:%M:%S")} [ERROR] | {message}')
+
+
+def warn_to_console(message):
+    print(f'\033[33m{datetime.datetime.now().strftime("%H:%M:%S")} [WARN] | {message}')

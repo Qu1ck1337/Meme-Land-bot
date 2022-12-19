@@ -10,9 +10,8 @@ class MemesPosting(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @app_commands.guilds(766386682047365190)
-    @app_commands.command(name="upload_meme", description="Запостить мемчик")
-    @app_commands.describe(attachment="Мем")
+    @app_commands.command(name="upload_meme", description="Выложить свой мем")
+    @app_commands.describe(attachment="Медиафайл")
     async def upload_meme(self, interaction: discord.Interaction, attachment: discord.Attachment):
         await interaction.response.send_modal(SendingMemeContextMenu(self.bot, attachment))
 

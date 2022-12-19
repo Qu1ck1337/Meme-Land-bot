@@ -29,12 +29,7 @@ class Meme:
             title=f"{random_emoji} {title} {random_emoji}" if title is not None else None,
             description=f'{"📔 **Описание:**" if self.meme_data["description"] != "" else ""} {self.meme_data["description"]}',
             colour=discord.Colour.from_str(get_user(self.meme_data['author'])["memes_color"]))
-        #todo убрать коментирование и exception
-        try:
-            views = self.meme_data["views"]
-        except Exception:
-            views = 0
-        embed.add_field(name="👁️ Просмотры", value=f"```{views} 👁️```")
+        embed.add_field(name="👁️ Просмотры", value=f"```{self.meme_data['views']} 👁️```")
         embed.add_field(name="👍 Лайки", value=f'```{self.meme_data["likes"]} 👍```')
         embed.add_field(name="😀 Автор", value=f"```{self.bot.get_user(self.meme_data['author'])}```")
         embed.set_image(url=self.meme_data["url"])

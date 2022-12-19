@@ -37,16 +37,10 @@ async def get_random_meme(bot):
             if requests.get(meme["url"]).ok:
                 return meme
             else:
-                print("ban")
                 embed = discord.Embed(
                     description=f'{"📔 **Описание:**" if meme["description"] != "" else ""} {meme["description"]}',
                     colour=discord.Colour.red())
-                # todo убрать коментирование и exception
-                try:
-                    views = meme["views"]
-                except Exception:
-                    views = 0
-                embed.add_field(name="👁️ Просмотры", value=f"```{views} 👁️```")
+                embed.add_field(name="👁️ Просмотры", value=f"```{meme['views']} 👁️```")
                 embed.add_field(name="👍 Лайки", value=f'```{meme["likes"]} 👍```')
                 embed.add_field(name="🏷️ ID", value=f'```{meme["meme_id"]} 🏷```')
                 embed.set_image(url=meme["url"])
@@ -106,11 +100,7 @@ def get_top_meme():
 
 def add_viewing_to_meme(meme_id: int):
     meme = get_meme(meme_id)
-    #todo убрать exception
-    try:
-        views = meme["views"] + 1
-    except Exception:
-        views = 1
+    views = meme["views"] + 1
     accepted_memes_collection.update_one(meme, {"$set": {"views": views}})
 
 

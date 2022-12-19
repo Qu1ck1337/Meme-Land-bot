@@ -18,7 +18,6 @@ class HelpCommand(commands.Cog):
         embed.set_footer(text=f"\"Спасибо за выбор нашего бота!\" 💗 - EBOLA (создатель бота)")
         await interaction.response.send_message(embed=embed, view=HelpSliders(self.bot))
 
-    @app_commands.guilds(766386682047365190)
     @app_commands.command(name="support", description="Помощь по командам бота")
     async def support(self, interaction: discord.Interaction):
         await interaction.response.send_message(embed=discord.Embed(title="🔨 Поддержка",
@@ -52,7 +51,7 @@ class HelpSliders(discord.ui.View):
                                                                               f"\n```/popular_meme - показывает самый лучший мем бота```"
                                                                               f"\n```/profile - показывает ваш мемный профиль```"
                                                                               f"\n```/leaderboard - показывает таблицу лидеров```"
-                                                                              f"\n```/color_memes - изменить цвет своих мемов```",
+                                                                              f"\n```/memes_color - изменить цвет своих мемов```",
                                                                   colour=discord.Colour.blue())
             embed.set_thumbnail(url=self.bot.application.icon)
             await interaction.response.edit_message(embed=embed)
