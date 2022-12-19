@@ -1,0 +1,3 @@
+meme_moderation_channel_id = 944667843482484746
+logs_moderation_logs = 1054390724382183524
+new_memes_channel = 944899159121612831
