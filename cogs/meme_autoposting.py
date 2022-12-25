@@ -1,4 +1,5 @@
 import datetime
+import sys
 
 import discord
 from discord import app_commands
@@ -22,6 +23,7 @@ class MemeAutoPosting(commands.Cog):
 
     @tasks.loop(minutes=30)
     async def auto_post_meme(self):
+        log_to_console("Starting Auto Posting memes")
         channels = self.bot.get_all_channels()
         channels_in_guilds = []
         sorted_channels_in_guilds = []
@@ -30,15 +32,15 @@ class MemeAutoPosting(commands.Cog):
         for channel in channels:
             if channel.id in channels_in_guilds:
                 sorted_channels_in_guilds.append(channel)
-
         for channel in sorted_channels_in_guilds:
             try:
                 meme = RandomedMeme(self.bot)
                 await channel.send(embed=meme.get_embed(title="❄ Случайный мемчик! ❄"), view=LikeMeme(
                     meme_id=meme.get_meme_id(),
                     bot=self.bot))
-            except AttributeError as ex:
-                pass
+            except Exception:
+                continue
+        log_to_console("Auto Posting meme done")
 
     @app_commands.command(description="Устанавливает автопостинг мемов раз в 30 минут")
     @app_commands.describe(channel="Канал, где нужно постить мемы (по умолчанию этот канал)")

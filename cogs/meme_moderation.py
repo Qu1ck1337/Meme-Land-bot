@@ -24,7 +24,7 @@ class MemeModeration(commands.Cog):
     async def on_ready(self):
         StaticParameters.moderation_channel = self.bot.get_channel(memes_channels_config.meme_moderation_channel_id)
 
-    @app_commands.guilds(766386682047365190)
+    @app_commands.guilds(892493256129118260)
     @app_commands.checks.has_permissions(administrator=True)
     @app_commands.command(name="delete_meme", description="Удалить мем под id")
     @app_commands.describe(meme_id="id мема для удаления")
@@ -97,13 +97,13 @@ class ModerationButtons(ui.View):
         add_user_exp(user_id=meme_author.id, exp=25)
         message = await StaticParameters.new_memes_channel.send(embed=new_meme_embed)
         await interaction_button.message.delete()
-        await interaction_button.response.send_message("Мем принят", ephemeral=True)
         await log_message(
             f"Был принят мем модератором {interaction_button.user.mention} под ID: {meme_id}")
         try:
             await message.publish()
         except discord.Forbidden or discord.HTTPException:
             pass
+        await interaction_button.response.send_message("Мем принят", ephemeral=True)
 
     @discord.ui.button(label="Отклонить", custom_id="persistent_view:reject", style=discord.ButtonStyle.red)
     async def reject_button(self, interaction_button: discord.Interaction, button: discord.ui.Button):
