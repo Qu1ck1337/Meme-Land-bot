@@ -15,7 +15,7 @@ class HelpCommand(commands.Cog):
                               color=0x42aaff)
         embed.add_field(name="🛎️ Доступные категории 🛎️", value="```👥 Пользовательские команды \n/meme /last_meme /popular_meme /send_meme /profile /leaderboard /color_memes```"
                                                           "\n```👮 Административные команды \n/auto_meme /stop_meme```")
-        embed.set_footer(text=f"\"Спасибо за выбор нашего бота!\" 💗 - EBOLA (создатель бота)")
+        embed.set_footer(text=f"\"Спасибо за выбор нашего бота!\" 💗 - EBOLA (создатель бота) | version {settings['version']}")
         await interaction.response.send_message(embed=embed, view=HelpSliders(self.bot))
 
     @app_commands.command(name="support", description="Помощь по командам бота")

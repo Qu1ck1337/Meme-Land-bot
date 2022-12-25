@@ -1,6 +1,7 @@
 import asyncio
 import os
 import discord
+import sdc_api_py
 from discord import app_commands
 from discord.ext import commands, tasks
 

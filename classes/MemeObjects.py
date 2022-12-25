@@ -52,8 +52,8 @@ def run_and_get(coro):
 
 
 class RandomedMeme(Meme):
-    def __init__(self, bot_client):
-        super().__init__(bot_client)
+    def __init__(self, bot_client, add_view=True):
+        super().__init__(bot_client, add_view)
         self.meme_data = run_and_get(get_random_meme(self.bot))
 
 

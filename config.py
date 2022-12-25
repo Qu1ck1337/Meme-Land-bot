@@ -2,8 +2,8 @@ settings = {
     "isBetaVersion": False,
     "guild": 892493256129118260,
     "prefix": "ml/",
-    "defaul_colour_of_embed": 0x42aaff,
-    "ignored_commands_channels": [896440547990995075, 896440570900263003]
+    "version": "1.0.1",
+    "SDC_monitoring_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijg5NDk1MjkzNTQ0Mjc0NzM5MyIsInBlcm1zIjowLCJpYXQiOjE2NzE5OTA1NzR9.iKJCSmSik3xKrGJGi62pe4H3RLVNZAbirng1BMU_L20"
 }
 
 release_settings = {

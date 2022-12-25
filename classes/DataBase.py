@@ -71,8 +71,7 @@ def add_meme_in_moderation_collection(url: str, description: str, message_id: in
         "url": url,
         "description": description,
         "message_id": message_id,
-        "author_id": interaction.user.id,
-        "guild": interaction.guild.id
+        "author_id": interaction.user.id
     })
 
 

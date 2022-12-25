@@ -34,7 +34,7 @@ class MemeAutoPosting(commands.Cog):
                 sorted_channels_in_guilds.append(channel)
         for channel in sorted_channels_in_guilds:
             try:
-                meme = RandomedMeme(self.bot)
+                meme = RandomedMeme(self.bot, False)
                 await channel.send(embed=meme.get_embed(title="❄ Случайный мемчик! ❄"), view=LikeMeme(
                     meme_id=meme.get_meme_id(),
                     bot=self.bot))
