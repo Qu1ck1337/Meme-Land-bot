@@ -1,7 +1,6 @@
 import asyncio
 import os
 import discord
-import sdc_api_py
 from discord import app_commands
 from discord.ext import commands, tasks
 
@@ -15,7 +14,7 @@ from config import settings, beta_settings, release_settings
 intents = discord.Intents(guilds=True, members=True, emojis=True, messages=True, reactions=True, typing=True)
                           #message_content=True)
 
-bot = commands.Bot(command_prefix=settings['prefix'], help_command=None, intents=intents,
+bot = commands.AutoShardedBot(command_prefix=settings['prefix'], help_command=None, intents=intents,
                    application_id=release_settings["application_id"] if settings["isBetaVersion"] is False else
                    beta_settings["application_id"])
 
@@ -76,6 +75,5 @@ async def load_extensions():
 
 def get_user_name(user_id: int):
     return bot.get_user(user_id).display_name
-
 
 asyncio.run(main())

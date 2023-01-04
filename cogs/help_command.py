@@ -3,6 +3,7 @@ from discord import app_commands, ui
 from discord.ext import commands
 
 from classes.Logger import log_to_console
+from config import settings
 
 
 class HelpCommand(commands.Cog):
