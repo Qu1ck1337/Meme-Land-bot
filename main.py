@@ -21,7 +21,6 @@ bot = commands.AutoShardedBot(command_prefix=settings['prefix'], help_command=No
 
 @bot.event
 async def on_ready():
-    print("coming ready")
     StaticParameters.main_bot_guild = bot.get_guild(892493256129118260)
     StaticParameters.log_channel = bot.get_channel(logs_moderation_logs)
     StaticParameters.new_memes_channel = bot.get_channel(new_memes_channel)

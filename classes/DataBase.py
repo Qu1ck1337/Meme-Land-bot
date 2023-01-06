@@ -1,5 +1,3 @@
-import asyncio
-
 import discord
 import pymongo
 import requests
@@ -21,7 +19,7 @@ accepted_memes_collection = db_memes[memes_settings["accepted_memes_collection"]
 memes_on_moderation_collection = db_memes[
     memes_settings["memes_on_moderation_collection"]]  # memes_on_moderation
 
-db_auto_post_guilds = client['auto_post_guilds']
+db_auto_post_guilds = client[memes_settings["auto_post_guilds_collection"]]
 auto_post_guilds_collection = db_auto_post_guilds["guilds"]
 
 
@@ -178,23 +176,27 @@ def get_top_users():
     return profile_collection.find().sort([("level", pymongo.DESCENDING), ("exp", pymongo.DESCENDING)]).limit(10)
 
 
-def get_auto_meme_guilds():
-    return auto_post_guilds_collection.find()
+def get_auto_meme_guilds(time: int=None):
+    if time is not None:
+        return auto_post_guilds_collection.find({"posting_time": time})
+    else:
+        return auto_post_guilds_collection.find()
 
 
 def get_auto_meme_guild(guild_id: int):
     return auto_post_guilds_collection.find_one({"guild_id": guild_id})
 
 
-def add_auto_meme_guild(guild_id: int, channel_id: int):
+def add_auto_meme_guild(guild_id: int, channel_id: int, time: int):
     auto_post_guilds_collection.insert_one({
         "guild_id": guild_id,
-        "channel_id": channel_id
+        "channel_id": channel_id,
+        "posting_time": time
     })
 
 
-def update_channel_in_guild(guild_data: dict, new_channel_id: int):
-    auto_post_guilds_collection.update_one(guild_data, {"$set": {"channel_id": new_channel_id}})
+def update_autoposing_in_guild(guild_data: dict, new_channel_id: int, time: int):
+    auto_post_guilds_collection.update_one(guild_data, {"$set": {"channel_id": new_channel_id, "posting_time": time}})
 
 
 def delete_guild_from_auto_meme_list(guild_data: dict):
