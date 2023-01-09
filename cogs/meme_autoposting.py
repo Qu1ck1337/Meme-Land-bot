@@ -32,7 +32,7 @@ class MemeAutoPosting(commands.Cog):
         for channel in self.bot.get_all_channels():
             for key, channel_ids in unsorted_channels_in_guilds.items():
                 if channel.id in channel_ids:
-                    self.add_or_update_to_sorted_list(key, channel)
+                    self.add_to_sorted_list(key, channel)
         self.auto_post_meme.start()
 
     @tasks.loop(minutes=15)
@@ -53,7 +53,6 @@ class MemeAutoPosting(commands.Cog):
             except discord.Forbidden:
                 guild = get_auto_meme_guild(channel.guild.id)
                 delete_guild_from_auto_meme_list(guild)
-                print("done!")
             except discord.HTTPException:
                 pass
         log_to_console("Auto Posting meme done")
@@ -73,11 +72,12 @@ class MemeAutoPosting(commands.Cog):
             channel = interaction.channel
 
         result = get_auto_meme_guild(interaction.guild_id)
+        self.remove_from_sorted_list_by_guild(channel.guild.id)
+        self.add_to_sorted_list(time.value, channel)
         if result is None:
             add_auto_meme_guild(interaction.guild_id, channel.id, time.value)
         else:
             update_autoposing_in_guild(result, channel.id, time.value)
-        self.add_or_update_to_sorted_list(time.value, channel)
 
         embed = discord.Embed(title="Круто! 🎉",
                               description=f"Автопостинг мемов успешно установлен на канале: {channel.mention}"
@@ -107,7 +107,6 @@ class MemeAutoPosting(commands.Cog):
 
     @app_commands.command(description="Посмотреть информацио об автопостинге на данном сервере")
     @app_commands.checks.has_permissions(administrator=True, manage_guild=True)
-    @app_commands.guilds(892493256129118260, 766386682047365190)
     async def auto_meme_info(self, interaction: discord.Interaction):
         auto_guild_data = get_auto_meme_guild(interaction.guild_id)
         if auto_guild_data is not None:
@@ -122,22 +121,24 @@ class MemeAutoPosting(commands.Cog):
                                                                                     f"\nВозможно вы не устанавливали автопостинг, отказались от рассылки, либо бот не смог скинуть мем в канале, что и привело к остановке рассылки",
                                                                         colour=discord.Colour.red()))
 
-    def add_or_update_to_sorted_list(self, key, value):
+    def add_to_sorted_list(self, key, value):
         if self.sorted_channels_in_guilds.get(key) is None:
             self.sorted_channels_in_guilds[key] = [value]
         else:
             self.sorted_channels_in_guilds[key].append(value)
-        print(self.sorted_channels_in_guilds)
 
-    def remove_from_sorted_list(self, key, value: int):
-        print(self.sorted_channels_in_guilds)
-        if self.sorted_channels_in_guilds.get(key) is not None:
+    def remove_from_sorted_list_by_guild(self, guild_id: int):
+        result = get_auto_meme_guild(guild_id)
+        if result is not None:
+            self.remove_from_sorted_list(result["posting_time"], result["channel_id"])
+
+    def remove_from_sorted_list(self, time, channel_id: int):
+        if self.sorted_channels_in_guilds.get(time) is not None:
             list_of_channels = []
-            for channel in self.sorted_channels_in_guilds[key]:
-                if channel.id != value:
+            for channel in self.sorted_channels_in_guilds[time]:
+                if channel.id != channel_id:
                     list_of_channels.append(channel)
-            self.sorted_channels_in_guilds[key] = list_of_channels
-        print(self.sorted_channels_in_guilds)
+            self.sorted_channels_in_guilds[time] = list_of_channels
 
 
 async def setup(bot):
