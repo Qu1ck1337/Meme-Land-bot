@@ -3,6 +3,7 @@ from discord import app_commands
 from discord.ext import commands, tasks
 from discord.ext.commands import Cog
 
+from classes.DataBase import get_auto_meme_guilds
 from classes.Logger import log_to_console
 from classes.MemeObjects import RandomedMeme
 
@@ -27,7 +28,33 @@ class MemeAutoPosting(commands.Cog):
         for time, channel_id in memes_threads.items():
             self.meme_threads[time] = self.bot.get_channel(channel_id)
             self.meme_threads_ids.append(channel_id)
-        self.auto_post_meme.start()
+        await self.attention()
+        #self.auto_post_meme.start()
+
+    async def attention(self):
+        log_to_console("Starting Auto Posting memes")
+        channels = self.bot.get_all_channels()
+        channels_in_guilds = []
+        sorted_channels_in_guilds = []
+        for guild in get_auto_meme_guilds():
+            channels_in_guilds.append(guild["channel_id"])
+        for channel in channels:
+            if channel.id in channels_in_guilds:
+                sorted_channels_in_guilds.append(channel)
+        for channel in sorted_channels_in_guilds:
+            try:
+                embed = discord.Embed(title="Изменение системы автопостинга ✏️",
+                                      description="Уважаемые администраторы, представляем вам новую систему автопостинга мемов <:jankychefskiss:1053994372464660500>\n\n"
+                                                  "Теперь бот использует систему подписок на рассылку, вместо привычной отправки сообщений! 😀 \n\n"
+                                                  "Для того, чтобы запустить/остановить автопостинг, нужно разрешить боту `управлять вебхуками`",
+                                      colour=discord.Colour.og_blurple())
+                embed.set_image(
+                    url="https://media.discordapp.net/attachments/1064128583200686162/1064174389739933796/image.png")
+                embed.set_footer(text="🚀 Чтобы возобновить автопостинг, используйте /auto_meme")
+                await channel.send(embed=embed)
+            except Exception:
+                continue
+        log_to_console("Auto Posting meme done")
 
     @tasks.loop(minutes=15)
     async def auto_post_meme(self):
@@ -51,8 +78,9 @@ class MemeAutoPosting(commands.Cog):
     async def auto_meme(self, interaction: discord.Interaction, time: app_commands.Choice[int]):
         webhooks = await interaction.channel.webhooks()
         if self.is_webhook_source_channel_in_meme_threads(webhooks):
-            await self.meme_threads[time.value].follow(destination=interaction.channel,
+            web = await self.meme_threads[time.value].follow(destination=interaction.channel,
                                                        reason="Subscribed to meme autoposting thread")
+            await web.edit(name=f"Meme Land | {time.name} случайный мем")
             embed = discord.Embed(title="Круто! 🎉",
                                   description=f"Автопостинг мемов успешно установлен на канале: {interaction.channel.mention}"
                                               f"\nВремя между мемами: `{time.value} минут`",
