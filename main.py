@@ -3,6 +3,7 @@ import os
 import discord
 from discord import app_commands
 from discord.ext import commands, tasks
+from discord.ext.commands import MissingPermissions
 
 from classes import StaticParameters
 from classes.DataBase import get_all_memes_in_moderation
@@ -21,7 +22,6 @@ bot = commands.AutoShardedBot(command_prefix=settings['prefix'], help_command=No
 
 @bot.event
 async def on_ready():
-    print("coming ready")
     StaticParameters.main_bot_guild = bot.get_guild(892493256129118260)
     StaticParameters.log_channel = bot.get_channel(logs_moderation_logs)
     StaticParameters.new_memes_channel = bot.get_channel(new_memes_channel)
@@ -49,6 +49,15 @@ async def update_status():
 async def on_slash_command_error(interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
     if isinstance(error, app_commands.MissingPermissions):
         await interaction.response.send_message(str(error), ephemeral=True)
+    elif isinstance(error, discord.app_commands.errors.CommandInvokeError):
+        if error.command.name == "stop_auto_meme" or error.command.name == "auto_meme":
+            embed = discord.Embed(title="Изменение системы автопостинга ✏️",
+                                  description="Теперь бот использует систему подписок на рассылку, вместо привычной отправки сообщений! 😀 \n\n"
+                                              "Для того, чтобы запустить/остановить автопостинг, нужно разрешить боту `управлять вебхуками`",
+                                  colour=discord.Colour.og_blurple())
+            embed.set_image(url="https://media.discordapp.net/attachments/1064128583200686162/1064174389739933796/image.png")
+            await interaction.response.send_message(embed=embed)
+        error_to_console(error)
     else:
         error_to_console(error)
 
