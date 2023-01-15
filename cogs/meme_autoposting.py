@@ -54,7 +54,7 @@ class MemeAutoPosting(commands.Cog):
         if self.is_webhook_source_channel_in_meme_threads(webhooks):
             web = await self.meme_threads[time.value].follow(destination=interaction.channel,
                                                        reason="Subscribed to meme autoposting thread")
-            await web.edit(name=f"Meme Land | {time.name} случайный мем")
+            await web.edit(name=f"Meme Land | {time.name} - рандомный мем")
             embed = discord.Embed(title="Круто! 🎉",
                                   description=f"Автопостинг мемов успешно установлен на канале: {interaction.channel.mention}"
                                               f"\nВремя между мемами: `{time.value} минут`",
