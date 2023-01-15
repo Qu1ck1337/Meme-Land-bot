@@ -1,64 +1,46 @@
-import datetime
-import sys
-
 import discord
 from discord import app_commands
 from discord.ext import commands, tasks
 from discord.ext.commands import Cog
 
-from classes.DataBase import get_auto_meme_guilds, get_auto_meme_guild, add_auto_meme_guild, update_autoposing_in_guild, \
-    delete_guild_from_auto_meme_list
 from classes.Logger import log_to_console
 from classes.MemeObjects import RandomedMeme
-from cogs.memes_watching import LikeMeme
+
+
+memes_threads = {
+    15: 1064136466659282954,
+    30: 1064136522024104027,
+    45: 1064136636889309215,
+    60: 1064136697752850463
+}
 
 
 class MemeAutoPosting(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.sorted_channels_in_guilds = {}
         self.time_left = 0
+        self.meme_threads = {}
+        self.meme_threads_ids = []
 
     @Cog.listener("on_ready")
     async def on_ready(self):
-        unsorted_channels_in_guilds = {}
-        auto_meme_guilds = get_auto_meme_guilds()
-        for guild in auto_meme_guilds:
-            if unsorted_channels_in_guilds.get(guild["posting_time"]) is None:
-                unsorted_channels_in_guilds[guild["posting_time"]] = [guild["channel_id"]]
-            else:
-                unsorted_channels_in_guilds[guild["posting_time"]].append(guild["channel_id"])
-
-        for channel in self.bot.get_all_channels():
-            for key, channel_ids in unsorted_channels_in_guilds.items():
-                if channel.id in channel_ids:
-                    self.add_to_sorted_list(key, channel)
+        for time, channel_id in memes_threads.items():
+            self.meme_threads[time] = self.bot.get_channel(channel_id)
+            self.meme_threads_ids.append(channel_id)
         self.auto_post_meme.start()
 
     @tasks.loop(minutes=15)
     async def auto_post_meme(self):
-        log_to_console("Starting Auto Posting memes")
-        channels = []
-        for key, value in self.sorted_channels_in_guilds.items():
-            if self.time_left % key == 0:
-                channels.extend(value)
-        self.time_left += 15
-
-        for channel in channels:
-            try:
+        for time, channel in self.meme_threads.items():
+            if self.time_left % time == 0:
                 meme = RandomedMeme(self.bot, False)
-                await channel.send(embed=meme.get_embed(title="❄ Случайный мемчик! ❄"), view=LikeMeme(
-                    meme_id=meme.get_meme_id(),
-                    bot=self.bot))
-            except discord.Forbidden:
-                guild = get_auto_meme_guild(channel.guild.id)
-                delete_guild_from_auto_meme_list(guild)
-            except discord.HTTPException:
-                pass
-        log_to_console("Auto Posting meme done")
+                message = await channel.send(embed=meme.get_embed(title="Случайный мемчик!"))
+                await message.publish()
+        self.time_left += 15
+        self.time_left %= 180
 
     @app_commands.command(description="Устанавливает автопостинг мемов раз в 30 минут")
-    @app_commands.describe(channel="Канал, где нужно постить мемы (по умолчанию этот канал)")
+    @app_commands.describe(time="Интервал времени между мемами")
     @app_commands.checks.has_permissions(administrator=True, manage_guild=True)
     @app_commands.choices(time=[
         app_commands.Choice(name="15 минут", value=15),
@@ -66,79 +48,64 @@ class MemeAutoPosting(commands.Cog):
         app_commands.Choice(name="45 минут", value=45),
         app_commands.Choice(name="1 час", value=60)
     ])
-    async def auto_meme(self, interaction: discord.Interaction, time: app_commands.Choice[int],
-                        channel: discord.TextChannel = None):
-        if channel is None:
-            channel = interaction.channel
-
-        result = get_auto_meme_guild(interaction.guild_id)
-        self.remove_from_sorted_list_by_guild(channel.guild.id)
-        self.add_to_sorted_list(time.value, channel)
-        if result is None:
-            add_auto_meme_guild(interaction.guild_id, channel.id, time.value)
+    async def auto_meme(self, interaction: discord.Interaction, time: app_commands.Choice[int]):
+        webhooks = await interaction.channel.webhooks()
+        if self.is_webhook_source_channel_in_meme_threads(webhooks):
+            await self.meme_threads[time.value].follow(destination=interaction.channel,
+                                                       reason="Subscribed to meme autoposting thread")
+            embed = discord.Embed(title="Круто! 🎉",
+                                  description=f"Автопостинг мемов успешно установлен на канале: {interaction.channel.mention}"
+                                              f"\nВремя между мемами: `{time.value} минут`",
+                                  colour=discord.Colour.green())
+            embed.set_footer(text="🔕 Чтобы остановить автопостинг мемов, используйте /stop_auto_meme")
+            await interaction.response.send_message(embed=embed)
         else:
-            update_autoposing_in_guild(result, channel.id, time.value)
-
-        embed = discord.Embed(title="Круто! 🎉",
-                              description=f"Автопостинг мемов успешно установлен на канале: {channel.mention}"
-                                          f"\nВремя между мемами: `{time.value} минут`",
-                              colour=discord.Colour.green())
-        embed.set_footer(text="🔕 Чтобы остановить автопостинг мемов используйте /stop_auto_meme")
-        await interaction.response.send_message(embed=embed)
+            embed = discord.Embed(title="Ошибка!",
+                                  description=f"Этот канал уже подписан на рассылку мемов",
+                                  colour=discord.Colour.red())
+            await interaction.response.send_message(embed=embed)
 
     @app_commands.command(description="Останавливает автопостинг мемов на этом сервере")
     @app_commands.checks.has_permissions(administrator=True, manage_guild=True)
-    async def stop_auto_meme(self, interaction: discord.Interaction):
-        result = get_auto_meme_guild(interaction.guild_id)
-        if result is not None:
-            self.remove_from_sorted_list(result["posting_time"], result["channel_id"])
-            delete_guild_from_auto_meme_list(result)
-            await interaction.response.send_message(
-                embed=discord.Embed(title="Приостановление 🔕",
-                                    description=f"Автопостинг мемов на этом сервере приостановлен 😢",
-                                    colour=discord.Colour.yellow(),
-                                    timestamp=datetime.datetime.now()))
+    @app_commands.describe(in_server="Остановить автопостинг на всём сервере?")
+    async def stop_auto_meme(self, interaction: discord.Interaction, in_server: bool = False):
+        ok = False
+        if in_server:
+            webhooks = await interaction.guild.webhooks()
+            for webhook in webhooks:
+                if webhook.source_channel.id in self.meme_threads_ids:
+                    await webhook.delete()
+                    ok = True
+            if ok:
+                embed = discord.Embed(title="Автопостинг на сервере приостановлен ⛔",
+                                      description="Рассылка мемов на этом сервере прекращена",
+                                      colour=discord.Colour.red())
+                embed.set_footer(text="🚀 Чтобы возобновить рассылку, используйте /auto_meme")
+                await interaction.response.send_message(embed=embed)
         else:
-            await interaction.response.send_message(
-                embed=discord.Embed(title="Ахтунг! ❌",
-                                    description=f"На сервере не был установлен автопостинг мемов",
-                                    colour=discord.Colour.red(),
-                                    timestamp=datetime.datetime.now()))
+            webhooks = await interaction.channel.webhooks()
+            for webhook in webhooks:
+                if webhook.source_channel.id in self.meme_threads_ids:
+                    await webhook.delete()
+                    ok = True
+                    break
+            if ok:
+                embed = discord.Embed(title="Автопостинг в канале приостановлен ⛔",
+                                      description="Рассылка мемов в этом канале прекращена",
+                                      colour=discord.Colour.red())
+                embed.set_footer(text="🚀 Чтобы возобновить рассылку, используйте /auto_meme")
+                await interaction.response.send_message(embed=embed)
+        if ok is False:
+            embed = discord.Embed(title="Автопостинг не был установлен на сервере",
+                                  colour=discord.Colour.yellow())
+            embed.set_footer(text="🚀 Чтобы начать рассылку, используйте /auto_meme")
+            await interaction.response.send_message(embed=embed)
 
-    @app_commands.command(description="Посмотреть информацио об автопостинге на данном сервере")
-    @app_commands.checks.has_permissions(administrator=True, manage_guild=True)
-    async def auto_meme_info(self, interaction: discord.Interaction):
-        auto_guild_data = get_auto_meme_guild(interaction.guild_id)
-        if auto_guild_data is not None:
-            await interaction.response.send_message(embed=discord.Embed(title=f"Информация об автопостинге на сервере {interaction.guild}",
-                                                                        description=f"Канал для автопостинга: <#{auto_guild_data['channel_id']}>"
-                                                                                    f"\nПромежуток времени между мемами: `{auto_guild_data['posting_time']} минут`",
-                                                                        colour=discord.Colour.green()))
-        else:
-            await interaction.response.send_message(embed=discord.Embed(title=f"Информация об автопостинге на сервере {interaction.guild}",
-                                                                        description=f"На сервере не установлен автопостинг мемов 😔"
-                                                                                    f"\n"
-                                                                                    f"\nВозможно вы не устанавливали автопостинг, отказались от рассылки, либо бот не смог скинуть мем в канале, что и привело к остановке рассылки",
-                                                                        colour=discord.Colour.red()))
-
-    def add_to_sorted_list(self, key, value):
-        if self.sorted_channels_in_guilds.get(key) is None:
-            self.sorted_channels_in_guilds[key] = [value]
-        else:
-            self.sorted_channels_in_guilds[key].append(value)
-
-    def remove_from_sorted_list_by_guild(self, guild_id: int):
-        result = get_auto_meme_guild(guild_id)
-        if result is not None:
-            self.remove_from_sorted_list(result["posting_time"], result["channel_id"])
-
-    def remove_from_sorted_list(self, time, channel_id: int):
-        if self.sorted_channels_in_guilds.get(time) is not None:
-            list_of_channels = []
-            for channel in self.sorted_channels_in_guilds[time]:
-                if channel.id != channel_id:
-                    list_of_channels.append(channel)
-            self.sorted_channels_in_guilds[time] = list_of_channels
+    def is_webhook_source_channel_in_meme_threads(self, webhook_list):
+        for webhook in webhook_list:
+            if webhook.source_channel.id in self.meme_threads_ids:
+                return False
+        return True
 
 
 async def setup(bot):
