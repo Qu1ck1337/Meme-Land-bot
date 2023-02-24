@@ -24,6 +24,9 @@ class SendingMemeContextMenu(ui.Modal, title="Выложить мем"):
 
     description = ui.TextInput(label="Описание", placeholder="Я люблю Meme Land!", style=discord.TextStyle.short,
                                required=False)
+    tags = ui.TextInput(label="Теги (до 5 тегов)", style=discord.TextStyle.paragraph,
+                                   placeholder='Каждый тег отделяется Запятой (пример: "привет, мир" - #привет #мир)',
+                                   required=False)
     users_agreement = ui.TextInput(label="Соглашение перед отправкой", style=discord.TextStyle.paragraph,
                                    placeholder='Нажимая на кнопку "отправить", вы соглашаетесь '
                                                'с правилами модерации мемов. Мы за позитив в боте =)',

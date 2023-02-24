@@ -32,7 +32,9 @@ class Meme:
         embed.add_field(name="👁️ Просмотры", value=f"```{self.meme_data['views']} 👁️```")
         embed.add_field(name="👍 Лайки", value=f'```{self.meme_data["likes"]} 👍```')
         embed.add_field(name="😀 Автор", value=f"```{self.bot.get_user(self.meme_data['author'])}```")
+        embed.add_field(name="🏷️ Теги", value="`#игры` `#прикол` `#ржака` `#minecraft` `#123333341414141414141414141414141`", inline=True)
         embed.set_image(url=self.meme_data["url"])
+        #embed.set_image(url="file:///F:\Meme_Land_Bot_Reloaded\classes\hello-world.jpg")
         embed.set_footer(text=f"🔨 Сервер поддержки: /support | 🏷️ ID мема: {self.meme_data['meme_id']}", icon_url=StaticParameters.main_bot_guild.icon)
         if self.add_view:
             add_viewing_to_meme(self.meme_data["meme_id"])
