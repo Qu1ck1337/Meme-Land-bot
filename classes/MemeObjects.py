@@ -84,7 +84,7 @@ class Profile:
         self.user_data = get_user(user.id)
 
     async def get_user_profile_embed(self):
-        random_emoji = random.choice(christmas_emoji)
+        random_emoji = random.choice(emojis_list)
         embed = discord.Embed(title=f"{random_emoji} Профиль самого лучшего юзера {random_emoji}", colour=discord.Colour.from_str(self.user_data["memes_color"]))
         embed.add_field(name="Уровень:", value=f"```{self.user_data['level']} 📈```")
         embed.add_field(name="Текущий опыт:", value=f"```{self.user_data['exp']} / {count_to_next_level(current_level=self.user_data['level'])} ⚡``` ")
