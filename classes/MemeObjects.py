@@ -10,7 +10,7 @@ from classes.Exp import count_to_next_level
 nest_asyncio.apply()
 
 
-christmas_emoji = ["❄", "🎄", "🎅", "<a:peeposnow:1050783484035203133>", "<a:peepochristmasdance:1050783481237606410>", "🎁"]
+emojis_list = ["🌷", "🌼", "💐", "🌸"]
 
 
 class Meme:
