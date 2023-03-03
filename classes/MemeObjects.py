@@ -24,7 +24,7 @@ class Meme:
             return discord.Embed(title="Ощибка!!!",
                                  description=f"Дядя я не найти ващ меме",
                                  colour=discord.Colour.red())
-        random_emoji = random.choice(christmas_emoji)
+        random_emoji = random.choice(emojis_list)
         embed = discord.Embed(
             title=f"{random_emoji} {title} {random_emoji}" if title is not None else None,
             description=f'{"📔 **Описание:**" if self.meme_data["description"] != "" else ""} {self.meme_data["description"]}',
