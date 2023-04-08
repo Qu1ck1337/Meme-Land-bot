@@ -57,9 +57,9 @@ async def on_slash_command_error(interaction: discord.Interaction, error: discor
                                   colour=discord.Colour.og_blurple())
             embed.set_image(url="https://media.discordapp.net/attachments/1064128583200686162/1064174389739933796/image.png")
             await interaction.response.send_message(embed=embed)
-        error_to_console(error)
+        error_to_console(error.with_traceback())
     else:
-        error_to_console(error)
+        error_to_console(error.with_traceback())
 
 
 async def main():

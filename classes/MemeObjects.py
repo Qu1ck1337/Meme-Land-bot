@@ -5,7 +5,8 @@ import discord
 import nest_asyncio
 
 from classes import StaticParameters
-from classes.DataBase import get_reversed_meme, get_top_meme, get_random_meme, get_meme, get_user, add_viewing_to_meme
+from classes.DataBase import get_reversed_meme, get_top_meme, get_random_meme, get_meme, get_user, add_viewing_to_meme, \
+    get_meme_by_tag
 from classes.Exp import count_to_next_level
 nest_asyncio.apply()
 
@@ -19,7 +20,7 @@ class Meme:
         self.add_view = add_view
         self.meme_data = None
 
-    def get_embed(self, title: str=None) -> discord.Embed:
+    def get_embed(self, title: str=None):
         if self.meme_data is None:
             return discord.Embed(title="Ощибка!!!",
                                  description=f"Дядя я не найти ващ меме",
@@ -28,13 +29,16 @@ class Meme:
         embed = discord.Embed(
             title=f"{random_emoji} {title} {random_emoji}" if title is not None else None,
             description=f'{"📔 **Описание:**" if self.meme_data["description"] != "" else ""} {self.meme_data["description"]}',
-            colour=discord.Colour.from_str(get_user(self.meme_data['author'])["memes_color"]))
+            colour=discord.Colour.from_str(get_user(self.meme_data["author"])["memes_color"]))
         embed.add_field(name="👁️ Просмотры", value=f"```{self.meme_data['views']} 👁️```")
-        embed.add_field(name="👍 Лайки", value=f'```{self.meme_data["likes"]} 👍```')
+        embed.add_field(name="👍 Лайки", value=f"```{self.meme_data['likes']} 👍```")
         embed.add_field(name="😀 Автор", value=f"```{self.bot.get_user(self.meme_data['author'])}```")
-        embed.add_field(name="🏷️ Теги", value="`#игры` `#прикол` `#ржака` `#minecraft` `#123333341414141414141414141414141`", inline=True)
+        embed.add_field(name="🏷️ Теги", value=f"`#{'` `#'.join(self.meme_data['tags'].split(' '))}`", inline=True)
+        # meme_file = FileManager().get_meme_local_url(self.meme_data["meme_id"])
+        # embed.set_image(url=f"attachment://{meme_file.filename}")
         embed.set_image(url=self.meme_data["url"])
         #embed.set_image(url="file:///F:\Meme_Land_Bot_Reloaded\classes\hello-world.jpg")
+        # print(self.meme_data["url"])
         embed.set_footer(text=f"🔨 Сервер поддержки: /support | 🏷️ ID мема: {self.meme_data['meme_id']}", icon_url=StaticParameters.main_bot_guild.icon)
         if self.add_view:
             add_viewing_to_meme(self.meme_data["meme_id"])
@@ -60,9 +64,13 @@ class RandomedMeme(Meme):
 
 
 class SearchedMeme(Meme):
-    def __init__(self, bot_client, meme_id: int, add_view=True):
+    def __init__(self, bot_client, meme_id: int=None, tag: str=None, add_view=True):
         super().__init__(bot_client, add_view)
-        self.meme_data = get_meme(meme_id)
+        if meme_id is not None:
+            self.meme_data = get_meme(meme_id)
+        elif tag is not None:
+            self.meme_data = get_meme_by_tag(tag)
+            print(self.meme_data)
 
     def is_meme_exist(self) -> bool:
         return True if self.meme_data is not None else False

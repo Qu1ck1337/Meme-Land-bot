@@ -18,14 +18,19 @@ class MemesWatching(commands.Cog):
 
     @app_commands.command(name="meme", description="Посмотреть мем")
     @app_commands.describe(meme_id="ID мема")
-    async def meme(self, interaction: discord.Interaction, meme_id: int = None):
+    async def meme(self, interaction: discord.Interaction, meme_id: int=None, tag: str=None):
         if meme_id is None:
-            meme = RandomedMeme(self.bot)
+            if tag is not None:
+                meme = SearchedMeme(self.bot, tag=tag)
+            else:
+                meme = RandomedMeme(self.bot)
         else:
-            meme = SearchedMeme(self.bot, meme_id)
-        await interaction.response.send_message(embed=meme.get_embed("Мемчик"),
+            meme = SearchedMeme(self.bot, meme_id=meme_id)
+        embed = meme.get_embed("Мемчик")
+        await interaction.response.send_message(embed=embed,
                                                 view=RandomMeme(meme.get_meme_id(), self.bot, interaction)
-                                                if meme_id is None or (meme_id is not None and meme.is_meme_exist()) else _())
+                                                if meme_id is None or (meme_id is not None and meme.is_meme_exist()) else _()
+                                                )
         add_user_exp(interaction.user.id, random.randint(1, 5))
 
     @app_commands.command(name="last_meme", description="Посмотреть свеженький мемчик")

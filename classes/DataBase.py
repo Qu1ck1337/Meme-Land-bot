@@ -3,6 +3,7 @@ import pymongo
 import requests
 from pymongo import MongoClient
 
+from classes import FileManager
 from classes.configs.DataBase_config import profile_settings, memes_settings
 from classes.DMManager import send_user_deleted_meme_dm_message
 
@@ -23,9 +24,17 @@ db_auto_post_guilds = client[memes_settings["auto_post_guilds_collection"]]
 auto_post_guilds_collection = db_auto_post_guilds["guilds"]
 
 
-# region Memes_Interaction
+# region Meme
 def get_meme(meme_id: int):
     return accepted_memes_collection.find_one({"meme_id": meme_id})
+
+
+def get_meme_by_tag(tag: str):
+    return accepted_memes_collection.find_one({"meme_id": f"/{tag}/"})#{"$regex": tag, '$options': 'i'}})
+
+
+def get_all_memes():
+    return accepted_memes_collection.find()
 
 
 async def get_random_meme(bot):
@@ -63,13 +72,14 @@ async def like_meme(meme_id: int):
 
 
 def add_meme_in_moderation_collection(url: str, description: str, message_id: int,
-                                            interaction: discord.Interaction):
+                                      interaction: discord.Interaction, tags: list):
     description = description[16:] if description is not None else ""
     memes_on_moderation_collection.insert_one({
         "url": url,
         "description": description,
         "message_id": message_id,
-        "author_id": interaction.user.id
+        "author_id": interaction.user.id,
+        "tags": " ".join(tags)
     })
 
 
@@ -101,7 +111,7 @@ def add_viewing_to_meme(meme_id: int):
     accepted_memes_collection.update_one(meme, {"$set": {"views": views}})
 
 
-def transform_meme_from_moderation_to_accepted(message_id: int) -> int:
+def transfer_meme_from_moderation_to_accepted(message_id: int) -> int:
     moderation_meme = get_meme_from_moderation_collection(message_id)
     meme_id = 1
     for last_meme in accepted_memes_collection.find().sort('_id', -1).limit(1):
@@ -111,7 +121,8 @@ def transform_meme_from_moderation_to_accepted(message_id: int) -> int:
         "meme_id": meme_id,
         "author": moderation_meme["author_id"],
         "description": moderation_meme["description"],
-        "url": moderation_meme["url"],
+        "url": FileManager.save_meme(moderation_meme["url"]),
+        "tags": moderation_meme["tags"],
         "views": 0,
         "likes": 0
     })
@@ -124,10 +135,10 @@ def delete_meme_by_id_from_accepted_collection(meme_id: int):
     result = accepted_memes_collection.delete_one({"meme_id": meme_id})
     return True if result.deleted_count > 0 else False
 
-
+print(delete_meme_by_id_from_accepted_collection(1))
 # endregion
 
-
+#region User
 def get_user(_id: int):
     user = profile_collection.find_one({"user_id": _id})
     if user is not None: return user
@@ -174,8 +185,9 @@ async def get_meme_ids_from_user(user_id: int):
 
 def get_top_users():
     return profile_collection.find().sort([("level", pymongo.DESCENDING), ("exp", pymongo.DESCENDING)]).limit(10)
+#endregion
 
-
+#region Guild
 def get_auto_meme_guilds(time: int=None):
     if time is not None:
         return auto_post_guilds_collection.find({"posting_time": time})
@@ -201,15 +213,4 @@ def update_autoposing_in_guild(guild_data: dict, new_channel_id: int, time: int)
 
 def delete_guild_from_auto_meme_list(guild_data: dict):
     auto_post_guilds_collection.delete_one(guild_data)
-
-    # async def update_user_data(self, user_data: dict):
-    #     print("start1")
-    #     user_data["exp"] = 0  # 571
-    #     print(user_data)
-    #     db_data = await self.get_user(user_data["id"])
-    #     print(db_data)
-    #     if db_data is not None:
-    #         print("t")
-    #         await profile_collection.update_one(db_data, {"$set": user_data})
-    #     print("done")
-    #     print(await self.get_user(user_data["id"]))
+#endregion
