@@ -19,9 +19,6 @@ from classes.DMManager import send_user_reject_meme_dm_message, send_user_accept
 class MemeModeration(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-
-    @Cog.listener("on_ready")
-    async def on_ready(self):
         StaticParameters.moderation_channel = self.bot.get_channel(memes_channels_config.meme_moderation_channel_id)
 
     @app_commands.guilds(892493256129118260)

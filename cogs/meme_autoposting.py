@@ -23,8 +23,6 @@ class MemeAutoPosting(commands.Cog):
         self.meme_threads = {}
         self.meme_threads_ids = []
 
-    @Cog.listener("on_ready")
-    async def on_ready(self):
         for time, channel_id in memes_threads.items():
             self.meme_threads[time] = self.bot.get_channel(channel_id)
             self.meme_threads_ids.append(channel_id)
