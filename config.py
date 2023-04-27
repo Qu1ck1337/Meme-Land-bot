@@ -3,7 +3,7 @@ settings = {
     "guild": 892493256129118260,
     "prefix": "ml/",
     "version": "1.1.2",
-    "SDC_monitoring_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijg5NDk1MjkzNTQ0Mjc0NzM5MyIsInBlcm1zIjowLCJpYXQiOjE2NzE5OTA1NzR9.iKJCSmSik3xKrGJGi62pe4H3RLVNZAbirng1BMU_L20"
+    "SDC_monitoring_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijg5NDk1MjkzNTQ0Mjc0NzM5MyIsInBlcm1zIjowLCJpYXQiOjE2ODI2MTM1Nzl9.aBZ2DjWQEN-ii3HznM-hLU8il22fKrUnqslvZgrzrYc"
 }
 
 release_settings = {

@@ -48,7 +48,6 @@ async def update_status():
 
 @bot.tree.error
 async def on_slash_command_error(interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
-    print(error.with_traceback())
     if isinstance(error, app_commands.MissingPermissions):
         await interaction.response.send_message(str(error), ephemeral=True)
     elif isinstance(error, discord.app_commands.errors.CommandInvokeError):
