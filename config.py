@@ -1,5 +1,5 @@
 settings = {
-    "isBetaVersion": True,
+    "isBetaVersion": False,
     "guild": 892493256129118260,
     "prefix": "ml/",
     "version": "1.1.2",
