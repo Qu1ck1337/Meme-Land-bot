@@ -22,6 +22,7 @@ bot = commands.AutoShardedBot(command_prefix=settings['prefix'], help_command=No
 
 @bot.event
 async def on_ready():
+    await load_extensions()
     StaticParameters.main_bot_guild = bot.get_guild(892493256129118260)
     StaticParameters.log_channel = bot.get_channel(logs_moderation_logs)
     StaticParameters.new_memes_channel = bot.get_channel(new_memes_channel)
@@ -47,6 +48,7 @@ async def update_status():
 
 @bot.tree.error
 async def on_slash_command_error(interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
+    print(error.with_traceback())
     if isinstance(error, app_commands.MissingPermissions):
         await interaction.response.send_message(str(error), ephemeral=True)
     elif isinstance(error, discord.app_commands.errors.CommandInvokeError):
@@ -66,7 +68,6 @@ async def main():
     print("Bot powered by Qu1ck_1337 (AKA EBOLA)")
     log_to_console(f"Starting bot")
     async with bot:
-        await load_extensions()
         if settings["isBetaVersion"] is not True:
             await bot.start(release_settings['token'])
         else:

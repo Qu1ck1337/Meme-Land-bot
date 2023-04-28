@@ -29,8 +29,8 @@ def get_meme(meme_id: int):
     return accepted_memes_collection.find_one({"meme_id": meme_id})
 
 
-def get_meme_by_tag(tag: str):
-    return accepted_memes_collection.find_one({"meme_id": f"/{tag}/"})#{"$regex": tag, '$options': 'i'}})
+def get_memes_by_tag(tag: str):
+    return accepted_memes_collection.find({"tags": tag})
 
 
 def get_all_memes():
@@ -79,7 +79,7 @@ def add_meme_in_moderation_collection(url: str, description: str, message_id: in
         "description": description,
         "message_id": message_id,
         "author_id": interaction.user.id,
-        "tags": " ".join(tags)
+        "tags": tags
     })
 
 
@@ -135,7 +135,6 @@ def delete_meme_by_id_from_accepted_collection(meme_id: int):
     result = accepted_memes_collection.delete_one({"meme_id": meme_id})
     return True if result.deleted_count > 0 else False
 
-print(delete_meme_by_id_from_accepted_collection(1))
 # endregion
 
 #region User

@@ -6,7 +6,7 @@ import nest_asyncio
 
 from classes import StaticParameters
 from classes.DataBase import get_reversed_meme, get_top_meme, get_random_meme, get_meme, get_user, add_viewing_to_meme, \
-    get_meme_by_tag
+    get_memes_by_tag
 from classes.Exp import count_to_next_level
 nest_asyncio.apply()
 
@@ -33,7 +33,7 @@ class Meme:
         embed.add_field(name="👁️ Просмотры", value=f"```{self.meme_data['views']} 👁️```")
         embed.add_field(name="👍 Лайки", value=f"```{self.meme_data['likes']} 👍```")
         embed.add_field(name="😀 Автор", value=f"```{self.bot.get_user(self.meme_data['author'])}```")
-        embed.add_field(name="🏷️ Теги", value=f"`#{'` `#'.join(self.meme_data['tags'].split(' '))}`", inline=True)
+        embed.add_field(name="🏷️ Теги", value=f"`#{'` `#'.join(self.meme_data['tags'])}`", inline=True)
         # meme_file = FileManager().get_meme_local_url(self.meme_data["meme_id"])
         # embed.set_image(url=f"attachment://{meme_file.filename}")
         embed.set_image(url=self.meme_data["url"])
@@ -64,15 +64,33 @@ class RandomedMeme(Meme):
 
 
 class SearchedMeme(Meme):
-    def __init__(self, bot_client, meme_id: int=None, tag: str=None, add_view=True):
+    def __init__(self, bot_client, meme_id: int, add_view=True):
         super().__init__(bot_client, add_view)
-        if meme_id is not None:
-            self.meme_data = get_meme(meme_id)
-        elif tag is not None:
-            self.meme_data = get_meme_by_tag(tag)
-            print(self.meme_data)
+        self.meme_data = get_meme(meme_id)
 
     def is_meme_exist(self) -> bool:
+        return True if self.meme_data is not None else False
+
+
+class TaggedMeme(Meme):
+    def __init__(self, bot_client, tag: str, add_view=True):
+        super().__init__(bot_client, add_view)
+        self.tag = tag
+        self.memes_with_tag = list(get_memes_by_tag(tag))
+        self.meme_data = None
+        self.index = 0
+        if len(self.memes_with_tag) > 0:
+            self.meme_data = self.memes_with_tag[self.index]
+        print(self.meme_data)
+
+    def next(self):
+        self.index += 1
+        if len(self.memes_with_tag) > self.index:
+            self.meme_data = self.memes_with_tag[self.index]
+            return True
+        return False
+
+    def is_meme_object_exist(self) -> bool:
         return True if self.meme_data is not None else False
 
 
