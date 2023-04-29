@@ -1,3 +1,5 @@
+import random
+
 import discord
 import pymongo
 import requests
@@ -30,7 +32,9 @@ def get_meme(meme_id: int):
 
 
 def get_memes_by_tag(tag: str):
-    return accepted_memes_collection.find({"tags": tag})
+    memes = list(accepted_memes_collection.find({"tags": tag}))
+    random.shuffle(memes)
+    return memes
 
 
 def get_all_memes():

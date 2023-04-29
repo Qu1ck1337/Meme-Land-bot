@@ -48,6 +48,7 @@ class MemeAutoPosting(commands.Cog):
         app_commands.Choice(name="1 час", value=60)
     ])
     async def auto_meme(self, interaction: discord.Interaction, time: app_commands.Choice[int]):
+        await interaction.response.defer()
         webhooks = await interaction.channel.webhooks()
         if self.is_webhook_source_channel_in_meme_threads(webhooks):
             web = await self.meme_threads[time.value].follow(destination=interaction.channel,
@@ -58,17 +59,18 @@ class MemeAutoPosting(commands.Cog):
                                               f"\nВремя между мемами: `{time.value} минут`",
                                   colour=discord.Colour.green())
             embed.set_footer(text="🔕 Чтобы остановить автопостинг мемов, используйте /stop_auto_meme")
-            await interaction.response.send_message(embed=embed)
+            await interaction.edit_original_response(embed=embed)
         else:
             embed = discord.Embed(title="Ошибка!",
                                   description=f"Этот канал уже подписан на рассылку мемов",
                                   colour=discord.Colour.red())
-            await interaction.response.send_message(embed=embed)
+            await interaction.edit_original_response(embed=embed)
 
     @app_commands.command(description="Останавливает автопостинг мемов на этом сервере")
     @app_commands.checks.has_permissions(administrator=True, manage_guild=True)
     @app_commands.describe(in_server="Остановить автопостинг на всём сервере?")
     async def stop_auto_meme(self, interaction: discord.Interaction, in_server: bool = False):
+        await interaction.response.defer()
         ok = False
         if in_server:
             webhooks = await interaction.guild.webhooks()
@@ -81,7 +83,7 @@ class MemeAutoPosting(commands.Cog):
                                       description="Рассылка мемов на этом сервере прекращена",
                                       colour=discord.Colour.red())
                 embed.set_footer(text="🚀 Чтобы возобновить рассылку, используйте /auto_meme")
-                await interaction.response.send_message(embed=embed)
+                await interaction.edit_original_response(embed=embed)
         else:
             webhooks = await interaction.channel.webhooks()
             for webhook in webhooks:
@@ -94,12 +96,12 @@ class MemeAutoPosting(commands.Cog):
                                       description="Рассылка мемов в этом канале прекращена",
                                       colour=discord.Colour.red())
                 embed.set_footer(text="🚀 Чтобы возобновить рассылку, используйте /auto_meme")
-                await interaction.response.send_message(embed=embed)
+                await interaction.edit_original_response(embed=embed)
         if ok is False:
             embed = discord.Embed(title="Автопостинг не был установлен на сервере",
                                   colour=discord.Colour.yellow())
             embed.set_footer(text="🚀 Чтобы начать рассылку, используйте /auto_meme")
-            await interaction.response.send_message(embed=embed)
+            await interaction.edit_original_response(embed=embed)
 
     def is_webhook_source_channel_in_meme_threads(self, webhook_list):
         for webhook in webhook_list:

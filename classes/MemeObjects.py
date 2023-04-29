@@ -33,7 +33,7 @@ class Meme:
         embed.add_field(name="👁️ Просмотры", value=f"```{self.meme_data['views']} 👁️```")
         embed.add_field(name="👍 Лайки", value=f"```{self.meme_data['likes']} 👍```")
         embed.add_field(name="😀 Автор", value=f"```{self.bot.get_user(self.meme_data['author'])}```")
-        embed.add_field(name="🏷️ Теги", value=f"`#{'` `#'.join(self.meme_data['tags'])}`", inline=True)
+        embed.add_field(name="🏷️ Теги", value=f"{'`#'+ '` `#'.join(self.meme_data['tags']) + '`' if len(self.meme_data['tags']) > 0 else '`Отсутствуют`'}", inline=True)
         # meme_file = FileManager().get_meme_local_url(self.meme_data["meme_id"])
         # embed.set_image(url=f"attachment://{meme_file.filename}")
         embed.set_image(url=self.meme_data["url"])
@@ -76,7 +76,7 @@ class TaggedMeme(Meme):
     def __init__(self, bot_client, tag: str, add_view=True):
         super().__init__(bot_client, add_view)
         self.tag = tag
-        self.memes_with_tag = list(get_memes_by_tag(tag))
+        self.memes_with_tag = get_memes_by_tag(tag)
         self.meme_data = None
         self.index = 0
         if len(self.memes_with_tag) > 0:
@@ -87,6 +87,19 @@ class TaggedMeme(Meme):
         self.index += 1
         if len(self.memes_with_tag) > self.index:
             self.meme_data = self.memes_with_tag[self.index]
+
+    def is_next_exists(self):
+        if len(self.memes_with_tag) > self.index + 1:
+            return True
+        return False
+
+    def prev(self):
+        if self.index > 0:
+            self.index -= 1
+            self.meme_data = self.memes_with_tag[self.index]
+
+    def is_prev_exists(self):
+        if self.index - 1 >= 0:
             return True
         return False
 

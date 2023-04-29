@@ -11,9 +11,19 @@ class MemesPosting(commands.Cog):
         self.bot = bot
 
     @app_commands.command(name="upload_meme", description="Выложить свой мем")
-    @app_commands.describe(attachment="Медиафайл")
+    @app_commands.describe(attachment="Медиафайл (поддерживаемые форматы: .jepg .jpg .png .gif)")
     async def upload_meme(self, interaction: discord.Interaction, attachment: discord.Attachment):
-        await interaction.response.send_modal(SendingMemeContextMenu(self.bot, attachment))
+
+        if attachment.filename.endswith((".jepg", ".jpg", ".png", ".gif")):
+                                     # 30MB
+                if attachment.size < 31_457_280:
+                    await interaction.response.send_modal(SendingMemeContextMenu(self.bot, attachment))
+                else:
+                    await interaction.response.send_message(ephemeral=True,
+                                                            content="Максимальный размер файла: **30МБ**")
+        else:
+            await interaction.response.send_message(ephemeral=True,
+                                                    content="Поддерживаемые форматы файла: .jepg .jpg .png .gif")
 
 
 class SendingMemeContextMenu(ui.Modal, title="Выложить мем"):
@@ -34,10 +44,14 @@ class SendingMemeContextMenu(ui.Modal, title="Выложить мем"):
                                    required=False)
 
     async def on_submit(self, interaction: discord.Interaction):
-        tags = self.tags.value.replace(" ", "").split(",")
+        tags = self.tags.value.replace(" ", "")
+        if len(tags) > 0:
+            tags = tags.split(",")
+        else:
+            tags = []
         embed = discord.Embed(description=f"📔 **Описание:** {self.description}" if len(self.description.value.strip()) > 0 else None,
                               colour=discord.Colour.blue())
-        embed.add_field(name="Теги", value=f"`#{'` `#'.join(tags)}`")
+        embed.add_field(name="Теги", value=f"{'`#' + '` `#'.join(tags) + '`' if len(tags) > 0 else '`Отсутствуют`'}")
         embed.set_author(icon_url=interaction.user.avatar, name=f'{interaction.user.name} отправляет мем на модерацию!')
         embed.set_image(url=self.attachment.url)
         embed.set_footer(text="Обычно мемы проверяются меньше 24 часов 😋")
