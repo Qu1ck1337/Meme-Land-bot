@@ -18,6 +18,7 @@ intents = discord.Intents(guilds=True, members=True, emojis=True, messages=True,
 bot = commands.AutoShardedBot(command_prefix=settings['prefix'], help_command=None, intents=intents,
                    application_id=release_settings["application_id"] if settings["isBetaVersion"] is False else
                    beta_settings["application_id"])
+is_bot_ready = False
 
 
 @bot.event
@@ -30,7 +31,7 @@ async def on_ready():
     await bot.tree.sync(guild=bot.get_guild(766386682047365190))
     await bot.tree.sync()
     success_to_console("Bot is ready")
-    update_status.start()
+    is_bot_ready = True
 
 
 @bot.event
@@ -39,29 +40,28 @@ async def setup_hook():
         bot.add_view(ModerationButtons(bot), message_id=meme["message_id"])
 
 
-@tasks.loop(minutes=60)
-async def update_status():
-    await bot.change_presence(
-        activity=discord.Activity(type=discord.ActivityType.watching, name=f"/help | {(len(bot.guilds) / 1000):.1f}К серверов"))
-    log_to_console("Update Bot activity")
-
-
 @bot.tree.error
 async def on_slash_command_error(interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
-    print(error.with_traceback())
-    if isinstance(error, app_commands.MissingPermissions):
-        await interaction.response.send_message(str(error), ephemeral=True)
-    elif isinstance(error, discord.app_commands.errors.CommandInvokeError):
-        if error.command.name == "stop_auto_meme" or error.command.name == "auto_meme":
-            embed = discord.Embed(title="Изменение системы автопостинга ✏️",
-                                  description="Теперь бот использует систему подписок на рассылку, вместо привычной отправки сообщений! 😀 \n\n"
-                                              "Для того, чтобы запустить/остановить автопостинг, нужно разрешить боту `управлять вебхуками`",
-                                  colour=discord.Colour.og_blurple())
-            embed.set_image(url="https://media.discordapp.net/attachments/1064128583200686162/1064174389739933796/image.png")
-            await interaction.response.send_message(embed=embed)
-        error_to_console(error.with_traceback())
-    else:
-        error_to_console(error.with_traceback())
+    error_text = str(error)
+    if is_bot_ready is False:
+        error_text = "🤖 Бот включается, во время запуска команды не работают!"
+    try:
+        await interaction.response.send_message(error_text)
+    except discord.errors.InteractionResponded:
+        await interaction.edit_original_response(content=str(error_text))
+    # if isinstance(error, app_commands.MissingPermissions):
+    #     await interaction.response.send_message(str(error), ephemeral=True)
+    # elif isinstance(error, discord.app_commands.errors.CommandInvokeError):
+    #     if error.command.name == "stop_auto_meme" or error.command.name == "auto_meme":
+    #         embed = discord.Embed(title="Изменение системы автопостинга ✏️",
+    #                               description="Теперь бот использует систему подписок на рассылку, вместо привычной отправки сообщений! 😀 \n\n"
+    #                                           "Для того, чтобы запустить/остановить автопостинг, нужно разрешить боту `управлять вебхуками`",
+    #                               colour=discord.Colour.og_blurple())
+    #         embed.set_image(url="https://media.discordapp.net/attachments/1064128583200686162/1064174389739933796/image.png")
+    #         await interaction.response.send_message(embed=embed)
+    #     error_to_console(error.with_traceback())
+    # else:
+    #     error_to_console(error.with_traceback())
 
 
 async def main():
