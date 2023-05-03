@@ -6,7 +6,7 @@ from discord.ext import commands
 
 from classes.DataBase import get_meme_ids_from_user, get_top_users
 from classes.Logger import log_to_console
-from classes.MemeObjects import Profile, Meme, SearchedMeme
+from classes.MemeObjects import Profile, SearchedMeme
 
 
 class MemeProfile(commands.Cog):
@@ -22,6 +22,7 @@ class MemeProfile(commands.Cog):
 
     @app_commands.command(description="Таблица лидеров")
     async def leaderboard(self, interaction: discord.Interaction):
+        await interaction.response.defer()
         result = get_top_users()
         embed = discord.Embed(title="Топ-10 лучших мемеров бота Meme Land",
                               colour=discord.Colour.blue(),
@@ -34,7 +35,7 @@ class MemeProfile(commands.Cog):
         embed.set_footer(text=f"Подробнее о себе /profile",
                          icon_url=interaction.user.avatar)
 
-        await interaction.response.send_message(embed=embed)
+        await interaction.edit_original_response(embed=embed)
 
 
 class MemeLibraryCheckButton(ui.View):
@@ -45,10 +46,11 @@ class MemeLibraryCheckButton(ui.View):
 
     @discord.ui.button(label="Заглянуть в архив", emoji="🗂️", style=discord.ButtonStyle.green)
     async def accept_button(self, interaction_button: discord.Interaction, button: discord.ui.Button):
+        await interaction_button.response.defer()
         ids = await get_meme_ids_from_user(self.author_id)
         profile_embed = interaction_button.message.embeds
         profile_embed.append(SearchedMeme(self.bot, ids[0]).get_embed(f"Мем 1 / {len(ids)}"))
-        await interaction_button.response.edit_message(embeds=profile_embed,
+        await interaction_button.edit_original_response(embeds=profile_embed,
                                                        view=MemeLibraryScroller(interaction_button, ids, self.bot) if len(ids) > 1 else None)
 
 
@@ -59,12 +61,6 @@ class MemeLibraryScroller(ui.View):
         self.author_meme_ids = author_meme_ids
         self.current_meme_id_index = 0
         self.bot = bot
-
-    # async def on_timeout(self):
-    #     for child in self.children:
-    #         child.disabled = True
-    #         print(child)
-    #     await self.interaction.edit_original_response(view=self)
 
     @discord.ui.button(label="Назад", emoji="◀", style=discord.ButtonStyle.green)
     async def previous_button(self, interaction_button: discord.Interaction, button: discord.ui.Button):
