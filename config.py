@@ -2,7 +2,7 @@ settings = {
     "isBetaVersion": False,
     "guild": 892493256129118260,
     "prefix": "ml/",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "SDC_monitoring_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijg5NDk1MjkzNTQ0Mjc0NzM5MyIsInBlcm1zIjowLCJpYXQiOjE2ODI2MTM1Nzl9.aBZ2DjWQEN-ii3HznM-hLU8il22fKrUnqslvZgrzrYc"
 }
 
