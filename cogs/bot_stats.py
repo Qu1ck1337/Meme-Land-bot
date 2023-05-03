@@ -51,7 +51,6 @@ class BotStats(commands.Cog):
                                                                     colour=discord.Colour.blurple()))
 
 
-
 async def setup(bot):
     log_to_console(f"Loaded {__file__}")
     await bot.add_cog(BotStats(bot))

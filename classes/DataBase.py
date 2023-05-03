@@ -2,12 +2,10 @@ import random
 
 import discord
 import pymongo
-import requests
 from pymongo import MongoClient
 
 from classes import FileManager
 from classes.configs.DataBase_config import profile_settings, memes_settings
-from classes.DMManager import send_user_deleted_meme_dm_message
 
 CONNECTION_STRING = \
     "mongodb+srv://dbBot:j5x-Pkq-Q8u-mW2@data.frvp6.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
@@ -42,27 +40,28 @@ def get_all_memes():
 
 
 async def get_random_meme(bot):
-    while True:
-        meme_col = accepted_memes_collection.aggregate([{"$sample": {"size": 1}}])
-        for meme in meme_col:
-            if requests.get(meme["url"]).ok:
-                return meme
-            else:
-                embed = discord.Embed(
-                    description=f'{"📔 **Описание:**" if meme["description"] != "" else ""} {meme["description"]}',
-                    colour=discord.Colour.red())
-                embed.add_field(name="👁️ Просмотры", value=f"```{meme['views']} 👁️```")
-                embed.add_field(name="👍 Лайки", value=f'```{meme["likes"]} 👍```')
-                embed.add_field(name="🏷️ ID", value=f'```{meme["meme_id"]} 🏷```')
-                embed.set_image(url=meme["url"])
-                await send_user_deleted_meme_dm_message(
-                                                        meme_author=bot.get_user(meme["author"]),
-                                                        moderator=None,
-                                                        reason="Мем устарел (пробыл в боте больше 2х недель)",
-                                                        meme_embed=embed,
-                                                        meme_id=meme["meme_id"])
-                delete_meme_by_id_from_accepted_collection(meme["meme_id"])
-                continue
+    return list(accepted_memes_collection.aggregate([{"$sample": {"size": 1}}]))[0]
+    # while True:
+    #     meme_col = accepted_memes_collection.aggregate([{"$sample": {"size": 1}}])
+        # for meme in meme_col:
+        #     if requests.get(meme["url"]).ok:
+        #         return meme
+            # else:
+            #     embed = discord.Embed(
+            #         description=f'{"📔 **Описание:**" if meme["description"] != "" else ""} {meme["description"]}',
+            #         colour=discord.Colour.red())
+            #     embed.add_field(name="👁️ Просмотры", value=f"```{meme['views']} 👁️```")
+            #     embed.add_field(name="👍 Лайки", value=f'```{meme["likes"]} 👍```')
+            #     embed.add_field(name="🏷️ ID", value=f'```{meme["meme_id"]} 🏷```')
+            #     embed.set_image(url=meme["url"])
+            #     await send_user_deleted_meme_dm_message(
+            #                                             meme_author=bot.get_user(meme["author"]),
+            #                                             moderator=None,
+            #                                             reason="Мем устарел (пробыл в боте больше 2х недель)",
+            #                                             meme_embed=embed,
+            #                                             meme_id=meme["meme_id"])
+            #     delete_meme_by_id_from_accepted_collection(meme["meme_id"])
+            #     continue
 
 
 async def update_meme(object, arg_name: str, value):
@@ -217,3 +216,25 @@ def update_autoposing_in_guild(guild_data: dict, new_channel_id: int, time: int)
 def delete_guild_from_auto_meme_list(guild_data: dict):
     auto_post_guilds_collection.delete_one(guild_data)
 #endregion
+
+# meme_id = 1
+# for meme in db_memes["accepted_memes"].find():
+#     new_url = save_meme(meme["url"])
+#     print(new_url)
+#     if new_url is not None:
+#         accepted_memes_collection.insert_one({
+#             "meme_id": meme_id,
+#             "author": meme["author"],
+#             "description": meme["description"],
+#             "url": new_url,
+#             "likes": meme["likes"],
+#             "views": meme["views"],
+#             "tags": []
+#         })
+#         meme_id += 1
+
+# for meme in db_memes["accepted_memes"].find():
+#     db_memes["accepted_memes"].delete_one(meme)
+#
+# for meme in db_memes["accepted_memes_test"].find():
+#     db_memes["accepted_memes"].insert_one(meme)

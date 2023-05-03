@@ -3,7 +3,6 @@ import datetime
 import discord
 from discord import ui, app_commands
 from discord.ext import commands
-from discord.ext.commands import Cog
 
 from classes import StaticParameters
 from classes.DataBase import add_meme_in_moderation_collection, remove_meme_from_moderation_collection, \
@@ -76,6 +75,7 @@ class ModerationButtons(ui.View):
         meme_id = transfer_meme_from_moderation_to_accepted(interaction_button.message.id)
         meme_author = self.bot.get_user(int(interaction_button.message.embeds[0].fields[-1].value.split("\n")[1][3:]))
         meme_description = interaction_button.message.embeds[0].description
+        tags = interaction_button.message.embeds[0].fields[0].value
         await send_user_accepted_meme_dm_message(meme_author=meme_author,
                                                  moderator=interaction_button.user,
                                                  meme_id=meme_id,
@@ -87,6 +87,7 @@ class ModerationButtons(ui.View):
                                        colour=discord.Colour.blue(),
                                        timestamp=datetime.datetime.now())
         new_meme_embed.set_image(url=interaction_button.message.embeds[0].image.url)
+        new_meme_embed.add_field(name="🏷️ Теги", value=tags)
         new_meme_embed.add_field(name="🏷️ ID мема", value=f"```{meme_id} 🏷️```")
         new_meme_embed.set_footer(text=f'⚡ Выкладывайте свои мемы: /upload_meme')
         new_meme_embed.add_field(name="😎 Автор", value=f'```{meme_author}```')

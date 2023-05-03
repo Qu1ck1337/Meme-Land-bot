@@ -6,7 +6,7 @@ from discord.ext import commands
 
 from classes.DataBase import get_meme_ids_from_user, get_top_users
 from classes.Logger import log_to_console
-from classes.MemeObjects import Profile, Meme, SearchedMeme
+from classes.MemeObjects import Profile, SearchedMeme
 
 
 class MemeProfile(commands.Cog):
@@ -61,12 +61,6 @@ class MemeLibraryScroller(ui.View):
         self.author_meme_ids = author_meme_ids
         self.current_meme_id_index = 0
         self.bot = bot
-
-    # async def on_timeout(self):
-    #     for child in self.children:
-    #         child.disabled = True
-    #         print(child)
-    #     await self.interaction.edit_original_response(view=self)
 
     @discord.ui.button(label="Назад", emoji="◀", style=discord.ButtonStyle.green)
     async def previous_button(self, interaction_button: discord.Interaction, button: discord.ui.Button):

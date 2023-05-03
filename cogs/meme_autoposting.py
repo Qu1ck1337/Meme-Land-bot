@@ -26,7 +26,7 @@ class MemeAutoPosting(commands.Cog):
         for time, channel_id in memes_threads.items():
             self.meme_threads[time] = self.bot.get_channel(channel_id)
             self.meme_threads_ids.append(channel_id)
-        #self.auto_post_meme.start()
+        self.auto_post_meme.start()
 
     @tasks.loop(minutes=15)
     async def auto_post_meme(self):

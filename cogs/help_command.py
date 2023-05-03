@@ -14,9 +14,10 @@ class HelpCommand(commands.Cog):
     async def help(self, interaction: discord.Interaction):
         embed = discord.Embed(title="🔨 Помощь по командам бота", description=f"Выберите определённую категорию, чтобы узнать подробнее о командах бота.",
                               color=0x42aaff)
-        embed.add_field(name="🛎️ Доступные категории 🛎️", value="```👥 Пользовательские команды \n/meme /last_meme /popular_meme /send_meme /profile /leaderboard /color_memes```"
-                                                          "\n```👮 Административные команды \n/auto_meme /stop_meme```")
-        embed.set_footer(text=f"\"Спасибо за выбор нашего бота!\" 💗 - EBOLA (создатель бота) | version {settings['version']}")
+        embed.add_field(name="🛎️ Доступные категории 🛎️", value="```👥 Пользовательские команды \n/meme /last_meme /top_meme /upload_meme /profile /leaderboard /memes_color "
+                                                                "/vote /stats```"
+                                                          "\n```👮 Команды администраторов \n/auto_meme /stop_meme```")
+        embed.set_footer(text=f"\"С любовью) 💗\" - EBOLA#1337 | version {settings['version']}")
         await interaction.response.send_message(embed=embed, view=HelpSliders(self.bot), ephemeral=True)
 
     @app_commands.command(name="support", description="Помощь по командам бота")
@@ -37,7 +38,7 @@ class HelpSliders(discord.ui.View):
     @discord.ui.select(placeholder="Выберите категорию", options=[discord.SelectOption(label="Пользовательские команды",
                                                                                        emoji="👥",
                                                                                        value="0"),
-                                                                  discord.SelectOption(label="Административные команды",
+                                                                  discord.SelectOption(label="Команды администраторов",
                                                                                        emoji="👮",
                                                                                        value="1")
                                                                   ])
@@ -48,11 +49,14 @@ class HelpSliders(discord.ui.View):
                                                                               f"\n```/upload_meme <картинка> - отправить мем на модерацию```"
                                                                               f"\n```/meme - показывает случайный мем```"
                                                                               f"\n```/meme <id мема> - показывает мем с нужным id```"
+                                                                              f"\n```/meme <тег> - ищет мемы по тегу```"
                                                                               f"\n```/last_meme - показывает последний залитый мем```"
                                                                               f"\n```/top_meme - показывает самый лучший мем бота```"
                                                                               f"\n```/profile - показывает ваш мемный профиль```"
-                                                                              f"\n```/leaderboard - показывает таблицу лидеров```"
-                                                                              f"\n```/memes_color - изменить цвет своих мемов```",
+                                                                              f"\n```/leaderboard - показывает таблицу лидеров бота```"
+                                                                              f"\n```/memes_color - изменить цвет своих мемов```"
+                                                                              f"\n```/vote - проголосовать за бота```"
+                                                                              f"\n```/stats - посмотреть статистику бота```",
                                                                   colour=discord.Colour.blue())
             embed.set_thumbnail(url=self.bot.application.icon)
             await interaction.response.edit_message(embed=embed)
@@ -60,7 +64,8 @@ class HelpSliders(discord.ui.View):
             embed = discord.Embed(title="👮 Административные команды",
                                                                   description=f"❗ Данными командами могут пользоваться только участники сервера с правами ***Администратора***"
                                                                               f"```\n/auto_meme <канал> - устанавливает канал для постинга мемов раз в 30 минут```"
-                                                                              f"```\n/stop_auto_meme - приостанавливает авто постинг мемов на сервере```",
+                                                                              f"```\n/stop_auto_meme <in_guild> - приостанавливает авто постинг мемов на сервере (in_guild=True "
+                                                                              f"на всём сервере)```",
                                                                   colour=discord.Colour.blue()
                                                                   )
             embed.set_thumbnail(url=self.bot.application.icon)

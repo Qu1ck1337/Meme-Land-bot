@@ -11,7 +11,7 @@ from classes.Exp import count_to_next_level
 nest_asyncio.apply()
 
 
-christmas_emoji = ["❄", "🎄", "🎅", "<a:peeposnow:1050783484035203133>", "<a:peepochristmasdance:1050783481237606410>", "🎁"]
+christmas_emoji = ["🌷", "🌼", "💐", "🌸"]
 
 
 class Meme:
@@ -81,7 +81,6 @@ class TaggedMeme(Meme):
         self.index = 0
         if len(self.memes_with_tag) > 0:
             self.meme_data = self.memes_with_tag[self.index]
-        print(self.meme_data)
 
     def next(self):
         self.index += 1

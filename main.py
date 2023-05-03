@@ -31,6 +31,7 @@ async def on_ready():
     await bot.tree.sync(guild=bot.get_guild(766386682047365190))
     await bot.tree.sync()
     success_to_console("Bot is ready")
+    global is_bot_ready
     is_bot_ready = True
 
 
@@ -49,19 +50,6 @@ async def on_slash_command_error(interaction: discord.Interaction, error: discor
         await interaction.response.send_message(error_text)
     except discord.errors.InteractionResponded:
         await interaction.edit_original_response(content=str(error_text))
-    # if isinstance(error, app_commands.MissingPermissions):
-    #     await interaction.response.send_message(str(error), ephemeral=True)
-    # elif isinstance(error, discord.app_commands.errors.CommandInvokeError):
-    #     if error.command.name == "stop_auto_meme" or error.command.name == "auto_meme":
-    #         embed = discord.Embed(title="Изменение системы автопостинга ✏️",
-    #                               description="Теперь бот использует систему подписок на рассылку, вместо привычной отправки сообщений! 😀 \n\n"
-    #                                           "Для того, чтобы запустить/остановить автопостинг, нужно разрешить боту `управлять вебхуками`",
-    #                               colour=discord.Colour.og_blurple())
-    #         embed.set_image(url="https://media.discordapp.net/attachments/1064128583200686162/1064174389739933796/image.png")
-    #         await interaction.response.send_message(embed=embed)
-    #     error_to_console(error.with_traceback())
-    # else:
-    #     error_to_console(error.with_traceback())
 
 
 async def main():

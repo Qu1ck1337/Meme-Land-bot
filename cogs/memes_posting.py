@@ -11,10 +11,10 @@ class MemesPosting(commands.Cog):
         self.bot = bot
 
     @app_commands.command(name="upload_meme", description="Выложить свой мем")
-    @app_commands.describe(attachment="Медиафайл (поддерживаемые форматы: .jepg .jpg .png .gif)")
+    @app_commands.describe(attachment="Медиафайл (поддерживаемые форматы: .jpeg .jepg .jpg .png .gif)")
     async def upload_meme(self, interaction: discord.Interaction, attachment: discord.Attachment):
 
-        if attachment.filename.endswith((".jepg", ".jpg", ".png", ".gif")):
+        if attachment.filename.endswith((".jpeg", ".jepg", ".jpg", ".png", ".gif")):
                                      # 30MB
                 if attachment.size < 31_457_280:
                     await interaction.response.send_modal(SendingMemeContextMenu(self.bot, attachment))
@@ -47,6 +47,7 @@ class SendingMemeContextMenu(ui.Modal, title="Выложить мем"):
         tags = self.tags.value.replace(" ", "")
         if len(tags) > 0:
             tags = tags.split(",")
+            tags = tags[:min(len(tags), 5)]
         else:
             tags = []
         embed = discord.Embed(description=f"📔 **Описание:** {self.description}" if len(self.description.value.strip()) > 0 else None,

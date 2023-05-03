@@ -18,6 +18,7 @@ class MemesWatching(commands.Cog):
 
     @app_commands.command(name="meme", description="Посмотреть мем")
     @app_commands.describe(meme_id="ID мема")
+    @app_commands.describe(tag="Тег мемов")
     async def meme(self, interaction: discord.Interaction, meme_id: int=None, tag: str=None):
         await interaction.response.defer()
         is_searched_or_randomed_meme = False
